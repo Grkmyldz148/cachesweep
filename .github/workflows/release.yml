@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version (e.g. 0.1.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: ver
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build & package .app
+        run: bash Scripts/package.sh "${{ steps.ver.outputs.version }}"
+
+      - name: Zip
+        run: |
+          cd dist
+          ditto -c -k --keepParent Cachesweep.app "Cachesweep-${{ steps.ver.outputs.version }}.zip"
+
+      - name: Sign update & generate appcast
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: bash Scripts/make_appcast.sh "${{ steps.ver.outputs.version }}"
+
+      - name: Create / update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.ver.outputs.version }}
+          name: Cachesweep ${{ steps.ver.outputs.version }}
+          files: |
+            dist/Cachesweep-${{ steps.ver.outputs.version }}.zip
+            dist/appcast.xml
