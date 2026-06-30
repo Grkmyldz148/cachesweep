@@ -35,6 +35,9 @@ final class AppModel {
     var lastFreed: UInt64 = 0
     var freeSpace: UInt64 = 0
 
+    // Smart discovery (Phase 1)
+    var discovered: [TargetState] = []
+
     // Live tracking (FSEvents)
     var activity: [ActivityEntry] = []
     var isMonitoring = false
@@ -42,18 +45,21 @@ final class AppModel {
     @ObservationIgnored private var dirty: Set<String> = []
     @ObservationIgnored private var resizeTask: Task<Void, Never>?
 
+    /// Seeds (curated) + discovered (smart), together.
+    var allStates: [TargetState] { targets + discovered }
+
     /// Sum of the selected targets — the headline "reclaimable" number.
     var selectedReclaimable: UInt64 {
-        targets.filter { $0.isSelected && $0.size > 0 }.reduce(0) { $0 + $1.size }
+        allStates.filter { $0.isSelected && $0.size > 0 }.reduce(0) { $0 + $1.size }
     }
 
     /// Everything we found, selected or not.
     var grandTotal: UInt64 {
-        targets.reduce(0) { $0 + $1.size }
+        allStates.reduce(0) { $0 + $1.size }
     }
 
     var selectedCount: Int {
-        targets.filter { $0.isSelected && $0.size > 0 }.count
+        allStates.filter { $0.isSelected && $0.size > 0 }.count
     }
 
     // MARK: - Scanning
@@ -65,15 +71,30 @@ final class AppModel {
 
         refreshFreeSpace()
 
+        // Smart discovery: find cache-like dirs beyond the curated seed list,
+        // across the user's chosen scan roots and respecting their exclusions.
+        let seedPaths = Set(targets.flatMap { $0.target.expandedPaths })
+        let found = await Discovery.discover(roots: AppSettings.shared.scanRoots,
+                                             excluding: seedPaths,
+                                             excludes: AppSettings.shared.excludedPaths)
+        let prevSel = Dictionary(discovered.map { ($0.id, $0.isSelected) },
+                                 uniquingKeysWith: { a, _ in a })
+        discovered = found.map { t in
+            let s = TargetState(target: t)
+            if let was = prevSel[t.id] { s.isSelected = was }
+            return s
+        }
+        sweepDebug("🔭 keşif: \(found.count) aday — " + found.prefix(12).map { "\($0.name)[\($0.safety == .safe ? "🟢" : "🟠")]" }.joined(separator: ", "))
+
+        // Size seeds + discovered concurrently.
+        let states = targets + discovered
         await withTaskGroup(of: (String, UInt64).self) { group in
-            for state in targets {
-                let t = state.target
+            for st in states {
+                let t = st.target
                 group.addTask { (t.id, await Scanner.size(of: t.expandedPaths)) }
             }
             for await (id, size) in group {
-                if let idx = targets.firstIndex(where: { $0.id == id }) {
-                    targets[idx].size = size
-                }
+                if let s = states.first(where: { $0.id == id }) { s.size = size }
             }
         }
         lastScan = Date()
@@ -83,7 +104,7 @@ final class AppModel {
     // MARK: - Cleaning
 
     func cleanSelected() async {
-        await clean(ids: targets.filter { $0.isSelected && $0.size > 0 }.map(\.id))
+        await clean(ids: allStates.filter { $0.isSelected && $0.size > 0 }.map(\.id))
     }
 
     func clean(ids: [String]) async {
@@ -91,7 +112,7 @@ final class AppModel {
         isCleaning = true
         defer { isCleaning = false }
 
-        let chosen = targets.filter { ids.contains($0.id) }
+        let chosen = allStates.filter { ids.contains($0.id) }
         for state in chosen { state.isCleaning = true }
         let payload = chosen.map(\.target)
 

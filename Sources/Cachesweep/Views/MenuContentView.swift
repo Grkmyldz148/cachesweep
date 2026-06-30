@@ -148,7 +148,7 @@ struct MenuContentView: View {
     }
 
     private var sortedTargets: [TargetState] {
-        model.targets.sorted { a, b in
+        model.allStates.sorted { a, b in
             if (a.size == 0) != (b.size == 0) { return a.size > b.size } // empties to bottom
             return a.size > b.size
         }
@@ -162,6 +162,10 @@ struct MenuContentView: View {
             Text("\(model.freeSpace.fileSize) boş")
             Spacer()
             Menu {
+                Button("Ayarlar…") {
+                    NotificationCenter.default.post(name: .showSettings, object: nil)
+                }
+                Divider()
                 if AppUpdater.shared.isAvailable {
                     Button("Güncellemeleri Denetle…") { AppUpdater.shared.checkForUpdates() }
                     Divider()

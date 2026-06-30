@@ -10,9 +10,19 @@ struct CategoryRow: View {
             HStack(spacing: DS.s3) {
                 iconTile
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(state.target.name)
-                        .font(.callout.weight(.medium))
-                        .foregroundStyle(.primary)
+                    HStack(spacing: DS.s1) {
+                        Text(state.target.name)
+                            .font(.callout.weight(.medium))
+                            .foregroundStyle(.primary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                        if state.target.isDiscovered {
+                            Image(systemName: "sparkle.magnifyingglass")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(.purple)
+                                .help("Akıllı tarama bunu otomatik buldu")
+                        }
+                    }
                     Text(state.target.detail)
                         .font(.footnote)
                         .foregroundStyle(.secondary)

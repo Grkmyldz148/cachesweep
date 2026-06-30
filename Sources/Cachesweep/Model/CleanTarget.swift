@@ -29,6 +29,7 @@ struct CleanTarget: Identifiable, Sendable {
     let rawPaths: [String]      // may contain ~
     let safety: Safety
     let strategy: CleanStrategy
+    var isDiscovered = false    // true when found by the smart scanner, not the seed list
 
     var expandedPaths: [String] {
         rawPaths.map { ($0 as NSString).expandingTildeInPath }
