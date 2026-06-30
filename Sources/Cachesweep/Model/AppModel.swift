@@ -20,8 +20,8 @@ final class TargetState: Identifiable {
 
     init(target: CleanTarget) {
         self.target = target
-        // Default-select the obviously-safe caches.
-        self.isSelected = target.safety == .safe
+        // Pre-select clearly-safe caches, but never something in active use.
+        self.isSelected = target.safety == .safe && !target.inUse
     }
 }
 
@@ -74,9 +74,14 @@ final class AppModel {
         // Smart discovery: find cache-like dirs beyond the curated seed list,
         // across the user's chosen scan roots and respecting their exclusions.
         let seedPaths = Set(targets.flatMap { $0.target.expandedPaths })
+        let activePaths = Set(activity
+            .filter { Date().timeIntervalSince($0.lastChange) < 120 }
+            .map(\.id))
         let found = await Discovery.discover(roots: AppSettings.shared.scanRoots,
                                              excluding: seedPaths,
-                                             excludes: AppSettings.shared.excludedPaths)
+                                             excludes: AppSettings.shared.excludedPaths,
+                                             activePaths: activePaths,
+                                             learn: LearningStore.shared.boosts())
         let prevSel = Dictionary(discovered.map { ($0.id, $0.isSelected) },
                                  uniquingKeysWith: { a, _ in a })
         discovered = found.map { t in
@@ -84,7 +89,12 @@ final class AppModel {
             if let was = prevSel[t.id] { s.isSelected = was }
             return s
         }
-        sweepDebug("🔭 keşif: \(found.count) aday — " + found.prefix(12).map { "\($0.name)[\($0.safety == .safe ? "🟢" : "🟠")]" }.joined(separator: ", "))
+        sweepDebug("🔭 keşif: \(found.count) aday — " + found.prefix(12).map { t in
+            let flag = t.safety == .safe ? "🟢" : "🟠"
+            let age = t.ageDays.map { "\($0)g" } ?? "?"
+            return "\(t.name)[\(flag) \(age)\(t.inUse ? " 🔴kullanımda" : "")\(t.learned ? " 🧠öğrenildi" : "")]"
+        }.joined(separator: ", "))
+        sweepDebug("🧠 öğrenilen bilgi: \(LearningStore.shared.summary)")
 
         // Size seeds + discovered concurrently.
         let states = targets + discovered
@@ -111,6 +121,16 @@ final class AppModel {
         guard !isCleaning, !isScanning, !ids.isEmpty else { return }
         isCleaning = true
         defer { isCleaning = false }
+
+        // Phase 3 — learning feedback from this round's discovered targets.
+        for st in discovered where st.size > 0 {
+            let path = st.target.expandedPaths.first ?? ""
+            if ids.contains(st.id) {
+                LearningStore.shared.recordCleaned(path: path)
+            } else if !st.isSelected {
+                LearningStore.shared.recordSkipped(path: path)
+            }
+        }
 
         let chosen = allStates.filter { ids.contains($0.id) }
         for state in chosen { state.isCleaning = true }
@@ -151,6 +171,7 @@ final class AppModel {
         let roots = knownRoots()
         var touched = false
         for path in changed {
+            LearningStore.shared.noticeActivity(at: path)   // "did a cleaned cache come back?"
             guard let b = Buckets.classify(path, knownRoots: roots) else { continue }
             touched = true
             if let e = activity.first(where: { $0.id == b.path }) {

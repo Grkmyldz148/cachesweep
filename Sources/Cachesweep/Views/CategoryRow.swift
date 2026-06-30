@@ -22,6 +22,14 @@ struct CategoryRow: View {
                                 .foregroundStyle(.purple)
                                 .help("Akıllı tarama bunu otomatik buldu")
                         }
+                        if state.target.inUse {
+                            badge("kullanımda", .orange)
+                        } else if let d = state.target.ageDays, d >= 14 {
+                            badge("\(d)g", .gray)
+                        }
+                        if state.target.learned {
+                            badge("öğrenildi", .teal)
+                        }
                     }
                     Text(state.target.detail)
                         .font(.footnote)
@@ -42,6 +50,14 @@ struct CategoryRow: View {
     }
 
     private var isEmpty: Bool { state.size == 0 }
+
+    private func badge(_ text: String, _ color: Color) -> some View {
+        Text(text)
+            .font(.system(size: 9, weight: .semibold))
+            .padding(.horizontal, 4).padding(.vertical, 1)
+            .background(color.opacity(0.15), in: Capsule())
+            .foregroundStyle(color)
+    }
 
     private var iconTile: some View {
         Image(systemName: state.target.symbol)

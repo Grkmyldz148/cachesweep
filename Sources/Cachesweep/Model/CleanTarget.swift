@@ -30,6 +30,9 @@ struct CleanTarget: Identifiable, Sendable {
     let safety: Safety
     let strategy: CleanStrategy
     var isDiscovered = false    // true when found by the smart scanner, not the seed list
+    var ageDays: Int? = nil     // days since last modified (staleness) — discovered only
+    var inUse = false           // currently being written (from the live tracker)
+    var learned = false         // promoted by accumulated learning (Phase 3)
 
     var expandedPaths: [String] {
         rawPaths.map { ($0 as NSString).expandingTildeInPath }

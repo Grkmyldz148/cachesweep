@@ -33,15 +33,20 @@ enum Discovery {
 
     /// Discover and classify cache-like dirs across the user's chosen `roots`.
     /// `seedPaths` (curated list) and `excludes` (user opt-outs) are skipped.
-    static func discover(roots: [String], excluding seedPaths: Set<String>, excludes: [String]) async -> [CleanTarget] {
+    static func discover(roots: [String], excluding seedPaths: Set<String>,
+                         excludes: [String], activePaths: Set<String>,
+                         learn: [String: Double]) async -> [CleanTarget] {
         await Task.detached(priority: .utility) {
-            run(roots: roots, excluding: seedPaths, excludes: excludes)
+            run(roots: roots, excluding: seedPaths, excludes: excludes,
+                activePaths: activePaths, learn: learn)
         }.value
     }
 
     // MARK: Implementation
 
-    private static func run(roots: [String], excluding seedPaths: Set<String>, excludes: [String]) -> [CleanTarget] {
+    private static func run(roots: [String], excluding seedPaths: Set<String>,
+                            excludes: [String], activePaths: Set<String>,
+                            learn: [String: Double]) -> [CleanTarget] {
         let fm = FileManager()
         let home = NSHomeDirectory()
         var seen = Set<String>()
@@ -50,10 +55,14 @@ enum Discovery {
         func consider(_ path: String, derived: Bool, hasTag: Bool, appleCaches: Bool) {
             guard !seen.contains(path), !seedPaths.contains(path) else { return }
             guard isDir(path, fm) else { return }
-            guard let v = classify(path, derived: derived, hasTag: hasTag,
-                                   appleCaches: appleCaches, excludes: excludes) else { return }
+            let age = ageInDays(path, fm)
+            let active = isActive(path, activePaths)
+            let sig = (path as NSString).lastPathComponent.lowercased()
+            let learnBoost = learn[sig] ?? 0
+            guard let v = classify(path, derived: derived, hasTag: hasTag, appleCaches: appleCaches,
+                                   excludes: excludes, ageDays: age, active: active, learnBoost: learnBoost) else { return }
             seen.insert(path)
-            scored.append((makeTarget(path, v), v.score))
+            scored.append((makeTarget(path, v, ageDays: age, inUse: active, learned: learnBoost > 0), v.score))
         }
 
         for root in roots {
@@ -95,7 +104,8 @@ enum Discovery {
 
     private struct Verdict { let safety: Safety; let score: Double }
 
-    private static func classify(_ path: String, derived: Bool, hasTag: Bool, appleCaches: Bool, excludes: [String]) -> Verdict? {
+    private static func classify(_ path: String, derived: Bool, hasTag: Bool, appleCaches: Bool,
+                                 excludes: [String], ageDays: Int?, active: Bool, learnBoost: Double) -> Verdict? {
         if denylisted(path, excludes: excludes) { return nil }
 
         var cache = 0.0
@@ -105,6 +115,17 @@ enum Discovery {
         if appleCaches                                { cache += 0.6 }
         if cacheNameTokens.contains(lastComp(path))   { cache += 0.4 }
         if derived                                    { cache += 0.5; safe += 0.7 }   // regenerable
+
+        // Behavioral signals (Phase 2): staleness & live activity.
+        if let ageDays {
+            if ageDays >= 7      { safe += 0.3 }      // untouched for a week → safe to clear
+            else if ageDays <= 1 { safe -= 0.2 }      // fresh → be cautious
+        }
+        if active { safe -= 0.6 }                     // being written right now → don't auto-select
+
+        // Learned confidence (Phase 3): accumulated user/regeneration evidence.
+        if learnBoost > 0 { cache += min(0.4, learnBoost); safe += learnBoost }
+        else if learnBoost < 0 { safe += learnBoost }
 
         guard cache >= 0.7 else { return nil }
         return Verdict(safety: safe >= 0.6 ? .safe : .caution, score: cache)
@@ -134,7 +155,7 @@ enum Discovery {
 
     // MARK: Helpers
 
-    private static func makeTarget(_ path: String, _ v: Verdict) -> CleanTarget {
+    private static func makeTarget(_ path: String, _ v: Verdict, ageDays: Int?, inUse: Bool, learned: Bool) -> CleanTarget {
         let leaf = (path as NSString).lastPathComponent
         let parent = ((path as NSString).deletingLastPathComponent as NSString).lastPathComponent
         return CleanTarget(
@@ -145,7 +166,10 @@ enum Discovery {
             rawPaths: [path],
             safety: v.safety,
             strategy: .directory,
-            isDiscovered: true
+            isDiscovered: true,
+            ageDays: ageDays,
+            inUse: inUse,
+            learned: learned
         )
     }
 
@@ -171,6 +195,18 @@ enum Discovery {
     private static func isDir(_ path: String, _ fm: FileManager) -> Bool {
         var d: ObjCBool = false
         return fm.fileExists(atPath: path, isDirectory: &d) && d.boolValue
+    }
+
+    /// Days since the directory was last modified (cheap staleness proxy).
+    private static func ageInDays(_ path: String, _ fm: FileManager) -> Int? {
+        guard let attrs = try? fm.attributesOfItem(atPath: path),
+              let mod = attrs[.modificationDate] as? Date else { return nil }
+        return max(0, Int(Date().timeIntervalSince(mod) / 86_400))
+    }
+
+    /// Is this path (or an ancestor/descendant) currently being written?
+    private static func isActive(_ path: String, _ active: Set<String>) -> Bool {
+        active.contains { $0 == path || $0.hasPrefix(path + "/") || path.hasPrefix($0 + "/") }
     }
 
     /// Run `mdfind` and return the matched paths (Spotlight, near-instant).
