@@ -1,0 +1,73 @@
+/* Menu */
+"menu.settings" = "Instellingen…";
+"menu.history" = "Groeigeschiedenis…";
+"menu.checkUpdates" = "Controleer op updates…";
+"menu.quit" = "Cachesweep afsluiten";
+
+/* Header & actions */
+"action.rescan" = "Opnieuw scannen";
+"action.cleanSelected" = "Selectie opschonen";
+"action.cleaning" = "Bezig met opschonen…";
+"clean.confirm.title" = "%1$d categorieën (%2$@) permanent verwijderen?";
+"clean.confirm.clean" = "Opschonen";
+"clean.confirm.cancel" = "Annuleer";
+"clean.confirm.message" = "Dit zijn opnieuw aan te maken caches. Dit kan niet ongedaan worden gemaakt.";
+"subtitle.scanning" = "Scannen…";
+"subtitle.lastClean" = "Laatste opschoning: %1$@ vrijgemaakt · %2$@ gevonden";
+"subtitle.selected" = "%1$d geselecteerd · %2$@ in totaal gevonden";
+
+/* Live activity */
+"live.title" = "LIVE-ACTIVITEIT";
+"live.writingNow" = "wordt nu geschreven";
+"discovery.confirm.title" = "Inhoud van %@ opschonen?";
+"discovery.confirm.clean" = "Inhoud opschonen";
+"discovery.confirm.cancel" = "Annuleer";
+"discovery.confirm.message" = "Een automatisch ontdekte locatie. De inhoud wordt permanent verwijderd.";
+
+/* Footer */
+"footer.free" = "%@ vrij";
+
+/* Badges */
+"badge.inUse" = "in gebruik";
+"badge.learned" = "geleerd";
+"badge.new" = "nieuw";
+
+/* Time */
+"time.justNow" = "zojuist";
+"time.secondsShort" = "%ds";
+"time.minutesShort" = "%dm";
+"time.minutesAgo" = "%d min geleden";
+"time.hoursAgo" = "%d u geleden";
+"time.daysAgo" = "%d d geleden";
+
+/* Rows */
+"activity.cleanHelp" = "Deze map opschonen";
+"discovered.help" = "Automatisch gevonden door de slimme scan";
+
+/* Settings */
+"settings.scanLocations" = "Scanlocaties";
+"settings.scanLocations.footer" = "De slimme scan zoekt alleen naar caches op de ingeschakelde schijven en mappen.";
+"settings.addFolder" = "Map toevoegen…";
+"settings.exclusions" = "Uitgesloten (nooit gescand)";
+"settings.exclusions.footer" = "Deze mappen en schijven worden overgeslagen, zelfs als ze zijn ingeschakeld.";
+"settings.noExclusions" = "Niets uitgesloten";
+"settings.homeLabel" = "Mac (thuismap)";
+"settings.chooseFolder.prompt" = "Kies";
+"settings.removeFolder" = "Map verwijderen";
+
+/* History */
+"history.today" = "Vandaag";
+"history.week" = "Deze week";
+"history.all" = "Alles";
+"history.empty.title" = "Nog geen gegevens";
+"history.empty.desc" = "Zodra er iets naar de schijf wordt geschreven (builds, npm install…), verschijnt het hier.";
+
+/* Windows */
+"window.settings" = "Cachesweep-instellingen";
+"window.history" = "Groeigeschiedenis";
+
+/* Idle-days badge */
+"badge.idleDays" = "%dd";
+
+"settings.language" = "Taal";
+"settings.language.system" = "Systeem (automatisch)";

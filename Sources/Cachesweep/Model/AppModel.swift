@@ -203,6 +203,7 @@ final class AppModel {
                 if let e = self.activity.first(where: { $0.id == path }) {
                     if !e.hasBaseline { e.baseline = size; e.hasBaseline = true }
                     e.size = size
+                    ActivityHistory.shared.record(path: e.id, label: e.label, size: size)
                 }
             }
             // Drop stale empties, keep the most recent dozen.

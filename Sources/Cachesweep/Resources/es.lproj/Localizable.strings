@@ -1,0 +1,73 @@
+/* Menu */
+"menu.settings" = "Ajustes…";
+"menu.history" = "Historial de crecimiento…";
+"menu.checkUpdates" = "Buscar actualizaciones…";
+"menu.quit" = "Salir de Cachesweep";
+
+/* Header & actions */
+"action.rescan" = "Volver a escanear";
+"action.cleanSelected" = "Limpiar seleccionados";
+"action.cleaning" = "Limpiando…";
+"clean.confirm.title" = "¿Eliminar permanentemente %1$d categorías (%2$@)?";
+"clean.confirm.clean" = "Limpiar";
+"clean.confirm.cancel" = "Cancelar";
+"clean.confirm.message" = "Son cachés regenerables. Esta acción no se puede deshacer.";
+"subtitle.scanning" = "Escaneando…";
+"subtitle.lastClean" = "Última limpieza: %1$@ liberado · %2$@ encontrado";
+"subtitle.selected" = "%1$d seleccionados · %2$@ encontrado en total";
+
+/* Live activity */
+"live.title" = "ACTIVIDAD EN VIVO";
+"live.writingNow" = "escribiendo ahora";
+"discovery.confirm.title" = "¿Limpiar el contenido de %@?";
+"discovery.confirm.clean" = "Limpiar contenido";
+"discovery.confirm.cancel" = "Cancelar";
+"discovery.confirm.message" = "Una ubicación detectada automáticamente. Su contenido se eliminará permanentemente.";
+
+/* Footer */
+"footer.free" = "%@ libre";
+
+/* Badges */
+"badge.inUse" = "en uso";
+"badge.learned" = "aprendido";
+"badge.new" = "nuevo";
+
+/* Time */
+"time.justNow" = "ahora mismo";
+"time.secondsShort" = "%ds";
+"time.minutesShort" = "%dmin";
+"time.minutesAgo" = "hace %d min";
+"time.hoursAgo" = "hace %d h";
+"time.daysAgo" = "hace %d d";
+
+/* Rows */
+"activity.cleanHelp" = "Limpiar esta carpeta";
+"discovered.help" = "Encontrado automáticamente por el escaneo inteligente";
+
+/* Settings */
+"settings.scanLocations" = "Ubicaciones de escaneo";
+"settings.scanLocations.footer" = "El escaneo inteligente solo busca cachés en los discos y carpetas activados.";
+"settings.addFolder" = "Añadir carpeta…";
+"settings.exclusions" = "Excluidos (nunca se escanean)";
+"settings.exclusions.footer" = "Estas carpetas y discos se omiten aunque estén activados.";
+"settings.noExclusions" = "Nada excluido";
+"settings.homeLabel" = "Mac (carpeta de inicio)";
+"settings.chooseFolder.prompt" = "Elegir";
+"settings.removeFolder" = "Quitar carpeta";
+
+/* History */
+"history.today" = "Hoy";
+"history.week" = "Esta semana";
+"history.all" = "Todo";
+"history.empty.title" = "Aún no hay datos";
+"history.empty.desc" = "A medida que se escriban cosas en el disco (builds, npm install…), aparecerán aquí.";
+
+/* Windows */
+"window.settings" = "Ajustes de Cachesweep";
+"window.history" = "Historial de crecimiento";
+
+/* Idle-days badge */
+"badge.idleDays" = "%dd";
+
+"settings.language" = "Idioma";
+"settings.language.system" = "Sistema (automático)";

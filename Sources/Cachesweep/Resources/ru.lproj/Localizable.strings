@@ -1,0 +1,73 @@
+/* Menu */
+"menu.settings" = "Настройки…";
+"menu.history" = "История роста…";
+"menu.checkUpdates" = "Проверить обновления…";
+"menu.quit" = "Выйти из Cachesweep";
+
+/* Header & actions */
+"action.rescan" = "Пересканировать";
+"action.cleanSelected" = "Очистить выбранное";
+"action.cleaning" = "Очистка…";
+"clean.confirm.title" = "Удалить безвозвратно %1$d категорий (%2$@)?";
+"clean.confirm.clean" = "Очистить";
+"clean.confirm.cancel" = "Отмена";
+"clean.confirm.message" = "Это восстанавливаемые кэши. Действие нельзя отменить.";
+"subtitle.scanning" = "Сканирование…";
+"subtitle.lastClean" = "Последняя очистка: освобождено %1$@ · найдено %2$@";
+"subtitle.selected" = "Выбрано %1$d · всего найдено %2$@";
+
+/* Live activity */
+"live.title" = "АКТИВНОСТЬ В РЕАЛЬНОМ ВРЕМЕНИ";
+"live.writingNow" = "идёт запись";
+"discovery.confirm.title" = "Очистить содержимое %@?";
+"discovery.confirm.clean" = "Очистить содержимое";
+"discovery.confirm.cancel" = "Отмена";
+"discovery.confirm.message" = "Автоматически обнаруженное расположение. Его содержимое будет удалено безвозвратно.";
+
+/* Footer */
+"footer.free" = "%@ свободно";
+
+/* Badges */
+"badge.inUse" = "используется";
+"badge.learned" = "изучено";
+"badge.new" = "новое";
+
+/* Time */
+"time.justNow" = "только что";
+"time.secondsShort" = "%dс";
+"time.minutesShort" = "%dм";
+"time.minutesAgo" = "%d мин назад";
+"time.hoursAgo" = "%d ч назад";
+"time.daysAgo" = "%d дн назад";
+
+/* Rows */
+"activity.cleanHelp" = "Очистить эту папку";
+"discovered.help" = "Найдено автоматически умным сканированием";
+
+/* Settings */
+"settings.scanLocations" = "Места сканирования";
+"settings.scanLocations.footer" = "Умное сканирование ищет кэши только на включённых дисках и папках.";
+"settings.addFolder" = "Добавить папку…";
+"settings.exclusions" = "Исключено (никогда не сканируется)";
+"settings.exclusions.footer" = "Эти папки и диски пропускаются, даже если включены.";
+"settings.noExclusions" = "Ничего не исключено";
+"settings.homeLabel" = "Mac (домашняя папка)";
+"settings.chooseFolder.prompt" = "Выбрать";
+"settings.removeFolder" = "Удалить папку";
+
+/* History */
+"history.today" = "Сегодня";
+"history.week" = "На этой неделе";
+"history.all" = "Всё";
+"history.empty.title" = "Пока нет данных";
+"history.empty.desc" = "По мере записи данных на диск (сборки, npm install…) они появятся здесь.";
+
+/* Windows */
+"window.settings" = "Настройки Cachesweep";
+"window.history" = "История роста";
+
+/* Idle-days badge */
+"badge.idleDays" = "%dд";
+
+"settings.language" = "Язык";
+"settings.language.system" = "Система (автоматически)";

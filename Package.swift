@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "Cachesweep",
+    defaultLocalization: "en",
     platforms: [.macOS(.v15)],
     dependencies: [
         .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.6.0")
@@ -14,6 +15,9 @@ let package = Package(
                 .product(name: "Sparkle", package: "Sparkle")
             ],
             path: "Sources/Cachesweep",
+            resources: [
+                .process("Resources")
+            ],
             swiftSettings: [
                 .swiftLanguageMode(.v5)
             ]

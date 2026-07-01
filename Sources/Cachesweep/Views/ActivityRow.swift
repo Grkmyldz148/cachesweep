@@ -32,7 +32,7 @@ struct ActivityRow: View {
                         .lineLimit(1)
                         .truncationMode(.middle)
                     if !entry.isKnown {
-                        Text("yeni")
+                        Text(L("badge.new"))
                             .font(.system(size: 9, weight: .bold))
                             .padding(.horizontal, 4).padding(.vertical, 1)
                             .background(Color.orange.opacity(0.18), in: Capsule())
@@ -50,7 +50,7 @@ struct ActivityRow: View {
                 }
                 .buttonStyle(.borderless)
                 .controlSize(.small)
-                .help("Bu klasörü temizle")
+                .help(L("activity.cleanHelp"))
             }
         }
     }
@@ -72,8 +72,8 @@ struct ActivityRow: View {
 
     private var recency: String {
         let s = Int(Date().timeIntervalSince(entry.lastChange))
-        if s < 3 { return "az önce" }
-        if s < 60 { return "\(s)sn" }
-        return "\(s / 60)dk"
+        if s < 3 { return L("time.justNow") }
+        if s < 60 { return Lf("time.secondsShort", Int32(s)) }
+        return Lf("time.minutesShort", Int32(s / 60))
     }
 }

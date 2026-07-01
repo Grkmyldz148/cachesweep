@@ -21,6 +21,11 @@ cp "$BIN_DIR/$APP_NAME" "$APP/Contents/MacOS/$APP_NAME"
 cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 cp -R "$BIN_DIR/Sparkle.framework" "$APP/Contents/Frameworks/"
 
+# SwiftPM localization / resource bundle (13 languages).
+if [ -d "$BIN_DIR/${APP_NAME}_${APP_NAME}.bundle" ]; then
+  cp -R "$BIN_DIR/${APP_NAME}_${APP_NAME}.bundle" "$APP/Contents/Resources/"
+fi
+
 # Find the bundled framework at runtime.
 install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP/Contents/MacOS/$APP_NAME" 2>/dev/null || true
 

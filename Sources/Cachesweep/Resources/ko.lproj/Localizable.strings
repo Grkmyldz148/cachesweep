@@ -1,0 +1,73 @@
+/* Menu */
+"menu.settings" = "설정…";
+"menu.history" = "증가 기록…";
+"menu.checkUpdates" = "업데이트 확인…";
+"menu.quit" = "Cachesweep 종료";
+
+/* Header & actions */
+"action.rescan" = "다시 스캔";
+"action.cleanSelected" = "선택 항목 정리";
+"action.cleaning" = "정리 중…";
+"clean.confirm.title" = "%1$d개 범주(%2$@)를 영구적으로 삭제할까요?";
+"clean.confirm.clean" = "정리";
+"clean.confirm.cancel" = "취소";
+"clean.confirm.message" = "다시 생성되는 캐시입니다. 이 작업은 되돌릴 수 없습니다.";
+"subtitle.scanning" = "스캔 중…";
+"subtitle.lastClean" = "마지막 정리: %1$@ 확보 · %2$@ 발견";
+"subtitle.selected" = "%1$d개 선택 · 총 %2$@ 발견";
+
+/* Live activity */
+"live.title" = "실시간 활동";
+"live.writingNow" = "지금 쓰는 중";
+"discovery.confirm.title" = "%@의 내용을 정리할까요?";
+"discovery.confirm.clean" = "내용 정리";
+"discovery.confirm.cancel" = "취소";
+"discovery.confirm.message" = "자동으로 발견된 위치입니다. 내용이 영구적으로 삭제됩니다.";
+
+/* Footer */
+"footer.free" = "%@ 사용 가능";
+
+/* Badges */
+"badge.inUse" = "사용 중";
+"badge.learned" = "학습됨";
+"badge.new" = "신규";
+
+/* Time */
+"time.justNow" = "방금";
+"time.secondsShort" = "%d초";
+"time.minutesShort" = "%d분";
+"time.minutesAgo" = "%d분 전";
+"time.hoursAgo" = "%d시간 전";
+"time.daysAgo" = "%d일 전";
+
+/* Rows */
+"activity.cleanHelp" = "이 폴더 정리";
+"discovered.help" = "스마트 스캔이 자동으로 발견함";
+
+/* Settings */
+"settings.scanLocations" = "스캔 위치";
+"settings.scanLocations.footer" = "스마트 스캔은 활성화된 디스크와 폴더에서만 캐시를 찾습니다.";
+"settings.addFolder" = "폴더 추가…";
+"settings.exclusions" = "제외됨(스캔 안 함)";
+"settings.exclusions.footer" = "이 폴더와 디스크는 활성화되어 있어도 건너뜁니다.";
+"settings.noExclusions" = "제외 항목 없음";
+"settings.homeLabel" = "Mac(홈 폴더)";
+"settings.chooseFolder.prompt" = "선택";
+"settings.removeFolder" = "폴더 제거";
+
+/* History */
+"history.today" = "오늘";
+"history.week" = "이번 주";
+"history.all" = "전체";
+"history.empty.title" = "아직 데이터가 없습니다";
+"history.empty.desc" = "디스크에 무언가 기록되면(빌드, npm install 등) 여기에 표시됩니다.";
+
+/* Windows */
+"window.settings" = "Cachesweep 설정";
+"window.history" = "증가 기록";
+
+/* Idle-days badge */
+"badge.idleDays" = "%d일";
+
+"settings.language" = "언어";
+"settings.language.system" = "시스템(자동)";

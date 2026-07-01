@@ -30,10 +30,13 @@ jobs:
       - name: Build & package .app
         run: bash Scripts/package.sh "${{ steps.ver.outputs.version }}"
 
-      - name: Zip
+      - name: Zip (for Sparkle auto-update)
         run: |
           cd dist
           ditto -c -k --keepParent Cachesweep.app "Cachesweep-${{ steps.ver.outputs.version }}.zip"
+
+      - name: Build DMG (for manual download)
+        run: bash Scripts/make_dmg.sh "${{ steps.ver.outputs.version }}"
 
       - name: Sign update & generate appcast
         env:
@@ -47,4 +50,5 @@ jobs:
           name: Cachesweep ${{ steps.ver.outputs.version }}
           files: |
             dist/Cachesweep-${{ steps.ver.outputs.version }}.zip
+            dist/Cachesweep-${{ steps.ver.outputs.version }}.dmg
             dist/appcast.xml

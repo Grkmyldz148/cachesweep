@@ -1,0 +1,73 @@
+/* Menu */
+"menu.settings" = "设置…";
+"menu.history" = "增长历史…";
+"menu.checkUpdates" = "检查更新…";
+"menu.quit" = "退出 Cachesweep";
+
+/* Header & actions */
+"action.rescan" = "重新扫描";
+"action.cleanSelected" = "清理所选";
+"action.cleaning" = "正在清理…";
+"clean.confirm.title" = "永久删除 %1$d 个类别（%2$@）？";
+"clean.confirm.clean" = "清理";
+"clean.confirm.cancel" = "取消";
+"clean.confirm.message" = "这些是可重新生成的缓存。此操作无法撤销。";
+"subtitle.scanning" = "正在扫描…";
+"subtitle.lastClean" = "上次清理：释放 %1$@ · 发现 %2$@";
+"subtitle.selected" = "已选 %1$d 项 · 共发现 %2$@";
+
+/* Live activity */
+"live.title" = "实时活动";
+"live.writingNow" = "正在写入";
+"discovery.confirm.title" = "清理 %@ 的内容？";
+"discovery.confirm.clean" = "清理内容";
+"discovery.confirm.cancel" = "取消";
+"discovery.confirm.message" = "自动发现的位置。其内容将被永久删除。";
+
+/* Footer */
+"footer.free" = "%@ 可用";
+
+/* Badges */
+"badge.inUse" = "使用中";
+"badge.learned" = "已学习";
+"badge.new" = "新";
+
+/* Time */
+"time.justNow" = "刚刚";
+"time.secondsShort" = "%d秒";
+"time.minutesShort" = "%d分";
+"time.minutesAgo" = "%d 分钟前";
+"time.hoursAgo" = "%d 小时前";
+"time.daysAgo" = "%d 天前";
+
+/* Rows */
+"activity.cleanHelp" = "清理此文件夹";
+"discovered.help" = "由智能扫描自动发现";
+
+/* Settings */
+"settings.scanLocations" = "扫描位置";
+"settings.scanLocations.footer" = "智能扫描仅在已启用的磁盘和文件夹中查找缓存。";
+"settings.addFolder" = "添加文件夹…";
+"settings.exclusions" = "已排除（永不扫描）";
+"settings.exclusions.footer" = "这些文件夹和磁盘即使启用也会被跳过。";
+"settings.noExclusions" = "无排除项";
+"settings.homeLabel" = "Mac（个人文件夹）";
+"settings.chooseFolder.prompt" = "选择";
+"settings.removeFolder" = "移除文件夹";
+
+/* History */
+"history.today" = "今天";
+"history.week" = "本周";
+"history.all" = "全部";
+"history.empty.title" = "暂无数据";
+"history.empty.desc" = "当有内容写入磁盘（构建、npm install 等）时，会显示在这里。";
+
+/* Windows */
+"window.settings" = "Cachesweep 设置";
+"window.history" = "增长历史";
+
+/* Idle-days badge */
+"badge.idleDays" = "%d天";
+
+"settings.language" = "语言";
+"settings.language.system" = "系统（自动）";

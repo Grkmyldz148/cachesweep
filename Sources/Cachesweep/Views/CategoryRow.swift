@@ -20,15 +20,15 @@ struct CategoryRow: View {
                             Image(systemName: "sparkle.magnifyingglass")
                                 .font(.system(size: 10, weight: .bold))
                                 .foregroundStyle(.purple)
-                                .help("Akıllı tarama bunu otomatik buldu")
+                                .help(L("discovered.help"))
                         }
                         if state.target.inUse {
-                            badge("kullanımda", .orange)
+                            badge(L("badge.inUse"), .orange)
                         } else if let d = state.target.ageDays, d >= 14 {
-                            badge("\(d)g", .gray)
+                            badge(Lf("badge.idleDays", Int32(d)), .gray)
                         }
                         if state.target.learned {
-                            badge("öğrenildi", .teal)
+                            badge(L("badge.learned"), .teal)
                         }
                     }
                     Text(state.target.detail)

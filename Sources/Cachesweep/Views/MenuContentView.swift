@@ -21,20 +21,20 @@ struct MenuContentView: View {
         .frame(width: DS.popoverWidth, height: DS.popoverHeight)
         .background(.regularMaterial)
         .confirmationDialog(
-            pendingDiscovery.map { "\($0.label) içeriği temizlensin mi?" } ?? "",
+            pendingDiscovery.map { Lf("discovery.confirm.title", $0.label) } ?? "",
             isPresented: Binding(
                 get: { pendingDiscovery != nil },
                 set: { if !$0 { pendingDiscovery = nil } }
             ),
             titleVisibility: .visible
         ) {
-            Button("İçeriği Temizle", role: .destructive) {
+            Button(L("discovery.confirm.clean"), role: .destructive) {
                 if let e = pendingDiscovery { Task { await model.cleanDiscovered(e) } }
                 pendingDiscovery = nil
             }
-            Button("Vazgeç", role: .cancel) { pendingDiscovery = nil }
+            Button(L("discovery.confirm.cancel"), role: .cancel) { pendingDiscovery = nil }
         } message: {
-            Text("Otomatik keşfedilen bir konum. İçeriği kalıcı olarak silinecek.")
+            Text(L("discovery.confirm.message"))
         }
     }
 
@@ -44,12 +44,12 @@ struct MenuContentView: View {
         VStack(alignment: .leading, spacing: DS.s2) {
             HStack(spacing: DS.s2) {
                 LiveDot()
-                Text("CANLI AKTİVİTE")
+                Text(L("live.title"))
                     .font(.caption2.weight(.semibold))
                     .tracking(0.5)
                     .foregroundStyle(.secondary)
                 Spacer()
-                Text("şu an yazılıyor")
+                Text(L("live.writingNow"))
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
             }
@@ -79,7 +79,7 @@ struct MenuContentView: View {
                         Image(systemName: "arrow.clockwise")
                     }
                     .buttonStyle(.borderless)
-                    .help("Yeniden tara")
+                    .help(L("action.rescan"))
                 }
             }
 
@@ -100,7 +100,7 @@ struct MenuContentView: View {
             } label: {
                 HStack(spacing: DS.s2) {
                     if model.isCleaning { ProgressView().controlSize(.small) }
-                    Text(model.isCleaning ? "Temizleniyor…" : "Seçilenleri Temizle")
+                    Text(model.isCleaning ? L("action.cleaning") : L("action.cleanSelected"))
                         .fontWeight(.medium)
                 }
                 .frame(maxWidth: .infinity)
@@ -109,26 +109,26 @@ struct MenuContentView: View {
             .buttonStyle(.borderedProminent)
             .disabled(model.selectedCount == 0 || model.isCleaning || model.isScanning)
             .confirmationDialog(
-                "\(model.selectedCount) kategori (\(model.selectedReclaimable.fileSize)) kalıcı olarak silinsin mi?",
+                Lf("clean.confirm.title", Int32(model.selectedCount), model.selectedReclaimable.fileSize),
                 isPresented: $confirming, titleVisibility: .visible
             ) {
-                Button("Temizle", role: .destructive) {
+                Button(L("clean.confirm.clean"), role: .destructive) {
                     Task { await model.cleanSelected() }
                 }
-                Button("Vazgeç", role: .cancel) {}
+                Button(L("clean.confirm.cancel"), role: .cancel) {}
             } message: {
-                Text("Bunlar yeniden oluşan önbelleklerdir. İşlem geri alınamaz.")
+                Text(L("clean.confirm.message"))
             }
         }
         .padding(DS.s4)
     }
 
     private var subtitle: String {
-        if model.isScanning { return "Taranıyor…" }
+        if model.isScanning { return L("subtitle.scanning") }
         if model.lastFreed > 0 {
-            return "Son temizlik: \(model.lastFreed.fileSize) açıldı · \(model.grandTotal.fileSize) bulundu"
+            return Lf("subtitle.lastClean", model.lastFreed.fileSize, model.grandTotal.fileSize)
         }
-        return "\(model.selectedCount) seçili · toplam \(model.grandTotal.fileSize) bulundu"
+        return Lf("subtitle.selected", Int32(model.selectedCount), model.grandTotal.fileSize)
     }
 
     // MARK: List
@@ -159,18 +159,21 @@ struct MenuContentView: View {
     private var footer: some View {
         HStack(spacing: DS.s2) {
             Image(systemName: "internaldrive")
-            Text("\(model.freeSpace.fileSize) boş")
+            Text(Lf("footer.free", model.freeSpace.fileSize))
             Spacer()
             Menu {
-                Button("Ayarlar…") {
+                Button(L("menu.settings")) {
                     NotificationCenter.default.post(name: .showSettings, object: nil)
+                }
+                Button(L("menu.history")) {
+                    NotificationCenter.default.post(name: .showHistory, object: nil)
                 }
                 Divider()
                 if AppUpdater.shared.isAvailable {
-                    Button("Güncellemeleri Denetle…") { AppUpdater.shared.checkForUpdates() }
+                    Button(L("menu.checkUpdates")) { AppUpdater.shared.checkForUpdates() }
                     Divider()
                 }
-                Button("Cachesweep’ten Çık") { NSApplication.shared.terminate(nil) }
+                Button(L("menu.quit")) { NSApplication.shared.terminate(nil) }
             } label: {
                 Image(systemName: "ellipsis.circle")
             }

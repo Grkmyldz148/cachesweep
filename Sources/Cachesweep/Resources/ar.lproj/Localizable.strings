@@ -1,0 +1,73 @@
+/* Menu */
+"menu.settings" = "الإعدادات…";
+"menu.history" = "سجل النمو…";
+"menu.checkUpdates" = "التحقق من التحديثات…";
+"menu.quit" = "إنهاء Cachesweep";
+
+/* Header & actions */
+"action.rescan" = "إعادة الفحص";
+"action.cleanSelected" = "تنظيف المحدد";
+"action.cleaning" = "جارٍ التنظيف…";
+"clean.confirm.title" = "حذف %1$d فئات (%2$@) نهائيًا؟";
+"clean.confirm.clean" = "تنظيف";
+"clean.confirm.cancel" = "إلغاء";
+"clean.confirm.message" = "هذه ذواكر مؤقتة قابلة لإعادة الإنشاء. لا يمكن التراجع عن هذا الإجراء.";
+"subtitle.scanning" = "جارٍ الفحص…";
+"subtitle.lastClean" = "آخر تنظيف: تم تحرير %1$@ · تم العثور على %2$@";
+"subtitle.selected" = "%1$d محدد · تم العثور على %2$@ إجمالًا";
+
+/* Live activity */
+"live.title" = "النشاط المباشر";
+"live.writingNow" = "جارٍ الكتابة الآن";
+"discovery.confirm.title" = "تنظيف محتويات %@؟";
+"discovery.confirm.clean" = "تنظيف المحتويات";
+"discovery.confirm.cancel" = "إلغاء";
+"discovery.confirm.message" = "موقع تم اكتشافه تلقائيًا. سيتم حذف محتوياته نهائيًا.";
+
+/* Footer */
+"footer.free" = "%@ متاح";
+
+/* Badges */
+"badge.inUse" = "قيد الاستخدام";
+"badge.learned" = "تم تعلمه";
+"badge.new" = "جديد";
+
+/* Time */
+"time.justNow" = "الآن";
+"time.secondsShort" = "%dث";
+"time.minutesShort" = "%dد";
+"time.minutesAgo" = "قبل %d دقيقة";
+"time.hoursAgo" = "قبل %d ساعة";
+"time.daysAgo" = "قبل %d يوم";
+
+/* Rows */
+"activity.cleanHelp" = "تنظيف هذا المجلد";
+"discovered.help" = "تم العثور عليه تلقائيًا بواسطة الفحص الذكي";
+
+/* Settings */
+"settings.scanLocations" = "مواقع الفحص";
+"settings.scanLocations.footer" = "يبحث الفحص الذكي عن الذواكر المؤقتة في الأقراص والمجلدات المفعّلة فقط.";
+"settings.addFolder" = "إضافة مجلد…";
+"settings.exclusions" = "مستبعَد (لا يُفحص أبدًا)";
+"settings.exclusions.footer" = "يتم تخطي هذه المجلدات والأقراص حتى عند تفعيلها.";
+"settings.noExclusions" = "لا شيء مستبعَد";
+"settings.homeLabel" = "Mac (المجلد الرئيسي)";
+"settings.chooseFolder.prompt" = "اختيار";
+"settings.removeFolder" = "إزالة المجلد";
+
+/* History */
+"history.today" = "اليوم";
+"history.week" = "هذا الأسبوع";
+"history.all" = "الكل";
+"history.empty.title" = "لا توجد بيانات بعد";
+"history.empty.desc" = "عند كتابة أشياء على القرص (عمليات البناء، npm install…)، ستظهر هنا.";
+
+/* Windows */
+"window.settings" = "إعدادات Cachesweep";
+"window.history" = "سجل النمو";
+
+/* Idle-days badge */
+"badge.idleDays" = "%dي";
+
+"settings.language" = "اللغة";
+"settings.language.system" = "النظام (تلقائي)";

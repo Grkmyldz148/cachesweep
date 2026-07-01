@@ -1,0 +1,73 @@
+/* Menu */
+"menu.settings" = "Ayarlar…";
+"menu.history" = "Büyüme Geçmişi…";
+"menu.checkUpdates" = "Güncellemeleri Denetle…";
+"menu.quit" = "Cachesweep'ten Çık";
+
+/* Header & actions */
+"action.rescan" = "Yeniden tara";
+"action.cleanSelected" = "Seçilenleri Temizle";
+"action.cleaning" = "Temizleniyor…";
+"clean.confirm.title" = "%1$d kategori (%2$@) kalıcı olarak silinsin mi?";
+"clean.confirm.clean" = "Temizle";
+"clean.confirm.cancel" = "Vazgeç";
+"clean.confirm.message" = "Bunlar yeniden oluşan önbelleklerdir. İşlem geri alınamaz.";
+"subtitle.scanning" = "Taranıyor…";
+"subtitle.lastClean" = "Son temizlik: %1$@ açıldı · %2$@ bulundu";
+"subtitle.selected" = "%1$d seçili · toplam %2$@ bulundu";
+
+/* Live activity */
+"live.title" = "CANLI AKTİVİTE";
+"live.writingNow" = "şu an yazılıyor";
+"discovery.confirm.title" = "%@ içeriği temizlensin mi?";
+"discovery.confirm.clean" = "İçeriği Temizle";
+"discovery.confirm.cancel" = "Vazgeç";
+"discovery.confirm.message" = "Otomatik keşfedilen bir konum. İçeriği kalıcı olarak silinecek.";
+
+/* Footer */
+"footer.free" = "%@ boş";
+
+/* Badges */
+"badge.inUse" = "kullanımda";
+"badge.learned" = "öğrenildi";
+"badge.new" = "yeni";
+
+/* Time */
+"time.justNow" = "az önce";
+"time.secondsShort" = "%dsn";
+"time.minutesShort" = "%ddk";
+"time.minutesAgo" = "%d dk önce";
+"time.hoursAgo" = "%d sa önce";
+"time.daysAgo" = "%d gün önce";
+
+/* Rows */
+"activity.cleanHelp" = "Bu klasörü temizle";
+"discovered.help" = "Akıllı tarama bunu otomatik buldu";
+
+/* Settings */
+"settings.scanLocations" = "Taranacak Yerler";
+"settings.scanLocations.footer" = "Akıllı tarama yalnızca açık olan disk ve klasörlerde cache arar.";
+"settings.addFolder" = "Klasör Ekle…";
+"settings.exclusions" = "Hariç Tutulanlar (asla taranmaz)";
+"settings.exclusions.footer" = "Buradaki klasör ve diskler, açık olsalar bile taranmaz.";
+"settings.noExclusions" = "Hariç tutulan yok";
+"settings.homeLabel" = "Mac (Ev klasörü)";
+"settings.chooseFolder.prompt" = "Seç";
+"settings.removeFolder" = "Klasörü kaldır";
+
+/* History */
+"history.today" = "Bugün";
+"history.week" = "Bu Hafta";
+"history.all" = "Tümü";
+"history.empty.title" = "Henüz veri yok";
+"history.empty.desc" = "Bir şeyler diske yazıldıkça (build, npm install…) burada birikir.";
+
+/* Windows */
+"window.settings" = "Cachesweep Ayarları";
+"window.history" = "Büyüme Geçmişi";
+
+/* Idle-days badge */
+"badge.idleDays" = "%dg";
+
+"settings.language" = "Dil";
+"settings.language.system" = "Sistem (otomatik)";

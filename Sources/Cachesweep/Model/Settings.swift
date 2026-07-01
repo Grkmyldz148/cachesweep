@@ -17,6 +17,7 @@ final class AppSettings {
         static let roots = "scanRoots"
         static let custom = "customFolders"
         static let excluded = "excludedPaths"
+        static let language = "language"
     }
 
     /// Locations the smart scanner searches.
@@ -25,17 +26,28 @@ final class AppSettings {
     var customFolders: [String]
     /// Folders/disks that must never be scanned (veto).
     var excludedPaths: [String]
+    /// Manual language override, or "system" to follow the device.
+    var language: String
 
     private init() {
         scanRoots = store.stringArray(forKey: Key.roots) ?? [NSHomeDirectory()]
         customFolders = store.stringArray(forKey: Key.custom) ?? []
         excludedPaths = store.stringArray(forKey: Key.excluded) ?? []
+        language = store.string(forKey: Key.language) ?? "system"
+        Localizer.apply(language == "system" ? nil : language)
+    }
+
+    func setLanguage(_ code: String) {
+        language = code
+        Localizer.apply(code == "system" ? nil : code)
+        save()
     }
 
     private func save() {
         store.set(scanRoots, forKey: Key.roots)
         store.set(customFolders, forKey: Key.custom)
         store.set(excludedPaths, forKey: Key.excluded)
+        store.set(language, forKey: Key.language)
     }
 
     // MARK: Scan roots
@@ -85,7 +97,7 @@ final class AppSettings {
     }
 
     func availableRoots() -> [Root] {
-        var roots = [Root(id: NSHomeDirectory(), label: "Mac (Ev klasörü)",
+        var roots = [Root(id: NSHomeDirectory(), label: L("settings.homeLabel"),
                           path: NSHomeDirectory(), removable: false)]
         for v in Self.mountedVolumes() where v.path != "/" {
             roots.append(Root(id: v.path, label: v.name, path: v.path, removable: false))

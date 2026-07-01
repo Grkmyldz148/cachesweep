@@ -1,0 +1,73 @@
+/* Menu */
+"menu.settings" = "Settings…";
+"menu.history" = "Growth History…";
+"menu.checkUpdates" = "Check for Updates…";
+"menu.quit" = "Quit Cachesweep";
+
+/* Header & actions */
+"action.rescan" = "Rescan";
+"action.cleanSelected" = "Clean Selected";
+"action.cleaning" = "Cleaning…";
+"clean.confirm.title" = "Permanently delete %1$d categories (%2$@)?";
+"clean.confirm.clean" = "Clean";
+"clean.confirm.cancel" = "Cancel";
+"clean.confirm.message" = "These are regenerable caches. This cannot be undone.";
+"subtitle.scanning" = "Scanning…";
+"subtitle.lastClean" = "Last cleanup: %1$@ freed · %2$@ found";
+"subtitle.selected" = "%1$d selected · %2$@ found in total";
+
+/* Live activity */
+"live.title" = "LIVE ACTIVITY";
+"live.writingNow" = "writing now";
+"discovery.confirm.title" = "Clean the contents of %@?";
+"discovery.confirm.clean" = "Clean Contents";
+"discovery.confirm.cancel" = "Cancel";
+"discovery.confirm.message" = "An auto-discovered location. Its contents will be permanently deleted.";
+
+/* Footer */
+"footer.free" = "%@ free";
+
+/* Badges */
+"badge.inUse" = "in use";
+"badge.learned" = "learned";
+"badge.new" = "new";
+
+/* Time */
+"time.justNow" = "just now";
+"time.secondsShort" = "%ds";
+"time.minutesShort" = "%dm";
+"time.minutesAgo" = "%d min ago";
+"time.hoursAgo" = "%d h ago";
+"time.daysAgo" = "%d d ago";
+
+/* Rows */
+"activity.cleanHelp" = "Clean this folder";
+"discovered.help" = "Found automatically by the smart scan";
+
+/* Settings */
+"settings.scanLocations" = "Scan Locations";
+"settings.scanLocations.footer" = "The smart scan only looks for caches in the enabled disks and folders.";
+"settings.addFolder" = "Add Folder…";
+"settings.exclusions" = "Excluded (never scanned)";
+"settings.exclusions.footer" = "These folders and disks are skipped even when enabled.";
+"settings.noExclusions" = "Nothing excluded";
+"settings.homeLabel" = "Mac (Home folder)";
+"settings.chooseFolder.prompt" = "Choose";
+"settings.removeFolder" = "Remove folder";
+
+/* History */
+"history.today" = "Today";
+"history.week" = "This Week";
+"history.all" = "All";
+"history.empty.title" = "No data yet";
+"history.empty.desc" = "As things get written to disk (builds, npm install…), they will appear here.";
+
+/* Windows */
+"window.settings" = "Cachesweep Settings";
+"window.history" = "Growth History";
+
+/* Idle-days badge */
+"badge.idleDays" = "%dd";
+
+"settings.language" = "Language";
+"settings.language.system" = "System (automatic)";

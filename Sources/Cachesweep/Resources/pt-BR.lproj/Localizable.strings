@@ -1,0 +1,73 @@
+/* Menu */
+"menu.settings" = "Ajustes…";
+"menu.history" = "Histórico de crescimento…";
+"menu.checkUpdates" = "Verificar atualizações…";
+"menu.quit" = "Sair do Cachesweep";
+
+/* Header & actions */
+"action.rescan" = "Escanear novamente";
+"action.cleanSelected" = "Limpar selecionados";
+"action.cleaning" = "Limpando…";
+"clean.confirm.title" = "Excluir permanentemente %1$d categorias (%2$@)?";
+"clean.confirm.clean" = "Limpar";
+"clean.confirm.cancel" = "Cancelar";
+"clean.confirm.message" = "São caches regeneráveis. Esta ação não pode ser desfeita.";
+"subtitle.scanning" = "Escaneando…";
+"subtitle.lastClean" = "Última limpeza: %1$@ liberado · %2$@ encontrado";
+"subtitle.selected" = "%1$d selecionado · %2$@ encontrado no total";
+
+/* Live activity */
+"live.title" = "ATIVIDADE AO VIVO";
+"live.writingNow" = "gravando agora";
+"discovery.confirm.title" = "Limpar o conteúdo de %@?";
+"discovery.confirm.clean" = "Limpar conteúdo";
+"discovery.confirm.cancel" = "Cancelar";
+"discovery.confirm.message" = "Um local detectado automaticamente. Seu conteúdo será excluído permanentemente.";
+
+/* Footer */
+"footer.free" = "%@ livre";
+
+/* Badges */
+"badge.inUse" = "em uso";
+"badge.learned" = "aprendido";
+"badge.new" = "novo";
+
+/* Time */
+"time.justNow" = "agora mesmo";
+"time.secondsShort" = "%ds";
+"time.minutesShort" = "%dmin";
+"time.minutesAgo" = "há %d min";
+"time.hoursAgo" = "há %d h";
+"time.daysAgo" = "há %d d";
+
+/* Rows */
+"activity.cleanHelp" = "Limpar esta pasta";
+"discovered.help" = "Encontrado automaticamente pela varredura inteligente";
+
+/* Settings */
+"settings.scanLocations" = "Locais de varredura";
+"settings.scanLocations.footer" = "A varredura inteligente só procura caches nos discos e pastas ativados.";
+"settings.addFolder" = "Adicionar pasta…";
+"settings.exclusions" = "Excluídos (nunca verificados)";
+"settings.exclusions.footer" = "Estas pastas e discos são ignorados mesmo quando ativados.";
+"settings.noExclusions" = "Nada excluído";
+"settings.homeLabel" = "Mac (pasta pessoal)";
+"settings.chooseFolder.prompt" = "Escolher";
+"settings.removeFolder" = "Remover pasta";
+
+/* History */
+"history.today" = "Hoje";
+"history.week" = "Esta semana";
+"history.all" = "Tudo";
+"history.empty.title" = "Ainda sem dados";
+"history.empty.desc" = "À medida que algo é gravado no disco (builds, npm install…), aparecerá aqui.";
+
+/* Windows */
+"window.settings" = "Ajustes do Cachesweep";
+"window.history" = "Histórico de crescimento";
+
+/* Idle-days badge */
+"badge.idleDays" = "%dd";
+
+"settings.language" = "Idioma";
+"settings.language.system" = "Sistema (automático)";

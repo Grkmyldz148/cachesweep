@@ -1,0 +1,73 @@
+/* Menu */
+"menu.settings" = "設定…";
+"menu.history" = "増加履歴…";
+"menu.checkUpdates" = "アップデートを確認…";
+"menu.quit" = "Cachesweep を終了";
+
+/* Header & actions */
+"action.rescan" = "再スキャン";
+"action.cleanSelected" = "選択項目を削除";
+"action.cleaning" = "クリーンアップ中…";
+"clean.confirm.title" = "%1$d 個のカテゴリ（%2$@）を完全に削除しますか？";
+"clean.confirm.clean" = "削除";
+"clean.confirm.cancel" = "キャンセル";
+"clean.confirm.message" = "これらは再生成されるキャッシュです。この操作は取り消せません。";
+"subtitle.scanning" = "スキャン中…";
+"subtitle.lastClean" = "前回のクリーンアップ：%1$@ 解放 · %2$@ 検出";
+"subtitle.selected" = "%1$d 件選択 · 合計 %2$@ 検出";
+
+/* Live activity */
+"live.title" = "ライブアクティビティ";
+"live.writingNow" = "書き込み中";
+"discovery.confirm.title" = "%@ の内容を削除しますか？";
+"discovery.confirm.clean" = "内容を削除";
+"discovery.confirm.cancel" = "キャンセル";
+"discovery.confirm.message" = "自動検出された場所です。内容は完全に削除されます。";
+
+/* Footer */
+"footer.free" = "空き %@";
+
+/* Badges */
+"badge.inUse" = "使用中";
+"badge.learned" = "学習済み";
+"badge.new" = "新規";
+
+/* Time */
+"time.justNow" = "たった今";
+"time.secondsShort" = "%d秒";
+"time.minutesShort" = "%d分";
+"time.minutesAgo" = "%d分前";
+"time.hoursAgo" = "%d時間前";
+"time.daysAgo" = "%d日前";
+
+/* Rows */
+"activity.cleanHelp" = "このフォルダを削除";
+"discovered.help" = "スマートスキャンが自動的に検出";
+
+/* Settings */
+"settings.scanLocations" = "スキャン対象";
+"settings.scanLocations.footer" = "スマートスキャンは、有効なディスクとフォルダ内のキャッシュのみを探します。";
+"settings.addFolder" = "フォルダを追加…";
+"settings.exclusions" = "除外（スキャンしない）";
+"settings.exclusions.footer" = "これらのフォルダとディスクは、有効でもスキップされます。";
+"settings.noExclusions" = "除外なし";
+"settings.homeLabel" = "Mac（ホームフォルダ）";
+"settings.chooseFolder.prompt" = "選択";
+"settings.removeFolder" = "フォルダを削除";
+
+/* History */
+"history.today" = "今日";
+"history.week" = "今週";
+"history.all" = "すべて";
+"history.empty.title" = "まだデータがありません";
+"history.empty.desc" = "ディスクへの書き込み（ビルド、npm install など）が発生すると、ここに表示されます。";
+
+/* Windows */
+"window.settings" = "Cachesweep の設定";
+"window.history" = "増加履歴";
+
+/* Idle-days badge */
+"badge.idleDays" = "%d日";
+
+"settings.language" = "言語";
+"settings.language.system" = "システム（自動）";
