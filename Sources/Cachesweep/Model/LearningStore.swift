@@ -62,8 +62,9 @@ final class LearningStore {
         save()
     }
 
-    func recordSkipped(path: String) {
-        let sig = Self.signature(forPath: path)
+    /// One skip per kind per clean action (callers dedupe by signature) —
+    /// otherwise five unselected node_modules folders would count as five skips.
+    func recordSkipped(signature sig: String) {
         knowledge[sig, default: Knowledge()].skipped += 1
         save()
     }

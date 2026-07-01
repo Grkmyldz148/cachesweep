@@ -53,7 +53,10 @@ enum Discovery {
         var scored: [(target: CleanTarget, score: Double)] = []
 
         func consider(_ path: String, derived: Bool, hasTag: Bool, appleCaches: Bool) {
-            guard !seen.contains(path), !seedPaths.contains(path) else { return }
+            guard !seen.contains(path) else { return }
+            // Skip anything a curated seed already covers (exact or nested),
+            // otherwise its bytes would be counted and cleaned twice.
+            guard !seedPaths.contains(where: { path == $0 || path.hasPrefix($0 + "/") }) else { return }
             guard isDir(path, fm) else { return }
             let age = ageInDays(path, fm)
             let active = isActive(path, activePaths)
@@ -96,8 +99,18 @@ enum Discovery {
             }
         }
 
+        // Drop candidates nested inside a shallower candidate — the parent
+        // already covers their bytes (prevents double counting and racing
+        // deletes like `target` + `target/wasm32-unknown-unknown`).
+        var kept: [(target: CleanTarget, score: Double)] = []
+        for cand in scored.sorted(by: { $0.target.rawPaths[0].count < $1.target.rawPaths[0].count }) {
+            let p = cand.target.rawPaths[0]
+            if kept.contains(where: { p.hasPrefix($0.target.rawPaths[0] + "/") }) { continue }
+            kept.append(cand)
+        }
+
         // Strongest signals first, cap the fan-out.
-        return scored.sorted { $0.score > $1.score }.prefix(40).map(\.target)
+        return kept.sorted { $0.score > $1.score }.prefix(40).map(\.target)
     }
 
     // MARK: Classifier

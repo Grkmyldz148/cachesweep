@@ -3,6 +3,7 @@ import Foundation
 /// Serves localized strings from the best-matching .lproj. By default it follows
 /// the device language (Locale.preferredLanguages); a manual override (set from
 /// Settings) takes precedence and updates live.
+@MainActor
 enum Localizer {
     /// The active localization bundle (recomputed when the override changes).
     private(set) static var cached: Bundle = resolve(override: nil)
@@ -40,11 +41,13 @@ enum Localizer {
 }
 
 /// Localized string for the active language. Falls back to the key itself.
+@MainActor
 func L(_ key: String) -> String {
     Localizer.cached.localizedString(forKey: key, value: key, table: nil)
 }
 
 /// Localized + formatted (keeps positional %1$@ / %d specifiers).
+@MainActor
 func Lf(_ key: String, _ args: CVarArg...) -> String {
     String(format: L(key), arguments: args)
 }

@@ -34,6 +34,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Task { await model.scan() }
     }
 
+    func applicationWillTerminate(_ notification: Notification) {
+        ActivityHistory.shared.flush()   // saves are throttled; persist the tail
+    }
+
     @objc func openSettings() {
         if settingsWindow == nil {
             settingsWindow = makeWindow(title: L("window.settings"),

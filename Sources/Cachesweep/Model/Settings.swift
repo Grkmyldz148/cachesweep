@@ -87,27 +87,7 @@ final class AppSettings {
         save()
     }
 
-    // MARK: Available roots (home + mounted volumes + custom folders)
-
-    struct Root: Identifiable {
-        let id: String
-        let label: String
-        let path: String
-        let removable: Bool
-    }
-
-    func availableRoots() -> [Root] {
-        var roots = [Root(id: NSHomeDirectory(), label: L("settings.homeLabel"),
-                          path: NSHomeDirectory(), removable: false)]
-        for v in Self.mountedVolumes() where v.path != "/" {
-            roots.append(Root(id: v.path, label: v.name, path: v.path, removable: false))
-        }
-        for f in customFolders {
-            roots.append(Root(id: f, label: (f as NSString).lastPathComponent,
-                              path: f, removable: true))
-        }
-        return roots
-    }
+    // MARK: Mounted volumes
 
     static func mountedVolumes() -> [(name: String, path: String)] {
         let keys: [URLResourceKey] = [.volumeNameKey, .volumeIsBrowsableKey]

@@ -42,11 +42,30 @@ final class AppModel {
     var activity: [ActivityEntry] = []
     var isMonitoring = false
     @ObservationIgnored private var monitor: FileActivityMonitor?
+    @ObservationIgnored private var monitoredPaths: [String] = []
     @ObservationIgnored private var dirty: Set<String> = []
     @ObservationIgnored private var resizeTask: Task<Void, Never>?
+    @ObservationIgnored private var resizePendingSince: Date?
 
-    /// Seeds (curated) + discovered (smart), together.
-    var allStates: [TargetState] { targets + discovered }
+    // Discovery result cache — Spotlight sweeps are not free, so reuse recent
+    // results unless forced (refresh button) or invalidated (after cleaning).
+    @ObservationIgnored private var discoveryCache: (key: String, at: Date, found: [CleanTarget])?
+
+    /// Seeds (curated) + discovered (smart) — minus anything whose scan root
+    /// is disabled or that the user excluded in Settings.
+    var allStates: [TargetState] {
+        (targets + discovered).filter { !allowedPaths($0.target).isEmpty }
+    }
+
+    /// A target's paths restricted to enabled scan roots and user exclusions.
+    private func allowedPaths(_ t: CleanTarget) -> [String] {
+        let roots = AppSettings.shared.scanRoots
+        let ex = AppSettings.shared.excludedPaths
+        return t.expandedPaths.filter { p in
+            roots.contains(where: { p == $0 || p.hasPrefix($0 + "/") })
+                && !ex.contains(where: { p == $0 || p.hasPrefix($0 + "/") })
+        }
+    }
 
     /// Sum of the selected targets — the headline "reclaimable" number.
     var selectedReclaimable: UInt64 {
@@ -64,24 +83,44 @@ final class AppModel {
 
     // MARK: - Scanning
 
-    func scan() async {
+    func scan(force: Bool = false) async {
         guard !isScanning, !isCleaning else { return }
         isScanning = true
         defer { isScanning = false }
 
         refreshFreeSpace()
+        syncMonitoredRoots()
+
+        let roots = AppSettings.shared.scanRoots
+        let excludes = AppSettings.shared.excludedPaths
+        let cacheKey = roots.joined(separator: "|") + "‖" + excludes.joined(separator: "|")
 
         // Smart discovery: find cache-like dirs beyond the curated seed list,
         // across the user's chosen scan roots and respecting their exclusions.
-        let seedPaths = Set(targets.flatMap { $0.target.expandedPaths })
-        let activePaths = Set(activity
-            .filter { Date().timeIntervalSince($0.lastChange) < 120 }
-            .map(\.id))
-        let found = await Discovery.discover(roots: AppSettings.shared.scanRoots,
+        // Recent results are reused (Spotlight sweep + stats aren't free).
+        let found: [CleanTarget]
+        if !force, let c = discoveryCache, c.key == cacheKey,
+           Date().timeIntervalSince(c.at) < 180 {
+            found = c.found
+        } else {
+            let seedPaths = Set(targets.flatMap { $0.target.expandedPaths })
+            let activePaths = Set(activity
+                .filter { Date().timeIntervalSince($0.lastChange) < 120 }
+                .map(\.id))
+            found = await Discovery.discover(roots: roots,
                                              excluding: seedPaths,
-                                             excludes: AppSettings.shared.excludedPaths,
+                                             excludes: excludes,
                                              activePaths: activePaths,
                                              learn: LearningStore.shared.boosts())
+            discoveryCache = (cacheKey, Date(), found)
+            sweepDebug("🔭 keşif: \(found.count) aday — " + found.prefix(12).map { t in
+                let flag = t.safety == .safe ? "🟢" : "🟠"
+                let age = t.ageDays.map { "\($0)g" } ?? "?"
+                return "\(t.name)[\(flag) \(age)\(t.inUse ? " 🔴kullanımda" : "")\(t.learned ? " 🧠öğrenildi" : "")]"
+            }.joined(separator: ", "))
+            sweepDebug("🧠 öğrenilen bilgi: \(LearningStore.shared.summary)")
+        }
+
         let prevSel = Dictionary(discovered.map { ($0.id, $0.isSelected) },
                                  uniquingKeysWith: { a, _ in a })
         discovered = found.map { t in
@@ -89,19 +128,14 @@ final class AppModel {
             if let was = prevSel[t.id] { s.isSelected = was }
             return s
         }
-        sweepDebug("🔭 keşif: \(found.count) aday — " + found.prefix(12).map { t in
-            let flag = t.safety == .safe ? "🟢" : "🟠"
-            let age = t.ageDays.map { "\($0)g" } ?? "?"
-            return "\(t.name)[\(flag) \(age)\(t.inUse ? " 🔴kullanımda" : "")\(t.learned ? " 🧠öğrenildi" : "")]"
-        }.joined(separator: ", "))
-        sweepDebug("🧠 öğrenilen bilgi: \(LearningStore.shared.summary)")
 
-        // Size seeds + discovered concurrently.
+        // Size seeds + discovered concurrently (only settings-allowed paths).
         let states = targets + discovered
         await withTaskGroup(of: (String, UInt64).self) { group in
             for st in states {
-                let t = st.target
-                group.addTask { (t.id, await Scanner.size(of: t.expandedPaths)) }
+                let id = st.target.id
+                let paths = allowedPaths(st.target)
+                group.addTask { (id, await Scanner.size(of: paths)) }
             }
             for await (id, size) in group {
                 if let s = states.first(where: { $0.id == id }) { s.size = size }
@@ -122,37 +156,59 @@ final class AppModel {
         isCleaning = true
         defer { isCleaning = false }
 
-        // Phase 3 — learning feedback from this round's discovered targets.
-        for st in discovered where st.size > 0 {
-            let path = st.target.expandedPaths.first ?? ""
-            if ids.contains(st.id) {
-                LearningStore.shared.recordCleaned(path: path)
-            } else if !st.isSelected {
-                LearningStore.shared.recordSkipped(path: path)
-            }
-        }
+        // Phase 3 — kinds the user deliberately left unselected: one skip per
+        // kind per clean action, not per folder.
+        let skippedSigs = Set(discovered
+            .filter { $0.size > 0 && !$0.isSelected && !ids.contains($0.id) }
+            .map { LearningStore.signature(forPath: $0.target.expandedPaths.first ?? "") })
+        for sig in skippedSigs { LearningStore.shared.recordSkipped(signature: sig) }
 
         let chosen = allStates.filter { ids.contains($0.id) }
         for state in chosen { state.isCleaning = true }
-        let payload = chosen.map(\.target)
+        // Clean only paths inside enabled roots and not excluded in Settings.
+        let payload = chosen.map { st -> CleanTarget in
+            var t = st.target
+            t.rawPaths = allowedPaths(st.target)
+            return t
+        }
 
-        let freed = await withTaskGroup(of: UInt64.self) { group -> UInt64 in
-            for t in payload { group.addTask { Cleaner.clean(t) } }
-            var total: UInt64 = 0
-            for await f in group { total += f }
-            return total
+        let results = await withTaskGroup(of: (String, UInt64).self) { group -> [String: UInt64] in
+            for t in payload { group.addTask { (t.id, Cleaner.clean(t)) } }
+            var out: [String: UInt64] = [:]
+            for await (id, f) in group { out[id] = f }
+            return out
+        }
+
+        // Record "cleaned" only when bytes were actually freed (a permissions
+        // failure should not count as evidence).
+        for st in chosen where st.target.isDiscovered {
+            if (results[st.id] ?? 0) > 0, let p = st.target.expandedPaths.first {
+                LearningStore.shared.recordCleaned(path: p)
+            }
         }
 
         for state in chosen { state.isCleaning = false }
-        lastFreed = freed
+        lastFreed = results.values.reduce(0, +)
+        discoveryCache = nil          // cleaned folders must not reappear from cache
         await scan()
     }
 
     // MARK: - Live tracking
 
     func startMonitoring() {
-        guard monitor == nil else { return }
-        let m = FileActivityMonitor(paths: [NSHomeDirectory()]) { [weak self] changed in
+        syncMonitoredRoots()
+    }
+
+    /// Keep the FSEvents watcher aligned with the user's scan roots
+    /// (home by default, plus any enabled disks/folders).
+    private func syncMonitoredRoots() {
+        let roots = AppSettings.shared.scanRoots
+        guard Set(roots) != Set(monitoredPaths) else { return }
+        monitor?.stop()
+        monitor = nil
+        monitoredPaths = roots
+        guard !roots.isEmpty else { isMonitoring = false; return }
+        let m = FileActivityMonitor(paths: roots) { [weak self] changed in
             Task { @MainActor in self?.ingest(changed) }
         }
         m.start()
@@ -192,10 +248,16 @@ final class AppModel {
     }
 
     private func scheduleResize() {
+        // Debounce, but never postpone a flush by more than ~8s — otherwise a
+        // long build (FSEvents batches every ~1.5s) would starve size updates.
+        let now = Date()
+        if resizePendingSince == nil { resizePendingSince = now }
+        let overdue = now.timeIntervalSince(resizePendingSince ?? now) >= 8
         resizeTask?.cancel()
         resizeTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .seconds(2))
+            if !overdue { try? await Task.sleep(for: .seconds(2)) }
             guard let self, !Task.isCancelled else { return }
+            self.resizePendingSince = nil
             let buckets = self.dirty
             self.dirty.removeAll()
             for path in buckets {

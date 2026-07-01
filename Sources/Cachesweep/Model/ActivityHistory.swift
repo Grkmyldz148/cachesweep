@@ -73,6 +73,10 @@ final class ActivityHistory {
             .map { (record: $0.0, growth: $0.1) }
     }
 
+    /// Force-write pending records — saves are throttled, so call this at app
+    /// termination to avoid losing the last few samples.
+    func flush() { save() }
+
     // MARK: Housekeeping
 
     private func prune(_ now: Date) {

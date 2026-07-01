@@ -7,7 +7,7 @@ struct HistoryView: View {
     enum Window: String, CaseIterable, Identifiable {
         case day, week, all
         var id: String { rawValue }
-        var label: String {
+        @MainActor var label: String {
             switch self {
             case .day:  return L("history.today")
             case .week: return L("history.week")

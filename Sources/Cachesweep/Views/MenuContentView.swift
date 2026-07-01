@@ -74,7 +74,7 @@ struct MenuContentView: View {
                     ProgressView().controlSize(.small)
                 } else {
                     Button {
-                        Task { await model.scan() }
+                        Task { await model.scan(force: true) }
                     } label: {
                         Image(systemName: "arrow.clockwise")
                     }
