@@ -12,10 +12,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Menu-bar icon — a template SF Symbol so it tints with the menu bar.
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        statusItem.isVisible = true
         if let button = statusItem.button {
-            let img = NSImage(systemSymbolName: "sparkles", accessibilityDescription: "Cachesweep")
-            img?.isTemplate = true
-            button.image = img
+            if let img = NSImage(systemSymbolName: "sparkles", accessibilityDescription: "Cachesweep") {
+                img.isTemplate = true
+                button.image = img
+            } else {
+                button.title = "✦"   // never leave a zero-width, invisible item
+            }
             button.action = #selector(togglePopover(_:))
             button.target = self
         }
@@ -32,6 +36,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NotificationCenter.default.addObserver(self, selector: #selector(openHistory),
                                                name: .showHistory, object: nil)
         Task { await model.scan() }
+
+        // First launch: confirm visibly that the app is alive. A full menu bar
+        // (notch overflow) or tools like Bartender can swallow the status icon,
+        // which reads as "nothing happened".
+        if !UserDefaults.standard.bool(forKey: "welcomeShown") {
+            UserDefaults.standard.set(true, forKey: "welcomeShown")
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(1))
+                self.showWelcome()
+            }
+        }
+    }
+
+    private func showWelcome() {
+        NSApp.activate(ignoringOtherApps: true)
+        let alert = NSAlert()
+        alert.messageText = L("welcome.title")
+        alert.informativeText = L("welcome.message")
+        alert.addButton(withTitle: L("welcome.ok"))
+        alert.runModal()
     }
 
     func applicationWillTerminate(_ notification: Notification) {

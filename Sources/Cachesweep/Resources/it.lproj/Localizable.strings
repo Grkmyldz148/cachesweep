@@ -71,3 +71,8 @@
 
 "settings.language" = "Lingua";
 "settings.language.system" = "Sistema (automatico)";
+
+/* First-launch welcome */
+"welcome.title" = "Cachesweep è in esecuzione";
+"welcome.message" = "Cerca l icona ✨ nella barra dei menu (in alto a destra). Se non è visibile, la barra potrebbe essere piena: fai clic sulla scrivania o libera spazio vicino al notch. Strumenti come Bartender possono nascondere le nuove icone.";
+"welcome.ok" = "OK";

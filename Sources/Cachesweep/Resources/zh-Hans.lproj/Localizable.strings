@@ -71,3 +71,8 @@
 
 "settings.language" = "语言";
 "settings.language.system" = "系统（自动）";
+
+/* First-launch welcome */
+"welcome.title" = "Cachesweep 正在运行";
+"welcome.message" = "请在菜单栏（右上角）寻找 ✨ 图标。如果看不到，菜单栏可能已满——点击桌面或在刘海附近腾出空间。Bartender 等工具也可能隐藏新图标。";
+"welcome.ok" = "好";

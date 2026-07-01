@@ -71,3 +71,8 @@
 
 "settings.language" = "Sprache";
 "settings.language.system" = "System (automatisch)";
+
+/* First-launch welcome */
+"welcome.title" = "Cachesweep läuft";
+"welcome.message" = "Suchen Sie das ✨-Symbol in der Menüleiste (oben rechts). Ist es nicht sichtbar, ist die Menüleiste womöglich voll — klicken Sie auf den Schreibtisch oder schaffen Sie Platz nahe der Notch. Tools wie Bartender können neue Symbole ebenfalls verbergen.";
+"welcome.ok" = "OK";

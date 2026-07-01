@@ -56,6 +56,8 @@ Cachesweep makes that **visible**, **explainable**, and **one-click reversible**
    [latest release](https://github.com/Grkmyldz148/cachesweep/releases/latest).
 2. Open it and drag **Cachesweep** onto **Applications**.
 3. First launch: right-click the app → **Open** (ad-hoc signed build; one time only).
+   On newer macOS, if it still refuses to open ("Apple could not verify…"):
+   System Settings → **Privacy & Security** → scroll down → **Open Anyway**.
 4. Grant **Full Disk Access** (System Settings → Privacy & Security) so it can
    scan `~/Library` fully.
 

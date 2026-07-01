@@ -71,3 +71,8 @@
 
 "settings.language" = "言語";
 "settings.language.system" = "システム（自動）";
+
+/* First-launch welcome */
+"welcome.title" = "Cachesweep は実行中です";
+"welcome.message" = "メニューバー（右上）の ✨ アイコンを探してください。見当たらない場合、メニューバーが満杯かもしれません。デスクトップをクリックするか、ノッチ付近に空きを作ってください。Bartender などのツールも新しいアイコンを隠すことがあります。";
+"welcome.ok" = "OK";
