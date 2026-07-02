@@ -33,6 +33,7 @@ struct CleanTarget: Identifiable, Sendable {
     var ageDays: Int? = nil     // days since last modified (staleness) — discovered only
     var inUse = false           // currently being written (from the live tracker)
     var learned = false         // promoted by accumulated learning (Phase 3)
+    var isLeftover = false      // orphaned data from an app that is no longer installed
 
     var expandedPaths: [String] {
         rawPaths.map { ($0 as NSString).expandingTildeInPath }
@@ -94,6 +95,11 @@ struct CleanTarget: Identifiable, Sendable {
                     detail: "İndirilen LLM modelleri",
                     symbol: "brain", rawPaths: ["~/.ollama/models"],
                     safety: .caution, strategy: .directory),
+
+        CleanTarget(id: "logs", name: "Log Kayıtları",
+                    detail: "~/Library/Logs",
+                    symbol: "doc.text", rawPaths: ["~/Library/Logs"],
+                    safety: .safe, strategy: .contents),
 
         CleanTarget(id: "trash", name: "Çöp Kutusu",
                     detail: "~/.Trash + güvenlik çöpü",

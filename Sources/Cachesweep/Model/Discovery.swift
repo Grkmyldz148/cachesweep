@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 
 /// Phase 1 smart discovery.
 ///
@@ -95,6 +96,31 @@ enum Discovery {
             if let subs = try? fm.contentsOfDirectory(atPath: cachesRoot) {
                 for s in subs where !s.hasPrefix(".") {
                     consider("\(cachesRoot)/\(s)", derived: false, hasTag: false, appleCaches: true)
+                }
+            }
+        }
+
+        // 4) Leftovers from uninstalled apps — the opaque bulk of "System Data".
+        //    Bundle-id-named folders in Application Support / Containers whose
+        //    app no longer exists anywhere on the system.
+        if roots.contains(home) {
+            let installed = installedBundleIDs()
+            for base in ["\(home)/Library/Application Support", "\(home)/Library/Containers"] {
+                guard let subs = try? fm.contentsOfDirectory(atPath: base) else { continue }
+                var leftovers: [(path: String, age: Int?)] = []
+                for s in subs where isBundleIDShaped(s) && !s.hasPrefix("com.apple.") {
+                    let path = "\(base)/\(s)"
+                    guard !seen.contains(path),
+                          !seedPaths.contains(where: { path == $0 || path.hasPrefix($0 + "/") }),
+                          !denylisted(path, excludes: excludes),
+                          isDir(path, fm),
+                          !isInstalled(s, installed) else { continue }
+                    leftovers.append((path, ageInDays(path, fm)))
+                }
+                // Stalest first; keep the list small — this is a hint, not a dragnet.
+                for l in leftovers.sorted(by: { ($0.age ?? 0) > ($1.age ?? 0) }).prefix(8) {
+                    seen.insert(l.path)
+                    scored.append((makeLeftoverTarget(l.path, age: l.age), 0.75))
                 }
             }
         }
@@ -208,6 +234,56 @@ enum Discovery {
     private static func isDir(_ path: String, _ fm: FileManager) -> Bool {
         var d: ObjCBool = false
         return fm.fileExists(atPath: path, isDirectory: &d) && d.boolValue
+    }
+
+    // MARK: Uninstalled-app leftovers
+
+    /// "com.vendor.App"-shaped names only — matching by display name is too risky.
+    private static func isBundleIDShaped(_ name: String) -> Bool {
+        let parts = name.split(separator: ".")
+        return parts.count >= 3 && !name.contains(" ")
+    }
+
+    /// Is an app with this bundle id (or a parent of it) present on the system?
+    /// LaunchServices lookup catches apps anywhere; the prefix check keeps
+    /// helper folders like com.microsoft.VSCode.ShipIt tied to their app.
+    private static func isInstalled(_ id: String, _ installed: Set<String>) -> Bool {
+        if NSWorkspace.shared.urlForApplication(withBundleIdentifier: id) != nil { return true }
+        return installed.contains { id == $0 || id.hasPrefix($0 + ".") || $0.hasPrefix(id + ".") }
+    }
+
+    /// Bundle ids of everything in the standard app folders.
+    private static func installedBundleIDs() -> Set<String> {
+        let fm = FileManager()
+        var ids = Set<String>()
+        let dirs = ["/Applications", "/Applications/Utilities",
+                    "/System/Applications", "/System/Applications/Utilities",
+                    NSHomeDirectory() + "/Applications"]
+        for dir in dirs {
+            guard let apps = try? fm.contentsOfDirectory(atPath: dir) else { continue }
+            for app in apps where app.hasSuffix(".app") {
+                if let d = NSDictionary(contentsOfFile: "\(dir)/\(app)/Contents/Info.plist"),
+                   let id = d["CFBundleIdentifier"] as? String {
+                    ids.insert(id)
+                }
+            }
+        }
+        return ids
+    }
+
+    private static func makeLeftoverTarget(_ path: String, age: Int?) -> CleanTarget {
+        CleanTarget(
+            id: "left:\(path)",
+            name: (path as NSString).lastPathComponent,
+            detail: tildeAbbreviate(path),
+            symbol: "archivebox",
+            rawPaths: [path],
+            safety: .caution,           // may hold licenses/data — always opt-in
+            strategy: .directory,
+            isDiscovered: true,
+            ageDays: age,
+            isLeftover: true
+        )
     }
 
     /// Days since the directory was last modified (cheap staleness proxy).

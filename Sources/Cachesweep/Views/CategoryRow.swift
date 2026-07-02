@@ -31,6 +31,9 @@ struct CategoryRow: View {
                         if state.target.learned {
                             badge(L("badge.learned"), .teal)
                         }
+                        if state.target.isLeftover {
+                            badge(L("badge.leftover"), .indigo)
+                        }
                     }
                     MarqueeText(text: state.target.detail)
                         .font(.footnote)
