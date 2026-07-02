@@ -80,3 +80,10 @@
 "reveal.help" = "Toon in Finder";
 
 "badge.leftover" = "restant";
+
+/* System areas */
+"system.title" = "SYSTEEMGEBIEDEN";
+"system.explain" = "Caches van root (/var/root, /Library…). Groottes worden alleen op verzoek gescand, met één beheerdersprompt.";
+"system.scan" = "Scannen (admin)…";
+"system.clean" = "Systeemgebieden opschonen…";
+"badge.admin" = "admin";

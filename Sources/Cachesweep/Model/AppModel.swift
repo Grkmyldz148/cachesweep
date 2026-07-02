@@ -38,6 +38,11 @@ final class AppModel {
     // Smart discovery (Phase 1)
     var discovered: [TargetState] = []
 
+    // System areas (root-owned, admin-gated)
+    var systemStates: [TargetState] = RootCleaner.targets.map(TargetState.init)
+    var systemScanned = false
+    var isSystemWorking = false
+
     // Live tracking (FSEvents)
     var activity: [ActivityEntry] = []
     var isMonitoring = false
@@ -191,6 +196,39 @@ final class AppModel {
         lastFreed = results.values.reduce(0, +)
         discoveryCache = nil          // cleaned folders must not reappear from cache
         await scan()
+    }
+
+    // MARK: - System areas (admin)
+
+    /// One password prompt: measure the root-owned allowlist.
+    func scanSystemAreas() async {
+        guard !isSystemWorking else { return }
+        isSystemWorking = true
+        defer { isSystemWorking = false }
+        do {
+            let sizes = try await RootCleaner.scanSizes()
+            for st in systemStates { st.size = sizes[st.id] ?? 0 }
+            systemScanned = true
+            sweepDebug("🔒 sistem alanları: " + systemStates.map { "\($0.target.id)=\($0.size.fileSize)" }.joined(separator: ", "))
+        } catch {
+            // Cancelled prompt or failure — leave the section untouched.
+        }
+    }
+
+    /// One password prompt: clean the selected root-owned targets.
+    func cleanSystemSelected() async {
+        let chosen = systemStates.filter { $0.isSelected && $0.size > 0 }
+        guard !chosen.isEmpty, !isSystemWorking else { return }
+        isSystemWorking = true
+        defer { isSystemWorking = false }
+        do {
+            try await RootCleaner.clean(targets: chosen.map(\.target))
+            lastFreed = chosen.reduce(0) { $0 + $1.size }
+            for st in chosen { st.size = 0; st.isSelected = false }
+            refreshFreeSpace()
+        } catch {
+            // Cancelled prompt — nothing was deleted.
+        }
     }
 
     // MARK: - Live tracking

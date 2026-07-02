@@ -80,3 +80,10 @@
 "reveal.help" = "Finder에서 보기";
 
 "badge.leftover" = "잔여";
+
+/* System areas */
+"system.title" = "시스템 영역";
+"system.explain" = "root 소유 캐시(/var/root, /Library…). 크기는 요청할 때만 한 번의 관리자 인증으로 스캔됩니다.";
+"system.scan" = "스캔(관리자)…";
+"system.clean" = "시스템 영역 정리…";
+"badge.admin" = "관리자";

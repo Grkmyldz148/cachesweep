@@ -80,3 +80,10 @@
 "reveal.help" = "Finder’da Göster";
 
 "badge.leftover" = "kalıntı";
+
+/* System areas */
+"system.title" = "SİSTEM ALANLARI";
+"system.explain" = "Kök-sahipli cache'ler (/var/root, /Library…). Boyutlar yalnızca sen isteyince, tek yönetici onayıyla taranır.";
+"system.scan" = "Tara (yönetici)…";
+"system.clean" = "Sistem Alanlarını Temizle…";
+"badge.admin" = "yönetici";

@@ -80,3 +80,10 @@
 "reveal.help" = "Im Finder zeigen";
 
 "badge.leftover" = "verwaist";
+
+/* System areas */
+"system.title" = "SYSTEMBEREICHE";
+"system.explain" = "Root-eigene Caches (/var/root, /Library…). Größen werden nur auf Wunsch gescannt, mit einer Admin-Abfrage.";
+"system.scan" = "Scannen (Admin)…";
+"system.clean" = "Systembereiche bereinigen…";
+"badge.admin" = "Admin";

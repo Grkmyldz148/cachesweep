@@ -80,3 +80,10 @@
 "reveal.help" = "Finder に表示";
 
 "badge.leftover" = "残留";
+
+/* System areas */
+"system.title" = "システム領域";
+"system.explain" = "root 所有のキャッシュ（/var/root、/Library…）。サイズは要求時のみ、1 回の管理者認証でスキャンされます。";
+"system.scan" = "スキャン（管理者）…";
+"system.clean" = "システム領域を掃除…";
+"badge.admin" = "管理者";

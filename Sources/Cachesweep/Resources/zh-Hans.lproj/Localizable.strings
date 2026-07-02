@@ -80,3 +80,10 @@
 "reveal.help" = "在访达中显示";
 
 "badge.leftover" = "残留";
+
+/* System areas */
+"system.title" = "系统区域";
+"system.explain" = "root 所有的缓存（/var/root、/Library…）。仅在你请求时扫描大小，只需一次管理员授权。";
+"system.scan" = "扫描（管理员）…";
+"system.clean" = "清理系统区域…";
+"badge.admin" = "管理员";

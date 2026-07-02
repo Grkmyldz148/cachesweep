@@ -80,3 +80,10 @@
 "reveal.help" = "Show in Finder";
 
 "badge.leftover" = "leftover";
+
+/* System areas */
+"system.title" = "SYSTEM AREAS";
+"system.explain" = "Root-owned caches (/var/root, /Library…). Sizes are scanned only when you ask, with one administrator prompt.";
+"system.scan" = "Scan (admin)…";
+"system.clean" = "Clean System Areas…";
+"badge.admin" = "admin";

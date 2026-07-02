@@ -80,3 +80,10 @@
 "reveal.help" = "إظهار في فايندر";
 
 "badge.leftover" = "بقايا";
+
+/* System areas */
+"system.title" = "مناطق النظام";
+"system.explain" = "ذواكر مؤقتة يملكها root (/var/root، /Library…). تُفحص الأحجام عند طلبك فقط، بموافقة مسؤول واحدة.";
+"system.scan" = "فحص (مسؤول)…";
+"system.clean" = "تنظيف مناطق النظام…";
+"badge.admin" = "مسؤول";

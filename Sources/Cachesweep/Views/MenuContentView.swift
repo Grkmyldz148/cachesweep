@@ -142,8 +142,61 @@ struct MenuContentView: View {
                         Divider().padding(.leading, DS.s4 + DS.iconTile + DS.s3)
                     }
                 }
+                systemSection
             }
             .padding(.vertical, DS.s1)
+        }
+    }
+
+    // MARK: System areas (admin-gated)
+
+    private var systemSection: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: DS.s2) {
+                Image(systemName: "lock.shield")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                Text(L("system.title"))
+                    .font(.caption2.weight(.semibold))
+                    .tracking(0.5)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                if model.isSystemWorking {
+                    ProgressView().controlSize(.small)
+                } else if !model.systemScanned {
+                    Button(L("system.scan")) {
+                        Task { await model.scanSystemAreas() }
+                    }
+                    .controlSize(.small)
+                }
+            }
+            .padding(.horizontal, DS.s4)
+            .padding(.top, DS.s4)
+            .padding(.bottom, DS.s2)
+
+            if model.systemScanned {
+                ForEach(model.systemStates) { st in
+                    CategoryRow(state: st) { st.isSelected.toggle() }
+                }
+                if model.systemStates.contains(where: { $0.isSelected && $0.size > 0 }) {
+                    Button {
+                        Task { await model.cleanSystemSelected() }
+                    } label: {
+                        Text(L("system.clean"))
+                            .frame(maxWidth: .infinity)
+                    }
+                    .disabled(model.isSystemWorking)
+                    .padding(.horizontal, DS.s4)
+                    .padding(.vertical, DS.s2)
+                }
+            } else if !model.isSystemWorking {
+                Text(L("system.explain"))
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, DS.s4)
+                    .padding(.bottom, DS.s2)
+            }
         }
     }
 

@@ -80,3 +80,10 @@
 "reveal.help" = "Показать в Finder";
 
 "badge.leftover" = "остаток";
+
+/* System areas */
+"system.title" = "СИСТЕМНЫЕ ОБЛАСТИ";
+"system.explain" = "Кэши, принадлежащие root (/var/root, /Library…). Размеры сканируются только по запросу, с одним запросом пароля администратора.";
+"system.scan" = "Сканировать (админ)…";
+"system.clean" = "Очистить системные области…";
+"badge.admin" = "админ";

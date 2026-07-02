@@ -34,6 +34,7 @@ struct CleanTarget: Identifiable, Sendable {
     var inUse = false           // currently being written (from the live tracker)
     var learned = false         // promoted by accumulated learning (Phase 3)
     var isLeftover = false      // orphaned data from an app that is no longer installed
+    var needsAdmin = false      // root-owned; cleaned via administrator authorization
 
     var expandedPaths: [String] {
         rawPaths.map { ($0 as NSString).expandingTildeInPath }

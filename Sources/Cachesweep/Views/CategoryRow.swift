@@ -34,6 +34,9 @@ struct CategoryRow: View {
                         if state.target.isLeftover {
                             badge(L("badge.leftover"), .indigo)
                         }
+                        if state.target.needsAdmin {
+                            badge(L("badge.admin"), .gray)
+                        }
                     }
                     MarqueeText(text: state.target.detail)
                         .font(.footnote)

@@ -80,3 +80,10 @@
 "reveal.help" = "Mostrar en Finder";
 
 "badge.leftover" = "residuo";
+
+/* System areas */
+"system.title" = "ÁREAS DEL SISTEMA";
+"system.explain" = "Cachés propiedad de root (/var/root, /Library…). Los tamaños solo se analizan cuando lo pides, con una única autorización de administrador.";
+"system.scan" = "Analizar (admin)…";
+"system.clean" = "Limpiar áreas del sistema…";
+"badge.admin" = "admin";

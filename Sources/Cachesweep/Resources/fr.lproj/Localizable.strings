@@ -80,3 +80,10 @@
 "reveal.help" = "Afficher dans le Finder";
 
 "badge.leftover" = "résidu";
+
+/* System areas */
+"system.title" = "ZONES SYSTÈME";
+"system.explain" = "Caches appartenant à root (/var/root, /Library…). Les tailles ne sont analysées que sur demande, avec une seule autorisation admin.";
+"system.scan" = "Analyser (admin)…";
+"system.clean" = "Nettoyer les zones système…";
+"badge.admin" = "admin";
