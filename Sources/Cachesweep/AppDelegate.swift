@@ -31,6 +31,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         model.startMonitoring()
         AppUpdater.shared.start()          // Sparkle (no-op unless running as a .app)
+
+        // Menu-bar badge: reclaimable total next to the icon.
+        model.onTotalsChanged = { [weak self] in self?.updateBadge() }
+
+        // Proactive growth check — shortly after launch, then periodically
+        // (internally capped to once a day).
+        Timer.scheduledTimer(withTimeInterval: 6 * 3600, repeats: true) { _ in
+            Task { @MainActor in GrowthNotifier.checkAndNotify() }
+        }
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(120))
+            GrowthNotifier.checkAndNotify()
+        }
         NotificationCenter.default.addObserver(self, selector: #selector(openSettings),
                                                name: .showSettings, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(openHistory),
@@ -47,6 +60,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self.showWelcome()
             }
         }
+    }
+
+    /// "✨ 24 GB" — show the reclaimable total next to the icon (from 100 MB up).
+    private func updateBadge() {
+        guard let button = statusItem.button else { return }
+        let total = model.selectedReclaimable
+        button.imagePosition = .imageLeading
+        button.font = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium)
+        button.title = total >= 100_000_000 ? " " + total.fileSize : ""
     }
 
     private func showWelcome() {

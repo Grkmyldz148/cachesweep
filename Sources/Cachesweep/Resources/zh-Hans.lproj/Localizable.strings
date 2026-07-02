@@ -93,3 +93,23 @@
 "category.app" = "应用缓存";
 "category.leftovers" = "应用残留";
 "category.other" = "其他";
+
+/* Seeds, system, FDA, login, notify */
+"seed.dotcache" = "通用缓存";
+"seed.sim" = "模拟器缓存";
+"seed.ollama" = "Ollama 模型";
+"seed.trash" = "废纸篓";
+"seed.logs" = "日志文件";
+"seed.archives" = "Xcode 归档";
+"sys.root" = "root 用户缓存";
+"sys.libcaches" = "系统缓存";
+"sys.updates" = "待处理的更新文件";
+"sys.syslogs" = "系统日志";
+"sys.usrlocal" = "旧软件包缓存 (usr/local)";
+"sys.snapshots" = "时间机器快照";
+"fda.title" = "需要完全磁盘访问权限";
+"fda.message" = "否则无法完整扫描 ~/Library。授予权限后请重新打开应用。";
+"fda.open" = "打开设置";
+"settings.launchAtLogin" = "登录时启动";
+"notify.growth.title" = "磁盘增长";
+"notify.growth.body" = "%1$@ 本周增长了 ▲%2$@";

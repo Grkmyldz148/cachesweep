@@ -59,8 +59,10 @@ struct CleanTarget: Identifiable, Sendable {
     }
 
     /// Curated, dev-focused, non-overlapping cache locations.
+    /// `name` may be a localization key ("seed.*") — resolved at display time;
+    /// non-key names (product names like "npm Cache") pass through unchanged.
     static let all: [CleanTarget] = [
-        CleanTarget(id: "dot-cache", name: "Genel Cache",
+        CleanTarget(id: "dot-cache", name: "seed.dotcache",
                     detail: "~/.cache (codex, puppeteer, uv…)",
                     symbol: "tray.full", rawPaths: ["~/.cache"],
                     safety: .safe, strategy: .contents),
@@ -71,7 +73,7 @@ struct CleanTarget: Identifiable, Sendable {
                     safety: .safe, strategy: .directory),
 
         CleanTarget(id: "yarn", name: "Yarn Cache",
-                    detail: "Yarn paket önbelleği",
+                    detail: "~/Library/Caches/Yarn",
                     symbol: "shippingbox", rawPaths: ["~/Library/Caches/Yarn"],
                     safety: .safe, strategy: .directory),
 
@@ -86,12 +88,25 @@ struct CleanTarget: Identifiable, Sendable {
                     safety: .safe, strategy: .directory),
 
         CleanTarget(id: "derived", name: "Xcode DerivedData",
-                    detail: "Derleme türevleri",
+                    detail: "~/Library/Developer/Xcode/DerivedData",
                     symbol: "hammer.fill", rawPaths: ["~/Library/Developer/Xcode/DerivedData"],
                     safety: .safe, strategy: .contents),
 
-        CleanTarget(id: "simcaches", name: "Simulator Cache",
-                    detail: "CoreSimulator/Caches",
+        CleanTarget(id: "devicesupport", name: "Xcode DeviceSupport",
+                    detail: "iOS/watchOS/tvOS DeviceSupport",
+                    symbol: "iphone",
+                    rawPaths: ["~/Library/Developer/Xcode/iOS DeviceSupport",
+                               "~/Library/Developer/Xcode/watchOS DeviceSupport",
+                               "~/Library/Developer/Xcode/tvOS DeviceSupport"],
+                    safety: .safe, strategy: .contents),
+
+        CleanTarget(id: "archives", name: "seed.archives",
+                    detail: "~/Library/Developer/Xcode/Archives",
+                    symbol: "shippingbox.fill", rawPaths: ["~/Library/Developer/Xcode/Archives"],
+                    safety: .caution, strategy: .contents),
+
+        CleanTarget(id: "simcaches", name: "seed.sim",
+                    detail: "~/Library/Developer/CoreSimulator/Caches",
                     symbol: "iphone", rawPaths: ["~/Library/Developer/CoreSimulator/Caches"],
                     safety: .caution, strategy: .contents),
 
@@ -106,22 +121,22 @@ struct CleanTarget: Identifiable, Sendable {
                     safety: .safe, strategy: .directory),
 
         CleanTarget(id: "homebrew", name: "Homebrew Cache",
-                    detail: "İndirilen formüller",
+                    detail: "~/Library/Caches/Homebrew",
                     symbol: "mug", rawPaths: ["~/Library/Caches/Homebrew"],
                     safety: .safe, strategy: .contents),
 
-        CleanTarget(id: "ollama", name: "Ollama Modelleri",
-                    detail: "İndirilen LLM modelleri",
+        CleanTarget(id: "ollama", name: "seed.ollama",
+                    detail: "~/.ollama/models",
                     symbol: "brain", rawPaths: ["~/.ollama/models"],
                     safety: .caution, strategy: .directory, category: .other),
 
-        CleanTarget(id: "logs", name: "Log Kayıtları",
+        CleanTarget(id: "logs", name: "seed.logs",
                     detail: "~/Library/Logs",
                     symbol: "doc.text", rawPaths: ["~/Library/Logs"],
                     safety: .safe, strategy: .contents, category: .other),
 
-        CleanTarget(id: "trash", name: "Çöp Kutusu",
-                    detail: "~/.Trash + güvenlik çöpü",
+        CleanTarget(id: "trash", name: "seed.trash",
+                    detail: "~/.Trash",
                     symbol: "trash", rawPaths: ["~/.Trash", "~/.nt-trash"],
                     safety: .safe, strategy: .contents, category: .other),
     ]

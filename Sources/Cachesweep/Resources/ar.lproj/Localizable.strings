@@ -93,3 +93,23 @@
 "category.app" = "ذواكر التطبيقات";
 "category.leftovers" = "بقايا التطبيقات";
 "category.other" = "أخرى";
+
+/* Seeds, system, FDA, login, notify */
+"seed.dotcache" = "ذاكرة عامة";
+"seed.sim" = "ذاكرة المحاكي";
+"seed.ollama" = "نماذج Ollama";
+"seed.trash" = "سلة المهملات";
+"seed.logs" = "ملفات السجل";
+"seed.archives" = "أرشيفات Xcode";
+"sys.root" = "ذواكر مستخدم root";
+"sys.libcaches" = "ذواكر النظام";
+"sys.updates" = "ملفات تحديث معلقة";
+"sys.syslogs" = "سجلات النظام";
+"sys.usrlocal" = "ذواكر حزم قديمة (usr/local)";
+"sys.snapshots" = "لقطات Time Machine";
+"fda.title" = "مطلوب صلاحية الوصول الكامل للقرص";
+"fda.message" = "بدونها لا يمكن فحص ~/Library بالكامل. امنح الصلاحية ثم أعد فتح التطبيق.";
+"fda.open" = "افتح الإعدادات";
+"settings.launchAtLogin" = "تشغيل عند تسجيل الدخول";
+"notify.growth.title" = "نمو القرص";
+"notify.growth.body" = "زاد %1$@ بمقدار ▲%2$@ هذا الأسبوع";

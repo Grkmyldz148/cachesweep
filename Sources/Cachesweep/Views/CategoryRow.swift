@@ -12,7 +12,9 @@ struct CategoryRow: View {
                 iconTile
                 VStack(alignment: .leading, spacing: 1) {
                     HStack(spacing: DS.s1) {
-                        MarqueeText(text: state.target.name)
+                        // Seed names are localization keys; discovered names
+                        // (paths, bundle components) pass through L() unchanged.
+                        MarqueeText(text: L(state.target.name))
                             .font(.callout.weight(.medium))
                             .foregroundStyle(.primary)
                             .layoutPriority(-1)   // badges keep their space; name compresses & scrolls

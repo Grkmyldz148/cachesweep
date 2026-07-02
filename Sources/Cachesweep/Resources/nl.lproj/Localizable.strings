@@ -93,3 +93,23 @@
 "category.app" = "APP-CACHES";
 "category.leftovers" = "APP-RESTANTEN";
 "category.other" = "OVERIG";
+
+/* Seeds, system, FDA, login, notify */
+"seed.dotcache" = "Algemene cache";
+"seed.sim" = "Simulatorcache";
+"seed.ollama" = "Ollama-modellen";
+"seed.trash" = "Prullenmand";
+"seed.logs" = "Logbestanden";
+"seed.archives" = "Xcode-archieven";
+"sys.root" = "Caches van root-gebruiker";
+"sys.libcaches" = "Systeemcaches";
+"sys.updates" = "Wachtende updatebestanden";
+"sys.syslogs" = "Systeemlogboeken";
+"sys.usrlocal" = "Oude pakketcaches (usr/local)";
+"sys.snapshots" = "Time Machine-momentopnamen";
+"fda.title" = "Volledige schijftoegang vereist";
+"fda.message" = "Zonder kan ~/Library niet volledig worden gescand. Verleen toegang en herstart de app.";
+"fda.open" = "Open Instellingen";
+"settings.launchAtLogin" = "Start bij inloggen";
+"notify.growth.title" = "Schijfgroei";
+"notify.growth.body" = "%1$@ groeide deze week met ▲%2$@";

@@ -42,6 +42,14 @@ final class AppModel {
     var systemStates: [TargetState] = RootCleaner.targets.map(TargetState.init)
     var systemScanned = false
     var isSystemWorking = false
+    var snapshotCount = 0
+    var snapshotsSelected = false
+
+    // Full Disk Access — without it ~/Library scans silently return zeros.
+    var fdaGranted = true
+
+    /// Fired whenever totals change (scan/clean) — drives the menu-bar badge.
+    @ObservationIgnored var onTotalsChanged: (() -> Void)?
 
     // Live tracking (FSEvents)
     var activity: [ActivityEntry] = []
@@ -95,6 +103,7 @@ final class AppModel {
 
         refreshFreeSpace()
         syncMonitoredRoots()
+        probeFullDiskAccess()
 
         let roots = AppSettings.shared.scanRoots
         let excludes = AppSettings.shared.excludedPaths
@@ -148,6 +157,13 @@ final class AppModel {
         }
         lastScan = Date()
         refreshFreeSpace()
+        onTotalsChanged?()
+    }
+
+    /// TCC probe: a protected path readable ⇒ Full Disk Access is granted.
+    private func probeFullDiskAccess() {
+        let probe = NSHomeDirectory() + "/Library/Safari"
+        fdaGranted = (try? FileManager.default.contentsOfDirectory(atPath: probe)) != nil
     }
 
     // MARK: - Cleaning
@@ -205,27 +221,33 @@ final class AppModel {
         guard !isSystemWorking else { return }
         isSystemWorking = true
         defer { isSystemWorking = false }
+        snapshotCount = await RootCleaner.snapshotCount()
         do {
             let sizes = try await RootCleaner.scanSizes()
             for st in systemStates { st.size = sizes[st.id] ?? 0 }
             systemScanned = true
-            sweepDebug("🔒 sistem alanları: " + systemStates.map { "\($0.target.id)=\($0.size.fileSize)" }.joined(separator: ", "))
+            sweepDebug("🔒 sistem alanları: " + systemStates.map { "\($0.target.id)=\($0.size.fileSize)" }.joined(separator: ", ") + " · snapshots=\(snapshotCount)")
         } catch {
             // Cancelled prompt or failure — leave the section untouched.
         }
     }
 
-    /// One password prompt: clean the selected root-owned targets.
+    /// One password prompt: clean the selected root-owned targets
+    /// (and, if chosen, all local Time Machine snapshots).
     func cleanSystemSelected() async {
         let chosen = systemStates.filter { $0.isSelected && $0.size > 0 }
-        guard !chosen.isEmpty, !isSystemWorking else { return }
+        let wantSnapshots = snapshotsSelected && snapshotCount > 0
+        guard !chosen.isEmpty || wantSnapshots, !isSystemWorking else { return }
         isSystemWorking = true
         defer { isSystemWorking = false }
         do {
-            try await RootCleaner.clean(targets: chosen.map(\.target))
+            try await RootCleaner.clean(targets: chosen.map(\.target),
+                                        deleteSnapshots: wantSnapshots)
             lastFreed = chosen.reduce(0) { $0 + $1.size }
             for st in chosen { st.size = 0; st.isSelected = false }
+            if wantSnapshots { snapshotCount = 0; snapshotsSelected = false }
             refreshFreeSpace()
+            onTotalsChanged?()
         } catch {
             // Cancelled prompt — nothing was deleted.
         }

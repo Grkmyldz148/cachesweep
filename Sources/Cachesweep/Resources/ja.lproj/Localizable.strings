@@ -93,3 +93,23 @@
 "category.app" = "アプリキャッシュ";
 "category.leftovers" = "アプリの残留物";
 "category.other" = "その他";
+
+/* Seeds, system, FDA, login, notify */
+"seed.dotcache" = "汎用キャッシュ";
+"seed.sim" = "シミュレータキャッシュ";
+"seed.ollama" = "Ollama モデル";
+"seed.trash" = "ゴミ箱";
+"seed.logs" = "ログファイル";
+"seed.archives" = "Xcode アーカイブ";
+"sys.root" = "root ユーザーキャッシュ";
+"sys.libcaches" = "システムキャッシュ";
+"sys.updates" = "保留中のアップデートファイル";
+"sys.syslogs" = "システムログ";
+"sys.usrlocal" = "古いパッケージキャッシュ (usr/local)";
+"sys.snapshots" = "Time Machine スナップショット";
+"fda.title" = "フルディスクアクセスが必要です";
+"fda.message" = "ないと ~/Library を完全にスキャンできません。許可してからアプリを再起動してください。";
+"fda.open" = "設定を開く";
+"settings.launchAtLogin" = "ログイン時に起動";
+"notify.growth.title" = "ディスク増加";
+"notify.growth.body" = "%1$@ は今週 ▲%2$@ 増えました";

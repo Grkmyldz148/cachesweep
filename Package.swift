@@ -21,6 +21,14 @@ let package = Package(
             swiftSettings: [
                 .swiftLanguageMode(.v5)
             ]
+        ),
+        .testTarget(
+            name: "CachesweepTests",
+            dependencies: ["Cachesweep"],
+            path: "Tests/CachesweepTests",
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
+            ]
         )
     ]
 )

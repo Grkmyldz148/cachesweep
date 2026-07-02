@@ -93,3 +93,23 @@
 "category.app" = "КЭШИ ПРИЛОЖЕНИЙ";
 "category.leftovers" = "ОСТАТКИ ПРИЛОЖЕНИЙ";
 "category.other" = "ПРОЧЕЕ";
+
+/* Seeds, system, FDA, login, notify */
+"seed.dotcache" = "Общий кэш";
+"seed.sim" = "Кэш симулятора";
+"seed.ollama" = "Модели Ollama";
+"seed.trash" = "Корзина";
+"seed.logs" = "Файлы журналов";
+"seed.archives" = "Архивы Xcode";
+"sys.root" = "Кэши пользователя root";
+"sys.libcaches" = "Системные кэши";
+"sys.updates" = "Ожидающие файлы обновлений";
+"sys.syslogs" = "Системные журналы";
+"sys.usrlocal" = "Старые кэши пакетов (usr/local)";
+"sys.snapshots" = "Снимки Time Machine";
+"fda.title" = "Нужен полный доступ к диску";
+"fda.message" = "Без него ~/Library не сканируется полностью. Дайте доступ и перезапустите приложение.";
+"fda.open" = "Открыть настройки";
+"settings.launchAtLogin" = "Запускать при входе";
+"notify.growth.title" = "Рост данных";
+"notify.growth.body" = "%1$@ вырос на ▲%2$@ за неделю";

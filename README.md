@@ -154,14 +154,18 @@ get new versions automatically. The signing private key lives in the
 ## Roadmap
 
 - [x] Smart discovery + signal classifier (Spotlight, staleness, in-use)
-- [x] Learning loop (clean → regrow feedback)
-- [x] Growth history with sparklines
-- [x] 13-language localization + picker
+- [x] Learning loop (clean → regrow feedback, persisted)
+- [x] Growth history with sparklines + proactive growth notifications
+- [x] 13-language localization + picker (seeds included)
 - [x] DMG release
+- [x] Uninstalled-app leftovers + admin-gated system areas (`/var/root`, `/Library`…)
+- [x] Time Machine local snapshot cleanup
+- [x] Full Disk Access onboarding
+- [x] Launch-at-login (`SMAppService`)
+- [x] Menu-bar reclaimable badge
+- [x] Unit tests + CI
 - [ ] Developer ID signing + notarization
-- [ ] Full Disk Access onboarding
-- [ ] Launch-at-login (`SMAppService`)
-- [ ] Privileged helper for root-owned caches (`/var/root`, `/usr/local/share`)
+- [ ] SMAppService XPC helper (replaces the osascript admin prompt)
 - [ ] Liquid Glass polish (macOS 26 `.glassEffect`)
 
 ## License

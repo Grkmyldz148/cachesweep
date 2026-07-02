@@ -93,3 +93,23 @@
 "category.app" = "APP CACHES";
 "category.leftovers" = "APP LEFTOVERS";
 "category.other" = "OTHER";
+
+/* Seeds, system, FDA, login, notify */
+"seed.dotcache" = "General Cache";
+"seed.sim" = "Simulator Cache";
+"seed.ollama" = "Ollama Models";
+"seed.trash" = "Trash";
+"seed.logs" = "Log Files";
+"seed.archives" = "Xcode Archives";
+"sys.root" = "Root User Caches";
+"sys.libcaches" = "System Caches";
+"sys.updates" = "Pending Update Files";
+"sys.syslogs" = "System Logs";
+"sys.usrlocal" = "Old Package Caches (usr/local)";
+"sys.snapshots" = "Time Machine Snapshots";
+"fda.title" = "Full Disk Access needed";
+"fda.message" = "Without it, ~/Library cannot be scanned fully. Grant access, then relaunch the app.";
+"fda.open" = "Open Settings";
+"settings.launchAtLogin" = "Launch at login";
+"notify.growth.title" = "Disk growth";
+"notify.growth.body" = "%1$@ grew ▲%2$@ this week";

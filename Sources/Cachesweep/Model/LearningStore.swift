@@ -20,9 +20,16 @@ final class LearningStore {
     static let shared = LearningStore()
 
     private(set) var knowledge: [String: Knowledge] = [:]
-    /// cleanedPath → signature, awaiting a regeneration signal (this session).
+    /// cleanedPath → signature, awaiting a regeneration signal (persisted, so
+    /// the "did it come back?" proof survives an app restart).
     @ObservationIgnored private var pending: [String: String] = [:]
     private let url: URL
+
+    /// On-disk layout (with migration from the old knowledge-only format).
+    private struct Store: Codable {
+        var knowledge: [String: Knowledge]
+        var pending: [String: String]
+    }
 
     private init() {
         let dir = FileManager.default
@@ -34,7 +41,7 @@ final class LearningStore {
     }
 
     /// Generalize a path to its "kind".
-    static func signature(forPath path: String) -> String {
+    nonisolated static func signature(forPath path: String) -> String {
         (path as NSString).lastPathComponent.lowercased()
     }
 
@@ -89,12 +96,17 @@ final class LearningStore {
     // MARK: Persistence
 
     private func load() {
-        guard let data = try? Data(contentsOf: url),
-              let decoded = try? JSONDecoder().decode([String: Knowledge].self, from: data) else { return }
-        knowledge = decoded
+        guard let data = try? Data(contentsOf: url) else { return }
+        if let store = try? JSONDecoder().decode(Store.self, from: data) {
+            knowledge = store.knowledge
+            pending = store.pending
+        } else if let old = try? JSONDecoder().decode([String: Knowledge].self, from: data) {
+            knowledge = old   // migrate from the pre-pending format
+        }
     }
 
     private func save() {
-        if let data = try? JSONEncoder().encode(knowledge) { try? data.write(to: url) }
+        let store = Store(knowledge: knowledge, pending: pending)
+        if let data = try? JSONEncoder().encode(store) { try? data.write(to: url) }
     }
 }

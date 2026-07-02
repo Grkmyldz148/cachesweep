@@ -12,7 +12,7 @@ enum RootCleaner {
 
     /// Curated root-owned locations that are safe to reclaim.
     static let targets: [CleanTarget] = [
-        CleanTarget(id: "sys-root", name: "Root Kullanıcısı Cache'leri",
+        CleanTarget(id: "sys-root", name: "sys.root",
                     detail: "/var/root (.gradle, .npm, Caches…)",
                     symbol: "lock.shield",
                     rawPaths: ["/private/var/root/Library/Caches",
@@ -21,25 +21,25 @@ enum RootCleaner {
                                "/private/var/root/.cache"],
                     safety: .caution, strategy: .directory, needsAdmin: true),
 
-        CleanTarget(id: "sys-lib-caches", name: "Sistem Cache'leri",
+        CleanTarget(id: "sys-lib-caches", name: "sys.libcaches",
                     detail: "/Library/Caches",
                     symbol: "lock.shield",
                     rawPaths: ["/Library/Caches"],
                     safety: .caution, strategy: .contents, needsAdmin: true),
 
-        CleanTarget(id: "sys-updates", name: "Bekleyen Güncelleme Dosyaları",
+        CleanTarget(id: "sys-updates", name: "sys.updates",
                     detail: "/Library/Updates",
                     symbol: "lock.shield",
                     rawPaths: ["/Library/Updates"],
                     safety: .caution, strategy: .contents, needsAdmin: true),
 
-        CleanTarget(id: "sys-lib-logs", name: "Sistem Logları",
+        CleanTarget(id: "sys-lib-logs", name: "sys.syslogs",
                     detail: "/Library/Logs",
                     symbol: "lock.shield",
                     rawPaths: ["/Library/Logs"],
                     safety: .caution, strategy: .contents, needsAdmin: true),
 
-        CleanTarget(id: "sys-usrlocal", name: "Eski Paket Cache'leri (usr/local)",
+        CleanTarget(id: "sys-usrlocal", name: "sys.usrlocal",
                     detail: "/usr/local/share/Library/Caches",
                     symbol: "lock.shield",
                     rawPaths: ["/usr/local/share/Library/Caches"],
@@ -64,8 +64,9 @@ enum RootCleaner {
         }
     }
 
-    /// One admin prompt: remove the chosen targets (allowlist paths only).
-    static func clean(targets chosen: [CleanTarget]) async throws {
+    /// One admin prompt: remove the chosen targets (allowlist paths only),
+    /// optionally deleting all local Time Machine snapshots in the same batch.
+    static func clean(targets chosen: [CleanTarget], deleteSnapshots: Bool = false) async throws {
         // Only ever operate on our own allowlist, whatever the caller passes.
         let allowed = Set(targets.flatMap(\.rawPaths))
         var cmds: [String] = []
@@ -79,8 +80,30 @@ enum RootCleaner {
                 }
             }
         }
+        if deleteSnapshots {
+            cmds.append("/usr/bin/tmutil listlocalsnapshotdates / | /usr/bin/tail -n +2 | while read d; do /usr/bin/tmutil deletelocalsnapshots \"$d\"; done")
+        }
         guard !cmds.isEmpty else { return }
         _ = try await runPrivileged("{ " + cmds.joined(separator: "; ") + "; } 2>/dev/null; exit 0")
+    }
+
+    /// Count local Time Machine snapshots (listing needs no admin).
+    static func snapshotCount() async -> Int {
+        await Task.detached(priority: .utility) {
+            let p = Process()
+            p.executableURL = URL(fileURLWithPath: "/usr/bin/tmutil")
+            p.arguments = ["listlocalsnapshots", "/"]
+            let pipe = Pipe()
+            p.standardOutput = pipe
+            p.standardError = FileHandle.nullDevice
+            guard (try? p.run()) != nil else { return 0 }
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            p.waitUntilExit()
+            return String(decoding: data, as: UTF8.self)
+                .split(separator: "\n")
+                .filter { $0.contains("com.apple.TimeMachine") }
+                .count
+        }.value
     }
 
     // MARK: - Privileged runner

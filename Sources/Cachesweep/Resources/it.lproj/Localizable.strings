@@ -93,3 +93,23 @@
 "category.app" = "CACHE APP";
 "category.leftovers" = "RESIDUI DI APP";
 "category.other" = "ALTRO";
+
+/* Seeds, system, FDA, login, notify */
+"seed.dotcache" = "Cache generale";
+"seed.sim" = "Cache del simulatore";
+"seed.ollama" = "Modelli Ollama";
+"seed.trash" = "Cestino";
+"seed.logs" = "File di log";
+"seed.archives" = "Archivi Xcode";
+"sys.root" = "Cache utente root";
+"sys.libcaches" = "Cache di sistema";
+"sys.updates" = "File di aggiornamento in sospeso";
+"sys.syslogs" = "Log di sistema";
+"sys.usrlocal" = "Vecchie cache di pacchetti (usr/local)";
+"sys.snapshots" = "Istantanee Time Machine";
+"fda.title" = "Serve Accesso completo al disco";
+"fda.message" = "Senza, ~/Library non può essere analizzata completamente. Concedi l’accesso e riapri l’app.";
+"fda.open" = "Apri Impostazioni";
+"settings.launchAtLogin" = "Apri all’accesso";
+"notify.growth.title" = "Crescita del disco";
+"notify.growth.body" = "%1$@ è cresciuto di ▲%2$@ questa settimana";

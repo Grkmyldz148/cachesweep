@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import ServiceManagement
 
 struct SettingsView: View {
     private let settings = AppSettings.shared
@@ -25,6 +26,14 @@ struct SettingsView: View {
                 } label: { EmptyView() }
                 .labelsHidden()
                 .pickerStyle(.menu)
+
+                Toggle(L("settings.launchAtLogin"), isOn: Binding(
+                    get: { SMAppService.mainApp.status == .enabled },
+                    set: { on in
+                        if on { try? SMAppService.mainApp.register() }
+                        else { try? SMAppService.mainApp.unregister() }
+                    }
+                ))
             } header: {
                 Text(L("settings.language"))
             }

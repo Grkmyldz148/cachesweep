@@ -9,6 +9,7 @@ struct MenuContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
+            if !model.fdaGranted { fdaBanner }
             Divider()
             if !model.activity.isEmpty {
                 liveSection
@@ -157,10 +158,35 @@ struct MenuContentView: View {
     private func rows(for cat: TargetCategory) -> [TargetState] {
         model.allStates
             .filter { $0.target.category == cat }
+            .filter { !($0.target.isDiscovered && $0.size == 0) }   // transient empties add noise
             .sorted { a, b in
                 if (a.size == 0) != (b.size == 0) { return b.size == 0 }  // empties last
                 return a.size > b.size
             }
+    }
+
+    // MARK: Full Disk Access banner
+
+    private var fdaBanner: some View {
+        HStack(spacing: DS.s2) {
+            Image(systemName: "exclamationmark.shield")
+                .foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(L("fda.title")).font(.caption.weight(.semibold))
+                Text(L("fda.message")).font(.caption2).foregroundStyle(.secondary)
+            }
+            Spacer(minLength: DS.s1)
+            Button(L("fda.open")) {
+                if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles") {
+                    NSWorkspace.shared.open(url)
+                }
+            }
+            .controlSize(.small)
+        }
+        .padding(DS.s3)
+        .background(.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: DS.cardRadius))
+        .padding(.horizontal, DS.s4)
+        .padding(.bottom, DS.s3)
     }
 
     private func sectionHeader(_ title: String) -> some View {
@@ -204,7 +230,9 @@ struct MenuContentView: View {
                 ForEach(model.systemStates) { st in
                     CategoryRow(state: st) { st.isSelected.toggle() }
                 }
-                if model.systemStates.contains(where: { $0.isSelected && $0.size > 0 }) {
+                if model.snapshotCount > 0 { snapshotRow }
+                if model.systemStates.contains(where: { $0.isSelected && $0.size > 0 })
+                    || (model.snapshotsSelected && model.snapshotCount > 0) {
                     Button {
                         Task { await model.cleanSystemSelected() }
                     } label: {
@@ -224,6 +252,36 @@ struct MenuContentView: View {
                     .padding(.bottom, DS.s2)
             }
         }
+    }
+
+    /// Time Machine local snapshots — count-based row (sizes aren't reported).
+    private var snapshotRow: some View {
+        Button {
+            model.snapshotsSelected.toggle()
+        } label: {
+            HStack(spacing: DS.s3) {
+                Image(systemName: "clock.arrow.circlepath")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.orange)
+                    .frame(width: DS.iconTile, height: DS.iconTile)
+                    .background(.orange.opacity(0.15), in: RoundedRectangle(cornerRadius: DS.iconRadius))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(L("sys.snapshots"))
+                        .font(.callout.weight(.medium))
+                    Text(verbatim: "tmutil · \(model.snapshotCount)")
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
+                Spacer(minLength: DS.s2)
+                Image(systemName: model.snapshotsSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 16))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(model.snapshotsSelected ? Color.accentColor : Color.secondary.opacity(0.5))
+            }
+            .padding(.vertical, DS.s2)
+            .padding(.horizontal, DS.s4)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: Footer

@@ -93,3 +93,23 @@
 "category.app" = "UYGULAMA CACHE’LERİ";
 "category.leftovers" = "UYGULAMA KALINTILARI";
 "category.other" = "DİĞER";
+
+/* Seeds, system, FDA, login, notify */
+"seed.dotcache" = "Genel Cache";
+"seed.sim" = "Simülatör Cache’i";
+"seed.ollama" = "Ollama Modelleri";
+"seed.trash" = "Çöp Kutusu";
+"seed.logs" = "Log Kayıtları";
+"seed.archives" = "Xcode Arşivleri";
+"sys.root" = "Root Kullanıcısı Cache’leri";
+"sys.libcaches" = "Sistem Cache’leri";
+"sys.updates" = "Bekleyen Güncelleme Dosyaları";
+"sys.syslogs" = "Sistem Logları";
+"sys.usrlocal" = "Eski Paket Cache’leri (usr/local)";
+"sys.snapshots" = "Time Machine Anlık Kopyaları";
+"fda.title" = "Tam Disk Erişimi gerekli";
+"fda.message" = "Verilmezse ~/Library tam taranamaz. İzni verin, sonra uygulamayı yeniden açın.";
+"fda.open" = "Ayarları Aç";
+"settings.launchAtLogin" = "Girişte başlat";
+"notify.growth.title" = "Disk büyümesi";
+"notify.growth.body" = "%1$@ bu hafta ▲%2$@ büyüdü";
