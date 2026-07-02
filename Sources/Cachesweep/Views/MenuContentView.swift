@@ -136,16 +136,42 @@ struct MenuContentView: View {
     private var list: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
-                ForEach(sortedTargets) { state in
-                    CategoryRow(state: state) { state.isSelected.toggle() }
-                    if state.id != sortedTargets.last?.id {
-                        Divider().padding(.leading, DS.s4 + DS.iconTile + DS.s3)
+                ForEach(TargetCategory.allCases, id: \.self) { cat in
+                    let rows = rows(for: cat)
+                    if !rows.isEmpty {
+                        sectionHeader(cat.title)
+                        ForEach(rows) { state in
+                            CategoryRow(state: state) { state.isSelected.toggle() }
+                            if state.id != rows.last?.id {
+                                Divider().padding(.leading, DS.s4 + DS.iconTile + DS.s3)
+                            }
+                        }
                     }
                 }
                 systemSection
             }
             .padding(.vertical, DS.s1)
         }
+    }
+
+    private func rows(for cat: TargetCategory) -> [TargetState] {
+        model.allStates
+            .filter { $0.target.category == cat }
+            .sorted { a, b in
+                if (a.size == 0) != (b.size == 0) { return b.size == 0 }  // empties last
+                return a.size > b.size
+            }
+    }
+
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.caption2.weight(.semibold))
+            .tracking(0.5)
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, DS.s4)
+            .padding(.top, DS.s3)
+            .padding(.bottom, DS.s1)
     }
 
     // MARK: System areas (admin-gated)
@@ -197,13 +223,6 @@ struct MenuContentView: View {
                     .padding(.horizontal, DS.s4)
                     .padding(.bottom, DS.s2)
             }
-        }
-    }
-
-    private var sortedTargets: [TargetState] {
-        model.allStates.sorted { a, b in
-            if (a.size == 0) != (b.size == 0) { return a.size > b.size } // empties to bottom
-            return a.size > b.size
         }
     }
 

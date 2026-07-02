@@ -87,3 +87,9 @@
 "system.scan" = "فحص (مسؤول)…";
 "system.clean" = "تنظيف مناطق النظام…";
 "badge.admin" = "مسؤول";
+
+/* Categories */
+"category.dev" = "ذواكر المطور";
+"category.app" = "ذواكر التطبيقات";
+"category.leftovers" = "بقايا التطبيقات";
+"category.other" = "أخرى";

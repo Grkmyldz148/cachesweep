@@ -66,7 +66,8 @@ enum Discovery {
             guard let v = classify(path, derived: derived, hasTag: hasTag, appleCaches: appleCaches,
                                    excludes: excludes, ageDays: age, active: active, learnBoost: learnBoost) else { return }
             seen.insert(path)
-            scored.append((makeTarget(path, v, ageDays: age, inUse: active, learned: learnBoost > 0), v.score))
+            scored.append((makeTarget(path, v, ageDays: age, inUse: active, learned: learnBoost > 0,
+                                      category: appleCaches ? .appCaches : .devCaches), v.score))
         }
 
         for root in roots {
@@ -194,7 +195,8 @@ enum Discovery {
 
     // MARK: Helpers
 
-    private static func makeTarget(_ path: String, _ v: Verdict, ageDays: Int?, inUse: Bool, learned: Bool) -> CleanTarget {
+    private static func makeTarget(_ path: String, _ v: Verdict, ageDays: Int?, inUse: Bool,
+                                   learned: Bool, category: TargetCategory) -> CleanTarget {
         let leaf = (path as NSString).lastPathComponent
         let parent = ((path as NSString).deletingLastPathComponent as NSString).lastPathComponent
         return CleanTarget(
@@ -208,7 +210,8 @@ enum Discovery {
             isDiscovered: true,
             ageDays: ageDays,
             inUse: inUse,
-            learned: learned
+            learned: learned,
+            category: category
         )
     }
 
@@ -272,9 +275,13 @@ enum Discovery {
     }
 
     private static func makeLeftoverTarget(_ path: String, age: Int?) -> CleanTarget {
-        CleanTarget(
+        // "com.brawersoftware.QuickLook-Thumbnail" → show "QuickLook-Thumbnail";
+        // the full bundle id stays readable in the detail path (marquee).
+        let bundleID = (path as NSString).lastPathComponent
+        let readable = bundleID.split(separator: ".").last.map(String.init) ?? bundleID
+        return CleanTarget(
             id: "left:\(path)",
-            name: (path as NSString).lastPathComponent,
+            name: readable,
             detail: tildeAbbreviate(path),
             symbol: "archivebox",
             rawPaths: [path],
@@ -282,7 +289,8 @@ enum Discovery {
             strategy: .directory,
             isDiscovered: true,
             ageDays: age,
-            isLeftover: true
+            isLeftover: true,
+            category: .leftovers
         )
     }
 

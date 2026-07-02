@@ -12,11 +12,10 @@ struct CategoryRow: View {
                 iconTile
                 VStack(alignment: .leading, spacing: 1) {
                     HStack(spacing: DS.s1) {
-                        Text(state.target.name)
+                        MarqueeText(text: state.target.name)
                             .font(.callout.weight(.medium))
                             .foregroundStyle(.primary)
-                            .lineLimit(1)
-                            .truncationMode(.middle)
+                            .layoutPriority(-1)   // badges keep their space; name compresses & scrolls
                         if state.target.isDiscovered {
                             Image(systemName: "sparkle.magnifyingglass")
                                 .font(.system(size: 10, weight: .bold))

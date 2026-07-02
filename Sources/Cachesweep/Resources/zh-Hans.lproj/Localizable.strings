@@ -87,3 +87,9 @@
 "system.scan" = "扫描（管理员）…";
 "system.clean" = "清理系统区域…";
 "badge.admin" = "管理员";
+
+/* Categories */
+"category.dev" = "开发缓存";
+"category.app" = "应用缓存";
+"category.leftovers" = "应用残留";
+"category.other" = "其他";

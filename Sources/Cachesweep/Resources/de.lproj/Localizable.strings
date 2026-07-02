@@ -87,3 +87,9 @@
 "system.scan" = "Scannen (Admin)…";
 "system.clean" = "Systembereiche bereinigen…";
 "badge.admin" = "Admin";
+
+/* Categories */
+"category.dev" = "ENTWICKLER-CACHES";
+"category.app" = "APP-CACHES";
+"category.leftovers" = "APP-ÜBERRESTE";
+"category.other" = "SONSTIGES";

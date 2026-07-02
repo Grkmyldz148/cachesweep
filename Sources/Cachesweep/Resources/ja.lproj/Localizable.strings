@@ -87,3 +87,9 @@
 "system.scan" = "スキャン（管理者）…";
 "system.clean" = "システム領域を掃除…";
 "badge.admin" = "管理者";
+
+/* Categories */
+"category.dev" = "開発キャッシュ";
+"category.app" = "アプリキャッシュ";
+"category.leftovers" = "アプリの残留物";
+"category.other" = "その他";

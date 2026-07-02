@@ -87,3 +87,9 @@
 "system.scan" = "Tara (yönetici)…";
 "system.clean" = "Sistem Alanlarını Temizle…";
 "badge.admin" = "yönetici";
+
+/* Categories */
+"category.dev" = "GELİŞTİRİCİ CACHE’LERİ";
+"category.app" = "UYGULAMA CACHE’LERİ";
+"category.leftovers" = "UYGULAMA KALINTILARI";
+"category.other" = "DİĞER";

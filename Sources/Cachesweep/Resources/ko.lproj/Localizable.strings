@@ -87,3 +87,9 @@
 "system.scan" = "스캔(관리자)…";
 "system.clean" = "시스템 영역 정리…";
 "badge.admin" = "관리자";
+
+/* Categories */
+"category.dev" = "개발 캐시";
+"category.app" = "앱 캐시";
+"category.leftovers" = "앱 잔여물";
+"category.other" = "기타";

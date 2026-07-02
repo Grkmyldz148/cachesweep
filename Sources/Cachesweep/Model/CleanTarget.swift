@@ -19,6 +19,23 @@ enum CleanStrategy: Sendable {
     case contents    // remove the children, keep the folder
 }
 
+/// Display grouping for the main list.
+enum TargetCategory: Int, CaseIterable, Sendable {
+    case devCaches   // package managers & build outputs
+    case appCaches   // per-app caches under ~/Library/Caches
+    case leftovers   // remains of uninstalled apps
+    case other       // models, logs, trash
+
+    @MainActor var title: String {
+        switch self {
+        case .devCaches: return L("category.dev")
+        case .appCaches: return L("category.app")
+        case .leftovers: return L("category.leftovers")
+        case .other:     return L("category.other")
+        }
+    }
+}
+
 /// A known location whose size we track and that the user can clean.
 /// This is the curated "rules database" — the heart of the product.
 struct CleanTarget: Identifiable, Sendable {
@@ -35,6 +52,7 @@ struct CleanTarget: Identifiable, Sendable {
     var learned = false         // promoted by accumulated learning (Phase 3)
     var isLeftover = false      // orphaned data from an app that is no longer installed
     var needsAdmin = false      // root-owned; cleaned via administrator authorization
+    var category: TargetCategory = .devCaches
 
     var expandedPaths: [String] {
         rawPaths.map { ($0 as NSString).expandingTildeInPath }
@@ -95,16 +113,16 @@ struct CleanTarget: Identifiable, Sendable {
         CleanTarget(id: "ollama", name: "Ollama Modelleri",
                     detail: "İndirilen LLM modelleri",
                     symbol: "brain", rawPaths: ["~/.ollama/models"],
-                    safety: .caution, strategy: .directory),
+                    safety: .caution, strategy: .directory, category: .other),
 
         CleanTarget(id: "logs", name: "Log Kayıtları",
                     detail: "~/Library/Logs",
                     symbol: "doc.text", rawPaths: ["~/Library/Logs"],
-                    safety: .safe, strategy: .contents),
+                    safety: .safe, strategy: .contents, category: .other),
 
         CleanTarget(id: "trash", name: "Çöp Kutusu",
                     detail: "~/.Trash + güvenlik çöpü",
                     symbol: "trash", rawPaths: ["~/.Trash", "~/.nt-trash"],
-                    safety: .safe, strategy: .contents),
+                    safety: .safe, strategy: .contents, category: .other),
     ]
 }

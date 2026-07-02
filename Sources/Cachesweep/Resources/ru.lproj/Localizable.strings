@@ -87,3 +87,9 @@
 "system.scan" = "Сканировать (админ)…";
 "system.clean" = "Очистить системные области…";
 "badge.admin" = "админ";
+
+/* Categories */
+"category.dev" = "КЭШИ РАЗРАБОТЧИКА";
+"category.app" = "КЭШИ ПРИЛОЖЕНИЙ";
+"category.leftovers" = "ОСТАТКИ ПРИЛОЖЕНИЙ";
+"category.other" = "ПРОЧЕЕ";
