@@ -76,3 +76,5 @@
 "welcome.title" = "Cachesweep가 실행 중입니다";
 "welcome.message" = "메뉴 막대(오른쪽 위)에서 ✨ 아이콘을 찾아보세요. 보이지 않으면 메뉴 막대가 가득 찼을 수 있습니다. 데스크탑을 클릭하거나 노치 주변 공간을 확보하세요. Bartender 같은 도구도 새 아이콘을 숨길 수 있습니다.";
 "welcome.ok" = "확인";
+
+"reveal.help" = "Finder에서 보기";

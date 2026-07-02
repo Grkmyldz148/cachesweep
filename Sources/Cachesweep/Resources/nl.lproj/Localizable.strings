@@ -76,3 +76,5 @@
 "welcome.title" = "Cachesweep is actief";
 "welcome.message" = "Zoek het ✨-symbool in de menubalk (rechtsboven). Is het niet zichtbaar, dan is de menubalk mogelijk vol — klik op het bureaublad of maak ruimte bij de notch. Tools zoals Bartender kunnen nieuwe symbolen ook verbergen.";
 "welcome.ok" = "OK";
+
+"reveal.help" = "Toon in Finder";

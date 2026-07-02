@@ -57,7 +57,7 @@ struct SettingsView: View {
                 ForEach(settings.excludedPaths, id: \.self) { path in
                     HStack(spacing: 10) {
                         Image(systemName: "nosign").foregroundStyle(.red).frame(width: 18)
-                        Text(abbrev(path)).lineLimit(1).truncationMode(.middle)
+                        MarqueeText(text: abbrev(path))
                         Spacer()
                         Button(role: .destructive) { settings.removeExclusion(path) } label: {
                             Image(systemName: "trash")
@@ -91,8 +91,8 @@ struct SettingsView: View {
             Image(systemName: icon).foregroundStyle(.blue).frame(width: 18)
             VStack(alignment: .leading, spacing: 1) {
                 Text(label)
-                Text(abbrev(path)).font(.caption).foregroundStyle(.secondary)
-                    .lineLimit(1).truncationMode(.middle)
+                MarqueeText(text: abbrev(path))
+                    .font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
             if removable {

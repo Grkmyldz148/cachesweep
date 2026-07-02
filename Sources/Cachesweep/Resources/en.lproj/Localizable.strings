@@ -76,3 +76,5 @@
 "welcome.title" = "Cachesweep is running";
 "welcome.message" = "Look for the ✨ icon in the menu bar (top right). If it is not visible, your menu bar may be full — click the desktop once or make room near the notch. Menu bar tools like Bartender can also hide new icons.";
 "welcome.ok" = "OK";
+
+"reveal.help" = "Show in Finder";

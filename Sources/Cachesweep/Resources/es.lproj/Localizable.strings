@@ -76,3 +76,5 @@
 "welcome.title" = "Cachesweep se está ejecutando";
 "welcome.message" = "Busca el icono ✨ en la barra de menús (arriba a la derecha). Si no aparece, la barra puede estar llena: haz clic en el escritorio o libera espacio junto al notch. Herramientas como Bartender también pueden ocultar iconos nuevos.";
 "welcome.ok" = "OK";
+
+"reveal.help" = "Mostrar en Finder";

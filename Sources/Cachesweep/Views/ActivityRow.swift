@@ -17,6 +17,7 @@ struct LiveDot: View {
 struct ActivityRow: View {
     var entry: ActivityEntry
     var onClean: (() -> Void)?
+    @State private var isHovering = false
 
     var body: some View {
         HStack(spacing: DS.s2) {
@@ -27,10 +28,8 @@ struct ActivityRow: View {
 
             VStack(alignment: .leading, spacing: 1) {
                 HStack(spacing: DS.s1) {
-                    Text(entry.label)
+                    MarqueeText(text: entry.label)
                         .font(.caption.weight(.medium))
-                        .lineLimit(1)
-                        .truncationMode(.middle)
                     if !entry.isKnown {
                         Text(L("badge.new"))
                             .font(.system(size: 9, weight: .bold))
@@ -44,6 +43,18 @@ struct ActivityRow: View {
 
             Spacer(minLength: DS.s1)
 
+            Button {
+                Reveal.inFinder(entry.id)
+            } label: {
+                Image(systemName: "arrow.up.forward.app")
+            }
+            .buttonStyle(.borderless)
+            .controlSize(.small)
+            .foregroundStyle(.secondary)
+            .help(L("reveal.help"))
+            .opacity(isHovering ? 1 : 0)
+            .allowsHitTesting(isHovering)
+
             if let onClean, !entry.isKnown, entry.size > 0 {
                 Button(action: onClean) {
                     Image(systemName: "trash")
@@ -53,6 +64,7 @@ struct ActivityRow: View {
                 .help(L("activity.cleanHelp"))
             }
         }
+        .onHover { isHovering = $0 }
     }
 
     @ViewBuilder

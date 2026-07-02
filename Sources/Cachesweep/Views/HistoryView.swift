@@ -60,17 +60,28 @@ struct HistoryView: View {
 struct HistoryRow: View {
     let record: GrowthRecord
     let growth: Int64
+    @State private var isHovering = false
 
     var body: some View {
         HStack(spacing: DS.s3) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(record.label)
+                MarqueeText(text: record.label)
                     .font(.callout.weight(.medium))
-                    .lineLimit(1).truncationMode(.middle)
                 Text("\(record.lastSize.fileSize) · \(relativeSeen)")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Spacer(minLength: DS.s2)
+            Button {
+                Reveal.inFinder(record.path)
+            } label: {
+                Image(systemName: "arrow.up.forward.app")
+            }
+            .buttonStyle(.borderless)
+            .controlSize(.small)
+            .foregroundStyle(.secondary)
+            .help(L("reveal.help"))
+            .opacity(isHovering ? 1 : 0)
+            .allowsHitTesting(isHovering)
             Sparkline(samples: record.samples)
                 .frame(width: 64, height: 22)
             Text(growthText)
@@ -80,6 +91,7 @@ struct HistoryRow: View {
         }
         .padding(.horizontal, DS.s3)
         .padding(.vertical, DS.s2)
+        .onHover { isHovering = $0 }
     }
 
     private var growthText: String {

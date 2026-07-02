@@ -76,3 +76,5 @@
 "welcome.title" = "Cachesweep est en cours d exécution";
 "welcome.message" = "Cherchez l icône ✨ dans la barre des menus (en haut à droite). Si elle n apparaît pas, la barre est peut-être pleine — cliquez sur le bureau ou libérez de l espace près de l encoche. Des outils comme Bartender peuvent aussi masquer les nouvelles icônes.";
 "welcome.ok" = "OK";
+
+"reveal.help" = "Afficher dans le Finder";

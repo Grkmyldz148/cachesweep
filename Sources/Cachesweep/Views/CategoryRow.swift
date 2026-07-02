@@ -4,6 +4,7 @@ import SwiftUI
 struct CategoryRow: View {
     var state: TargetState
     var onToggle: () -> Void
+    @State private var isHovering = false
 
     var body: some View {
         Button(action: onToggle) {
@@ -31,11 +32,9 @@ struct CategoryRow: View {
                             badge(L("badge.learned"), .teal)
                         }
                     }
-                    Text(state.target.detail)
+                    MarqueeText(text: state.target.detail)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
                 }
                 Spacer(minLength: DS.s2)
                 trailing
@@ -43,6 +42,7 @@ struct CategoryRow: View {
             .padding(.vertical, DS.s2)
             .padding(.horizontal, DS.s4)
             .contentShape(Rectangle())
+            .onHover { isHovering = $0 }
         }
         .buttonStyle(.plain)
         .opacity(state.isCleaning ? 0.45 : (isEmpty ? 0.5 : 1))
@@ -75,6 +75,17 @@ struct CategoryRow: View {
         if state.isCleaning {
             ProgressView().controlSize(.small)
         } else {
+            Button {
+                Reveal.inFinder(state.target.expandedPaths.first ?? "")
+            } label: {
+                Image(systemName: "arrow.up.forward.app")
+            }
+            .buttonStyle(.borderless)
+            .controlSize(.small)
+            .foregroundStyle(.secondary)
+            .help(L("reveal.help"))
+            .opacity(isHovering ? 1 : 0)            // reserved space — no layout jump
+            .allowsHitTesting(isHovering)
             Text(isEmpty ? "—" : state.size.fileSize)
                 .font(.callout.monospacedDigit())
                 .foregroundStyle(isEmpty ? .secondary : .primary)

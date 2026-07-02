@@ -76,3 +76,5 @@
 "welcome.title" = "Cachesweep çalışıyor";
 "welcome.message" = "Menü çubuğunda (sağ üst) ✨ simgesini arayın. Görünmüyorsa menü çubuğu dolu olabilir — masaüstüne bir kez tıklayın veya çentik yakınında yer açın. Bartender gibi araçlar da yeni simgeleri gizleyebilir.";
 "welcome.ok" = "Tamam";
+
+"reveal.help" = "Finder’da Göster";
