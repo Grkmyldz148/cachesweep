@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cachesweep &mdash; the menu-bar disk cleaner that shows you what's eating your space</title>
+  <meta name="description" content="A fast, transparent, developer-focused cache cleaner for macOS. It finds regenerable caches anywhere on disk, watches writes live, learns what you clean, and reclaims space in one click. Free & open source." />
+  <link rel="canonical" href="https://cachesweep.com/" />
+
+  <meta name="author" content="Görkem Yıldız" />
+  <meta name="theme-color" content="#10121a" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="application-name" content="Cachesweep" />
+  <meta name="apple-mobile-web-app-title" content="Cachesweep" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Cachesweep" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:title" content="Cachesweep &mdash; the menu-bar disk cleaner for macOS" />
+  <meta property="og:description" content="See what's eating your space &mdash; live. Finds regenerable caches anywhere on disk, learns what you clean, reclaims space in one click." />
+  <meta property="og:url" content="https://cachesweep.com/" />
+  <meta property="og:image" content="https://cachesweep.com/assets/img/og-cover.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="A macOS desktop with the Cachesweep menu-bar popover open, showing reclaimable caches" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Cachesweep &mdash; the menu-bar disk cleaner for macOS" />
+  <meta name="twitter:description" content="See what's eating your space &mdash; live. One-click cleanup of npm, Gradle, DerivedData, Docker and more." />
+  <meta name="twitter:image" content="https://cachesweep.com/assets/img/og-cover.jpg" />
+
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png" />
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png" />
+  <link rel="manifest" href="site.webmanifest" />
+  <link rel="preload" as="image" href="assets/img/wallpaper-dark.webp" fetchpriority="high" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="assets/css/site.css?v=ba77f3f1" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Cachesweep",
+    "url": "https://cachesweep.com/",
+    "operatingSystem": "macOS 15.0 or later",
+    "applicationCategory": "UtilitiesApplication",
+    "description": "The menu-bar disk cleaner that shows you what's eating your space — live. Finds regenerable caches anywhere on disk, learns what you clean, and reclaims space in one click.",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "license": "https://opensource.org/licenses/MIT",
+    "downloadUrl": "https://github.com/Grkmyldz148/cachesweep/releases/latest",
+    "image": "https://cachesweep.com/assets/img/app-icon-512.png",
+    "author": { "@type": "Person", "name": "Görkem Yıldız" }
+  }
+  </script>
+</head>
+<body>
+
+  <!-- SF-style glyphs, drawn by hand (SF Symbols themselves aren't licensed for web embedding) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="sparkfill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#32d74b" stop-opacity=".35" />
+        <stop offset="1" stop-color="#32d74b" stop-opacity="0" />
+      </linearGradient>
+
+      <symbol id="i-apple" viewBox="0 0 24 24">
+        <path fill="currentColor" d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.031 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701" />
+      </symbol>
+
+      <symbol id="i-sparkles" viewBox="0 0 24 24">
+        <path fill="currentColor" d="M10 3.5C10.45 7.1 12.9 9.55 16.5 10 12.9 10.45 10.45 12.9 10 16.5 9.55 12.9 7.1 10.45 3.5 10 7.1 9.55 9.55 7.1 10 3.5Z" />
+        <path fill="currentColor" d="M17.75 2.5c.22 1.75 1.5 3.03 3.25 3.25-1.75.22-3.03 1.5-3.25 3.25-.22-1.75-1.5-3.03-3.25-3.25 1.75-.22 3.03-1.5 3.25-3.25Z" />
+        <path fill="currentColor" d="M17.25 14c.18 1.45 1.3 2.57 2.75 2.75-1.45.18-2.57 1.3-2.75 2.75-.18-1.45-1.3-2.57-2.75-2.75 1.45-.18 2.57-1.3 2.75-2.75Z" />
+      </symbol>
+
+      <symbol id="i-refresh" viewBox="0 0 24 24">
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M17.6 7.2A7.2 7.2 0 1 0 19.2 12" />
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M17.9 3.2 17.7 7.4 13.5 7.2" />
+      </symbol>
+
+      <symbol id="i-check-fill" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" fill="currentColor" />
+        <path d="M7.8 12.4 10.8 15.4 16.4 9.2" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+
+      <symbol id="i-circle" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6" />
+      </symbol>
+
+      <symbol id="i-drive" viewBox="0 0 24 24">
+        <rect x="2.6" y="7.4" width="18.8" height="9.2" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.6" />
+        <circle cx="17.6" cy="12" r="1.15" fill="currentColor" />
+        <path d="M6 12h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+      </symbol>
+
+      <symbol id="i-ellipsis" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9.4" fill="none" stroke="currentColor" stroke-width="1.6" />
+        <circle cx="7.6" cy="12" r="1.2" fill="currentColor" />
+        <circle cx="12" cy="12" r="1.2" fill="currentColor" />
+        <circle cx="16.4" cy="12" r="1.2" fill="currentColor" />
+      </symbol>
+
+      <symbol id="i-trash" viewBox="0 0 24 24">
+        <path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+          d="M4.5 7h15M9.8 7V5.6c0-.6.5-1.1 1.1-1.1h2.2c.6 0 1.1.5 1.1 1.1V7M6.6 7l.8 11.7c.06.9.8 1.5 1.7 1.5h5.8c.9 0 1.64-.6 1.7-1.5L17.4 7M10.1 10.8v5.4M13.9 10.8v5.4" />
+      </symbol>
+
+      <symbol id="i-folder" viewBox="0 0 24 24">
+        <path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"
+          d="M3.2 7.2c0-1.1.9-2 2-2h3.9c.55 0 1.07.22 1.45.62l.9.96h7.35c1.1 0 2 .9 2 2v8c0 1.1-.9 2-2 2H5.2c-1.1 0-2-.9-2-2v-9.58Z" />
+      </symbol>
+
+      <symbol id="i-box" viewBox="0 0 24 24">
+        <path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"
+          d="M12 2.8 20 7v10l-8 4.2L4 17V7l8-4.2ZM4 7l8 4.2L20 7M12 11.2V21" />
+      </symbol>
+
+      <symbol id="i-shield" viewBox="0 0 24 24">
+        <path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"
+          d="M12 2.8 19 5.4v5.8c0 4.5-2.9 7.5-7 9.2-4.1-1.7-7-4.7-7-9.2V5.4L12 2.8Z" />
+        <rect x="9.7" y="10.6" width="4.6" height="3.8" rx="0.9" fill="none" stroke="currentColor" stroke-width="1.4" />
+        <path d="M10.7 10.6V9.5a1.3 1.3 0 0 1 2.6 0v1.1" fill="none" stroke="currentColor" stroke-width="1.4" />
+      </symbol>
+
+      <symbol id="i-clock-back" viewBox="0 0 24 24">
+        <path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
+          d="M5 8.3A8 8 0 1 1 4 12.6" />
+        <path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M5.3 4.2 5 8.4l4.2.3" />
+        <path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M12 8.2V12l2.6 1.6" />
+      </symbol>
+
+      <symbol id="i-magnify-sparkle" viewBox="0 0 24 24">
+        <circle cx="10.3" cy="10.3" r="6.1" fill="none" stroke="currentColor" stroke-width="1.7" />
+        <path d="M14.9 14.9 20.4 20.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+        <path fill="currentColor" d="M10.3 7.1c.24 1.9 1.54 3.2 3.44 3.44-1.9.24-3.2 1.54-3.44 3.44-.24-1.9-1.54-3.2-3.44-3.44 1.9-.24 3.2-1.54 3.44-3.44Z" />
+      </symbol>
+
+      <symbol id="i-reveal" viewBox="0 0 24 24">
+        <rect x="3.6" y="6.4" width="14" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.6" />
+        <path d="M13.4 3.6h7v7M20 4 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+
+      <symbol id="i-checkmark" viewBox="0 0 24 24">
+        <path d="M4.5 12.8 9.6 17.9 19.5 6.7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+
+      <symbol id="i-globe" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9.2" fill="none" stroke="currentColor" stroke-width="1.5" />
+        <path d="M2.8 12h18.4M12 2.8c-2.6 2.5-3.9 5.6-3.9 9.2s1.3 6.7 3.9 9.2c2.6-2.5 3.9-5.6 3.9-9.2S14.6 5.3 12 2.8Z" fill="none" stroke="currentColor" stroke-width="1.5" />
+      </symbol>
+
+      <symbol id="i-arrow-right" viewBox="0 0 24 24">
+        <path d="M4.5 12h15M13.5 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+
+      <symbol id="i-arrow-down" viewBox="0 0 24 24">
+        <path d="M12 4.5v15M6 13.5l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+
+      <symbol id="i-github" viewBox="0 0 24 24">
+        <path fill="currentColor" d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 20.9c-3.34.72-4.04-1.6-4.04-1.6-.55-1.4-1.33-1.76-1.33-1.76-1.09-.74.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.11-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.65 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z" />
+      </symbol>
+    </defs>
+  </svg>
+
+  <div class="wallpaper" aria-hidden="true"></div>
+
+  <!-- ══════════════════════════ menu bar ══════════════════════════ -->
+  <header class="menubar">
+    <span class="mb-item mb-apple" aria-hidden="true"><svg width="14" height="17"><use href="#i-apple"/></svg></span>
+    <span class="mb-item mb-app">Finder</span>
+    <span class="mb-item mb-desktop">File</span>
+    <span class="mb-item mb-desktop">Edit</span>
+    <span class="mb-item mb-desktop">View</span>
+    <span class="mb-item mb-desktop">Go</span>
+    <span class="mb-item mb-desktop">Window</span>
+    <span class="mb-item mb-desktop">Help</span>
+    <nav class="mb-right" aria-label="Status items">
+      <span class="mb-status mb-desktop"><img src="assets/img/menubar/wifi.svg" alt="" width="40" height="24" /></span>
+      <span class="mb-status mb-desktop"><img src="assets/img/menubar/search.svg" alt="" width="38" height="24" /></span>
+      <span class="mb-status mb-desktop"><img src="assets/img/menubar/circle.svg" alt="" width="38" height="24" /></span>
+      <span class="mb-status mb-desktop"><img src="assets/img/menubar/controlcenter.svg" alt="" width="38" height="24" /></span>
+      <span class="mb-status mb-sweep" id="mbSweep" title="Cachesweep"><svg width="15" height="15"><use href="#i-sparkles"/></svg></span>
+      <span class="mb-clock" id="mbClock">Mon Jun 10 9:41 AM</span>
+    </nav>
+  </header>
+
+  <!-- ══════════════════════════ the desktop ══════════════════════════ -->
+  <section class="desktop" id="top">
+    <div class="hero-copy">
+      <h1>Cachesweep</h1>
+      <p class="hero-sub">The menu-bar disk cleaner that shows you what&rsquo;s eating your space &mdash; live.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="https://github.com/Grkmyldz148/cachesweep/releases/latest">
+          <svg class="arr" width="17" height="17" style="rotate:90deg"><use href="#i-arrow-right"/></svg>
+          Download DMG
+        </a>
+        <a class="btn btn-glass" href="https://github.com/Grkmyldz148/cachesweep">
+          <svg width="17" height="17"><use href="#i-github"/></svg>
+          Go to GitHub
+        </a>
+      </div>
+      <p class="hero-note">Free &amp; open source · MIT · macOS 15+ · 13 languages</p>
+    </div>
+
+    <!-- the app, rebuilt in HTML &mdash; it runs a real demo loop -->
+    <aside class="popover glass glass-deep" id="popover" data-lg data-lg-radius="18" data-lg-bezel="18" data-lg-scale="26" data-lg-blur="14" data-lg-saturate="1.75" aria-label="Cachesweep app preview">
+      <div class="pop-arrow" id="popArrow"></div>
+
+      <div class="pop-pad">
+        <div class="pop-head">
+          <svg class="sparkles" width="15" height="15"><use href="#i-sparkles"/></svg>
+          Cachesweep
+          <span class="spacer"></span>
+          <button class="icon-btn" id="rescanBtn" aria-label="Rescan"><svg width="15" height="15" id="rescanIcon"><use href="#i-refresh"/></svg></button>
+        </div>
+
+        <div class="pop-big" id="bigNumber">120.3 MB</div>
+        <div class="pop-sub" id="popSub">2 selected · 120.3 MB found in total</div>
+
+        <button class="clean-btn" id="cleanBtn"><span id="cleanLabel">Clean Selected</span></button>
+      </div>
+
+      <div class="pop-sep"></div>
+
+      <div class="live">
+        <div class="live-head">
+          <span class="live-dot"></span> LIVE ACTIVITY
+          <span class="right">writing now</span>
+        </div>
+        <div class="lrow unknown" id="liveRow1">
+          <span class="gicon"><svg width="14" height="14"><use href="#i-folder"/></svg></span>
+          <span class="l-main">
+            <span class="l-name"><span class="txt">~/Library/Caches</span><span class="badge badge-new">new</span></span>
+            <span class="l-line2"><span id="lr1size">1.57 GB</span> <span class="up" id="lr1delta">▲ 330.4 MB</span> <span class="dim" id="lr1when">· just now</span></span>
+          </span>
+          <button class="icon-btn" aria-label="Clean this folder"><svg width="13" height="13"><use href="#i-trash"/></svg></button>
+        </div>
+        <div class="lrow unknown">
+          <span class="gicon"><svg width="14" height="14"><use href="#i-folder"/></svg></span>
+          <span class="l-main">
+            <span class="l-name"><span class="txt">~/Library/Group Containers/…/Caches</span><span class="badge badge-new">new</span></span>
+            <span class="l-line2"><span id="lr2size">412.6 MB</span> <span class="up" id="lr2delta">▲ 12.8 MB</span> <span class="dim" id="lr2when">· 42s</span></span>
+          </span>
+          <button class="icon-btn" aria-label="Clean this folder"><svg width="13" height="13"><use href="#i-trash"/></svg></button>
+        </div>
+      </div>
+
+      <div class="pop-sep"></div>
+
+      <div class="pop-list">
+        <div class="sec-h">DEVELOPER CACHES</div>
+
+        <div class="crow" data-clean data-size="19800000">
+          <span class="tile"><svg width="15" height="15"><use href="#i-folder"/></svg></span>
+          <span class="c-main">
+            <span class="c-name">General Cache</span>
+            <span class="c-detail">~/.cache (codex, puppeteer, uv…)</span>
+          </span>
+          <span class="c-size">19.8 MB</span>
+          <svg class="check" width="17" height="17"><use href="#i-check-fill"/></svg>
+        </div>
+
+        <div class="crow dim">
+          <span class="tile"><svg width="15" height="15"><use href="#i-box"/></svg></span>
+          <span class="c-main">
+            <span class="c-name">npm Cache</span>
+            <span class="c-detail">~/.npm/_cacache</span>
+          </span>
+          <span class="c-size empty">—</span>
+          <svg class="check off" width="17" height="17"><use href="#i-circle"/></svg>
+        </div>
+
+        <div class="crow dim">
+          <span class="tile"><svg width="15" height="15"><use href="#i-box"/></svg></span>
+          <span class="c-main">
+            <span class="c-name">Yarn Cache</span>
+            <span class="c-detail">~/Library/Caches/Yarn</span>
+          </span>
+          <span class="c-size empty">—</span>
+          <svg class="check off" width="17" height="17"><use href="#i-circle"/></svg>
+        </div>
+
+        <div class="crow dim">
+          <span class="tile"><svg width="15" height="15"><use href="#i-box"/></svg></span>
+          <span class="c-main">
+            <span class="c-name">pnpm Store</span>
+            <span class="c-detail">~/Library/pnpm/store</span>
+          </span>
+          <span class="c-size empty">—</span>
+          <svg class="check off" width="17" height="17"><use href="#i-circle"/></svg>
+        </div>
+
+        <div class="sec-h">OTHER</div>
+
+        <div class="crow" data-clean data-size="100500000">
+          <span class="tile"><svg width="15" height="15"><use href="#i-trash"/></svg></span>
+          <span class="c-main">
+            <span class="c-name">Trash</span>
+            <span class="c-detail">~/.Trash</span>
+          </span>
+          <span class="c-size">100.5 MB</span>
+          <svg class="check" width="17" height="17"><use href="#i-check-fill"/></svg>
+        </div>
+      </div>
+
+      <div class="pop-sep"></div>
+
+      <div class="pop-foot">
+        <svg width="15" height="15"><use href="#i-drive"/></svg>
+        <span id="freeSpace">43.99 GB free</span>
+        <span class="spacer"></span>
+        <svg width="15" height="15"><use href="#i-ellipsis"/></svg>
+      </div>
+    </aside>
+
+    <!-- ── dock ── -->
+    <nav class="dock-wrap" aria-label="Dock">
+      <div class="dock glass" id="dock">
+        <button class="dock-item" data-label="Finder"><img src="assets/img/dock/finder.webp" alt="Finder" /></button>
+        <button class="dock-item" data-label="Launchpad"><img src="assets/img/dock/launchpad.webp" alt="Launchpad" /></button>
+        <button class="dock-item" data-label="Safari"><img src="assets/img/dock/safari.webp" alt="Safari" /></button>
+        <button class="dock-item" data-label="Messages"><img src="assets/img/dock/messages.webp" alt="Messages" /></button>
+        <button class="dock-item" data-label="Mail"><img src="assets/img/dock/mail.webp" alt="Mail" /></button>
+        <button class="dock-item" data-label="Find My"><img src="assets/img/dock/findmy.webp" alt="Find My" /></button>
+        <button class="dock-item" data-label="Photos"><img src="assets/img/dock/photos.webp" alt="Photos" /></button>
+        <button class="dock-item" data-label="FaceTime"><img src="assets/img/dock/facetime.webp" alt="FaceTime" /></button>
+        <button class="dock-item" data-label="Calendar"><img src="assets/img/dock/calendar.webp" alt="Calendar" /></button>
+        <button class="dock-item" data-label="Contacts"><img src="assets/img/dock/contacts.webp" alt="Contacts" /></button>
+        <button class="dock-item" data-label="Reminders"><img src="assets/img/dock/reminders.webp" alt="Reminders" /></button>
+        <button class="dock-item" data-label="Notes"><img src="assets/img/dock/notes.webp" alt="Notes" /></button>
+        <button class="dock-item" data-label="Freeform"><img src="assets/img/dock/freeform.webp" alt="Freeform" /></button>
+        <button class="dock-item" data-label="TV"><img src="assets/img/dock/appletv.webp" alt="TV" /></button>
+        <button class="dock-item" data-label="Music"><img src="assets/img/dock/music.webp" alt="Music" /></button>
+        <button class="dock-item" data-label="News"><img src="assets/img/dock/news.webp" alt="News" /></button>
+        <button class="dock-item" data-label="App Store"><img src="assets/img/dock/appstore.webp" alt="App Store" /></button>
+        <div class="dock-sep" role="presentation"></div>
+        <button class="dock-item" data-label="Downloads"><img src="assets/img/dock/folder.webp" alt="Downloads" /></button>
+        <button class="dock-item" data-label="Trash"><img src="assets/img/dock/trash.webp" alt="Trash" /></button>
+      </div>
+    </nav>
+  </section>
+
+  <!-- ══════════════════════════ proof strip ══════════════════════════ -->
+  <section class="stage stage-tight">
+    <div class="chips reveal">
+      <span class="chip"><svg width="13" height="13"><use href="#i-apple"/></svg> macOS 15+</span>
+      <span class="chip">Swift 6 · SwiftUI native</span>
+      <span class="chip"><svg width="14" height="14"><use href="#i-globe"/></svg> 13 languages</span>
+      <span class="chip">MIT licensed</span>
+      <span class="chip"><svg width="13" height="13"><use href="#i-sparkles"/></svg> Sparkle auto-updates</span>
+      <span class="chip"><svg width="14" height="14"><use href="#i-shield"/></svg> Safe by default</span>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════ live tracking ══════════════════════════ -->
+  <section class="stage" id="live">
+    <div class="window glass reveal">
+      <div class="titlebar"><span class="tl r"></span><span class="tl y"></span><span class="tl g"></span><span class="win-title">Live Activity &mdash; FSEvents</span></div>
+      <div class="win-body">
+        <div class="copy">
+          <div class="eyebrow">Live tracking</div>
+          <h2>Watch your disk refill &mdash; live.</h2>
+          <p>You upgrade macOS, 70&nbsp;GB frees up, and a week later it&rsquo;s gone. Cachesweep watches the file system in real time, so you can finally see <em>what is being written where</em>.</p>
+          <ul>
+            <li><svg width="15" height="15"><use href="#i-checkmark"/></svg> Per-folder growth deltas (▲) and recency, streamed from FSEvents</li>
+            <li><svg width="15" height="15"><use href="#i-checkmark"/></svg> Persistent growth history with sparklines &mdash; across restarts</li>
+            <li><svg width="15" height="15"><use href="#i-checkmark"/></svg> A nudge when something balloons: &ldquo;DerivedData grew ▲4&nbsp;GB this week&rdquo;</li>
+          </ul>
+        </div>
+        <div class="demo">
+          <div class="demo-panel" id="liveDemo">
+            <div class="live-head" style="padding:2px 6px 6px"><span class="live-dot"></span> LIVE ACTIVITY <span class="right">writing now</span></div>
+            <div class="lrow"><span class="gicon"><svg width="14" height="14"><use href="#i-folder"/></svg></span><span class="l-main"><span class="l-name"><span class="txt">Xcode DerivedData</span></span><span class="l-line2"><span data-demo-size>2.31 GB</span> <span class="up" data-demo-delta>▲ 128 MB</span> <span class="dim" data-demo-when>· just now</span></span></span></div>
+            <div class="lrow"><span class="gicon"><svg width="14" height="14"><use href="#i-box"/></svg></span><span class="l-main"><span class="l-name"><span class="txt">npm Cache</span></span><span class="l-line2"><span data-demo-size>612 MB</span> <span class="up" data-demo-delta>▲ 48.2 MB</span> <span class="dim" data-demo-when>· 4s</span></span></span></div>
+            <div class="lrow unknown"><span class="gicon"><svg width="14" height="14"><use href="#i-folder"/></svg></span><span class="l-main"><span class="l-name"><span class="txt">~/Library/Caches/ms-playwright</span><span class="badge badge-new">new</span></span><span class="l-line2"><span data-demo-size>1.02 GB</span> <span class="up" data-demo-delta>▲ 212 MB</span> <span class="dim" data-demo-when>· 11s</span></span></span></div>
+            <div class="lrow"><span class="gicon"><svg width="14" height="14"><use href="#i-box"/></svg></span><span class="l-main"><span class="l-name"><span class="txt">Ollama Models</span></span><span class="l-line2"><span data-demo-size>9.4 GB</span> <span class="up" data-demo-delta>▲ 1.7 GB</span> <span class="dim" data-demo-when>· 26s</span></span></span></div>
+            <svg class="sparkline" viewBox="0 0 320 56" preserveAspectRatio="none" aria-hidden="true">
+              <path class="fill" d="M0 46 L26 44 L52 45 L78 38 L104 39 L130 30 L156 32 L182 22 L208 25 L234 14 L260 17 L286 9 L320 4 L320 56 L0 56 Z" />
+              <path id="sparkPath" d="M0 46 L26 44 L52 45 L78 38 L104 39 L130 30 L156 32 L182 22 L208 25 L234 14 L260 17 L286 9 L320 4" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════ discovery ══════════════════════════ -->
+  <section class="stage" id="discovery">
+    <div class="window glass reveal">
+      <div class="titlebar"><span class="tl r"></span><span class="tl y"></span><span class="tl g"></span><span class="win-title">Smart Discovery &mdash; Spotlight + classifier</span></div>
+      <div class="win-body flip">
+        <div class="copy">
+          <div class="eyebrow">Smart discovery</div>
+          <h2>Finds caches you never listed.</h2>
+          <p>Most cleaners ship a hardcoded list. Cachesweep <em>hunts</em>: Spotlight surfaces project manifests and <code>CACHEDIR.TAG</code> markers anywhere on disk, and a signal-based classifier decides what&rsquo;s genuinely regenerable.</p>
+          <ul>
+            <li><svg width="15" height="15"><use href="#i-checkmark"/></svg> Leftovers of uninstalled apps get flagged too</li>
+            <li><svg width="15" height="15"><use href="#i-checkmark"/></svg> Everything discovered lands <strong>opt-in</strong>, marked <span class="badge badge-new">new</span></li>
+            <li><svg width="15" height="15"><use href="#i-checkmark"/></svg> True on-disk allocation &mdash; a sparse <code>Docker.raw</code> is measured honestly</li>
+          </ul>
+        </div>
+        <div class="demo">
+          <div class="demo-panel term" id="discDemo">
+            <div>▸ sweeping <span class="path">~/dev</span> …</div>
+            <div class="disc-line"><span class="disc">✦ found</span> <span class="path">turbo/cache</span> &mdash; CACHEDIR.TAG</div>
+            <div class="disc-line"><span class="disc">✦ found</span> <span class="path">target/debug/incremental</span> &mdash; cargo manifest</div>
+            <div class="disc-line"><span class="disc">✦ found</span> <span class="path">node_modules/.cache</span> &mdash; 14 projects</div>
+            <div class="disc-line"><span class="disc">✦ found</span> <span class="path">~/Library/Caches/Arc</span> &mdash; app removed <span class="badge badge-leftover">leftover</span></div>
+            <div class="disc-line"><span class="ok">✓ classifier:</span> regenerable · idle 21d · safe to remove</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════ learning ══════════════════════════ -->
+  <section class="stage" id="learning">
+    <div class="window glass reveal">
+      <div class="titlebar"><span class="tl r"></span><span class="tl y"></span><span class="tl g"></span><span class="win-title">Learning Loop</span></div>
+      <div class="win-body">
+        <div class="copy">
+          <div class="eyebrow">Learning loop</div>
+          <h2>It learns what you clean.</h2>
+          <p>Clean something once and Cachesweep remembers. When a cache grows back, it notices. Kinds you keep cleaning get promoted to trusted &mdash; the curated seed list is just a starting point.</p>
+          <ul>
+            <li><svg width="15" height="15"><use href="#i-checkmark"/></svg> Grow-back detection per location</li>
+            <li><svg width="15" height="15"><use href="#i-checkmark"/></svg> Trusted kinds auto-promote over time</li>
+            <li><svg width="15" height="15"><use href="#i-checkmark"/></svg> Your habits stay on your Mac &mdash; nothing leaves the device</li>
+          </ul>
+        </div>
+        <div class="demo">
+          <div class="demo-panel">
+            <div class="crow" id="learnRow">
+              <span class="tile"><svg width="15" height="15"><use href="#i-folder"/></svg></span>
+              <span class="c-main">
+                <span class="c-name">ms-playwright <span class="badge badge-new" id="learnBadge">new</span></span>
+                <span class="c-detail">~/Library/Caches/ms-playwright</span>
+              </span>
+              <span class="c-size" id="learnSize">1.02 GB</span>
+              <svg class="check off" id="learnCheck" width="17" height="17"><use href="#i-circle"/></svg>
+            </div>
+            <div class="term" style="padding:8px 6px 2px" id="learnLog">
+              <div>· cleaned by you &mdash; remembering</div>
+              <div style="opacity:.4">· grew back ▲ 890 MB in 6 days</div>
+              <div style="opacity:.4">· cleaned again &mdash; promoting to trusted</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════ safety ══════════════════════════ -->
+  <section class="stage" id="safety">
+    <div class="window glass reveal">
+      <div class="titlebar"><span class="tl r"></span><span class="tl y"></span><span class="tl g"></span><span class="win-title">Safety Model</span></div>
+      <div class="win-body flip">
+        <div class="copy">
+          <div class="eyebrow">Safe by default</div>
+          <h2>Green means regenerable.<br />Orange means think twice.</h2>
+          <p>Only clearly-safe, idle caches are ever pre-selected. Real data &mdash; models you&rsquo;d re-download, anything <em>in active use</em> &mdash; is opt-in, never auto-picked. Destructive steps sit behind a confirmation, exactly as the HIG asks.</p>
+          <ul>
+            <li><svg width="15" height="15"><use href="#i-checkmark"/></svg> In-use detection: hot folders are never pre-selected</li>
+            <li><svg width="15" height="15"><use href="#i-checkmark"/></svg> Idle-age badges tell you how stale a cache is</li>
+            <li><svg width="15" height="15"><use href="#i-checkmark"/></svg> One-click, one confirmation, fully reversible by regeneration</li>
+          </ul>
+        </div>
+        <div class="demo">
+          <div class="demo-panel">
+            <div class="crow">
+              <span class="tile"><svg width="15" height="15"><use href="#i-box"/></svg></span>
+              <span class="c-main">
+                <span class="c-name">Gradle Cache <span class="badge badge-idle">21d</span></span>
+                <span class="c-detail">~/.gradle/caches</span>
+              </span>
+              <span class="c-size">4.2 GB</span>
+              <svg class="check" width="17" height="17"><use href="#i-check-fill"/></svg>
+            </div>
+            <div class="crow caution">
+              <span class="tile"><svg width="15" height="15"><use href="#i-box"/></svg></span>
+              <span class="c-main">
+                <span class="c-name">Ollama Models <span class="badge badge-inuse">in use</span></span>
+                <span class="c-detail">~/.ollama/models &mdash; re-downloads on demand</span>
+              </span>
+              <span class="c-size">12.4 GB</span>
+              <svg class="check off" width="17" height="17"><use href="#i-circle"/></svg>
+            </div>
+            <div class="crow caution">
+              <span class="tile"><svg width="15" height="15"><use href="#i-drive"/></svg></span>
+              <span class="c-main">
+                <span class="c-name">Docker.raw <span class="badge badge-idle">sparse</span></span>
+                <span class="c-detail">60 GB apparent → 18.2 GB real allocation</span>
+              </span>
+              <span class="c-size">18.2 GB</span>
+              <svg class="check off" width="17" height="17"><use href="#i-circle"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════ system data ══════════════════════════ -->
+  <section class="stage" id="system">
+    <div class="window glass reveal">
+      <div class="titlebar"><span class="tl r"></span><span class="tl y"></span><span class="tl g"></span><span class="win-title">System Areas &mdash; admin-gated</span></div>
+      <div class="win-body">
+        <div class="copy">
+          <div class="eyebrow">System data</div>
+          <h2>Even &ldquo;System Data&rdquo;, explained.</h2>
+          <p>The mystery bar in Storage settings, decoded: root-owned caches, pending update files, old package caches, Time Machine snapshots. Scanned only when you ask &mdash; behind a single administrator prompt.</p>
+          <ul>
+            <li><svg width="15" height="15"><use href="#i-checkmark"/></svg> Nothing root-owned is touched without explicit intent</li>
+            <li><svg width="15" height="15"><use href="#i-checkmark"/></svg> Local Time Machine snapshots, thinned via <code>tmutil</code></li>
+          </ul>
+        </div>
+        <div class="demo">
+          <div class="demo-panel">
+            <div class="sec-h" style="padding:4px 6px 6px"><svg width="11" height="11" style="display:inline-block;vertical-align:-1px;margin-right:5px"><use href="#i-shield"/></svg>SYSTEM AREAS</div>
+            <div class="crow">
+              <span class="tile caution" style="color:var(--orange);background:rgba(255,159,10,.15)"><svg width="15" height="15"><use href="#i-folder"/></svg></span>
+              <span class="c-main">
+                <span class="c-name">System Caches <span class="badge badge-admin">admin</span></span>
+                <span class="c-detail">/Library/Caches</span>
+              </span>
+              <span class="c-size">3.1 GB</span>
+              <svg class="check off" width="17" height="17"><use href="#i-circle"/></svg>
+            </div>
+            <div class="crow">
+              <span class="tile caution" style="color:var(--orange);background:rgba(255,159,10,.15)"><svg width="15" height="15"><use href="#i-clock-back"/></svg></span>
+              <span class="c-main">
+                <span class="c-name">Time Machine Snapshots</span>
+                <span class="c-detail">tmutil · 3</span>
+              </span>
+              <span class="c-size">—</span>
+              <svg class="check off" width="17" height="17"><use href="#i-circle"/></svg>
+            </div>
+            <div class="crow">
+              <span class="tile caution" style="color:var(--orange);background:rgba(255,159,10,.15)"><svg width="15" height="15"><use href="#i-box"/></svg></span>
+              <span class="c-main">
+                <span class="c-name">Pending Update Files <span class="badge badge-admin">admin</span></span>
+                <span class="c-detail">/Library/Updates</span>
+              </span>
+              <span class="c-size">1.8 GB</span>
+              <svg class="check off" width="17" height="17"><use href="#i-circle"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════ install ══════════════════════════ -->
+  <section class="stage" id="install">
+    <div class="window glass reveal">
+      <div class="titlebar"><span class="tl r"></span><span class="tl y"></span><span class="tl g"></span><span class="win-title">Cachesweep &mdash; Install</span></div>
+      <div class="win-body single">
+        <div class="copy">
+          <div class="eyebrow">Install</div>
+          <h2>Drag. Drop. Sweep.</h2>
+          <div class="dmg" aria-hidden="true">
+            <div class="slot"><img src="assets/img/app-icon-256.webp" srcset="assets/img/app-icon-128.webp 1x, assets/img/app-icon-256.webp 2x" alt="" width="116" height="116" />Cachesweep</div>
+            <svg class="dmg-arr" width="34" height="34"><use href="#i-arrow-right"/></svg>
+            <div class="slot"><img src="assets/img/dock/folder.webp" alt="" width="116" height="116" />Applications</div>
+          </div>
+          <ol class="steps" style="text-align:left;max-width:52ch;margin-inline:auto">
+            <li>Download <strong>Cachesweep-x.y.z.dmg</strong> from the latest release.</li>
+            <li>Drag <strong>Cachesweep</strong> onto <strong>Applications</strong> and launch it from the ✨ menu-bar icon.</li>
+            <li>First launch: right-click → <strong>Open</strong> (ad-hoc signed build &mdash; one time only). Updates arrive signed, via Sparkle.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════ finale ══════════════════════════ -->
+  <section class="finale reveal" id="cta">
+    <h2>Your disk. Explained.</h2>
+    <p>Stop wondering where 70&nbsp;GB went. Put a sweeper in the menu bar and watch it work &mdash; live.</p>
+    <div class="hero-ctas" style="margin-top:30px">
+      <a class="btn btn-primary" href="https://github.com/Grkmyldz148/cachesweep/releases/latest">
+        <svg class="arr" width="17" height="17" style="rotate:90deg"><use href="#i-arrow-right"/></svg>
+        Download for macOS
+      </a>
+      <a class="btn btn-glass" href="https://github.com/Grkmyldz148/cachesweep">
+        <svg width="17" height="17"><use href="#i-github"/></svg>
+        Star on GitHub
+      </a>
+    </div>
+  </section>
+
+  <footer class="site glass">
+    <span><strong>Cachesweep</strong> · MIT © 2026 <a href="https://gorkemyildiz.com">Görkem Yıldız</a></span>
+    <span class="spacer"></span>
+    <a href="https://github.com/Grkmyldz148/cachesweep">GitHub</a>
+    <a href="https://github.com/Grkmyldz148/cachesweep/releases/latest">Releases</a>
+    <a href="https://github.com/Grkmyldz148/cachesweep/issues">Report an issue</a>
+  </footer>
+
+  <script src="assets/js/liquid-glass.js?v=c0e8d4c4" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
+  <script src="assets/js/main.js?v=c3b76e17" defer></script>
+</body>
+</html>

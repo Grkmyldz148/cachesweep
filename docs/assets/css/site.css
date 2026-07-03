@@ -1,0 +1,844 @@
+/* Cachesweep landing  a macOS desktop, rebuilt for the web.
+ * Type: SF via the system stack (ui-rounded for the big counter).
+ * Material: Liquid Glass (see liquid-glass.js) + specular rims here.
+ * Palette: macOS dark-mode semantic colors, one accent (systemBlue). */
+
+:root {
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+          "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-rounded: ui-rounded, "SF Pro Rounded", var(--font);
+
+  --label: rgba(255, 255, 255, 0.96);
+  --label-2: rgba(235, 235, 245, 0.64);
+  --label-3: rgba(235, 235, 245, 0.38);
+  --sep: rgba(255, 255, 255, 0.08);
+
+  --blue: #0a84ff;
+  --green: #32d74b;
+  --orange: #ff9f0a;
+  --teal: #6ac4dc;
+  --purple: #bf5af2;
+  --indigo: #7d7aff;
+  --red: #ff453a;
+
+  --glass-bg: rgba(22, 24, 30, 0.44);
+  --glass-bg-deep: rgba(20, 22, 27, 0.6);
+  --radius-window: 20px;
+  --menubar-h: 30px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+html, body {
+  /* clip, not hidden: hidden alone lets iOS grow the layout viewport when
+   * something overflows, which lays text out wider than the screen */
+  overflow-x: clip;
+}
+
+body {
+  font-family: var(--font);
+  color: var(--label);
+  background: #10121a;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+::selection { background: rgba(10, 132, 255, 0.4); }
+
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+img { display: block; }
+svg { display: block; }
+
+.wallpaper {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background: url("../img/wallpaper-dark.webp") center / cover no-repeat;
+}
+.wallpaper::after {
+  /* gentle scrim so exhibits stay legible deep into the page */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 90% at 50% 0%, transparent 40%, rgba(5, 6, 12, 0.42) 100%);
+}
+
+/* ---------------------------------------------------------------- glass -- */
+
+.glass {
+  position: relative;
+  background: var(--glass-bg);
+  border: 0.5px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 24px 60px rgba(0, 0, 6, 0.38), 0 2px 8px rgba(0, 0, 6, 0.22);
+  /* NO backdrop-filter anywhere: the frost is a pre-blurred wallpaper
+   * texture injected by liquid-glass.js (.lg-surface), counter-scrolled
+   * with a transform. Per-frame cost: zero filters, zero layout. */
+}
+
+/* injected by liquid-glass.js: [blurred texture + tint veil], clipped */
+.glass > .lg-surface {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.lg-surface .lg-tex {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: none;
+  will-change: transform;
+}
+.lg-surface .lg-veil { position: absolute; inset: 0; }
+/* specular rim  light falls from the top */
+.glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 1px 0 0 rgba(255, 255, 255, 0.07),
+    inset -1px 0 0 rgba(255, 255, 255, 0.07),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.045);
+}
+/* sheen  one soft diagonal highlight, never a rainbow */
+.glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.09) 0%, transparent 34%);
+  opacity: 0.8;
+}
+.glass > * { position: relative; z-index: 2; }
+
+.glass-deep { background: var(--glass-bg-deep); }
+
+/* ------------------------------------------------------------- menu bar -- */
+
+.menubar {
+  /* part of the desktop scene  scrolls away with it, exactly like a
+   * screenshot of a Mac would */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  height: var(--menubar-h);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 12px;
+  font-size: 13px;
+  background: rgba(0, 0, 0, 0);
+}
+
+.mb-item {
+  padding: 3px 10px;
+  border-radius: 6px;
+  color: var(--label);
+  white-space: nowrap;
+  transition: background 150ms ease;
+}
+.mb-item:hover { background: rgba(255, 255, 255, 0.14); }
+.mb-app { font-weight: 700; }
+.mb-apple svg { width: 14px; height: 17px; fill: var(--label); }
+
+.mb-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.mb-status {
+  height: 22px;
+  display: flex;
+  align-items: center;
+  padding: 0 3px;
+  border-radius: 6px;
+  transition: background 150ms ease;
+}
+.mb-status:hover { background: rgba(255, 255, 255, 0.14); }
+/* the source SVGs carry ~11px of built-in side padding  crop it away so
+ * status items sit at real macOS density (HIG: menu bar extras are compact) */
+.mb-status img { height: 22px; width: 24px; object-fit: cover; }
+.mb-status svg { width: 15px; height: 15px; }
+
+/* the Cachesweep menu extra  active, popover attached */
+.mb-sweep {
+  background: rgba(255, 255, 255, 0.24);
+  color: #fff;
+  padding: 0 7px;
+  margin-left: 2px;
+}
+.mb-clock { padding: 3px 8px 3px 10px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* -------------------------------------------------------------- desktop -- */
+
+.desktop {
+  position: relative;
+  min-height: 100svh;
+  padding: calc(var(--menubar-h) + 24px) 6vw 150px;
+  display: flex;
+  align-items: center;
+}
+
+.hero-copy { max-width: 640px; }
+
+.hero-copy h1 {
+  font-size: clamp(64px, 8.5vw, 118px);
+  font-weight: 700;
+  letter-spacing: -0.022em;
+  line-height: 1.02;
+  text-shadow: 0 4px 40px rgba(0, 0, 30, 0.4);
+}
+.hero-sub {
+  margin-top: 22px;
+  font-size: clamp(18px, 1.8vw, 23px);
+  line-height: 1.45;
+  font-weight: 400;
+  color: var(--label-2);
+  max-width: 30ch;
+  text-wrap: balance;
+}
+.hero-ctas {
+  margin-top: 34px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.hero-note {
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--label-3);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 24px;
+  border-radius: 23px;
+  font-size: 15px;
+  font-weight: 600;
+  transition: transform 120ms ease, box-shadow 200ms ease, filter 200ms ease,
+              border-color 200ms ease, background 200ms ease;
+}
+.btn:active { transform: scale(0.985); }
+.btn .arr { transition: transform 200ms ease; }
+.btn:hover .arr { transform: translateX(3px); }
+
+.btn-primary {
+  color: #fff;
+  background: linear-gradient(180deg, #2f97ff, #0a84ff 65%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.34),
+              0 8px 24px rgba(10, 132, 255, 0.38);
+}
+.btn-primary:hover {
+  filter: brightness(1.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.34),
+              0 10px 30px rgba(10, 132, 255, 0.5);
+}
+
+.btn-glass {
+  /* small control: translucent tint reads as glass without a live filter */
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+.btn-glass:hover { border-color: rgba(255, 255, 255, 0.36); background: rgba(255, 255, 255, 0.15); }
+
+/* -------------------------------------------------------------- popover -- */
+
+.popover {
+  position: absolute;
+  top: calc(var(--menubar-h) + 12px);
+  right: clamp(16px, 3.2vw, 52px);
+  width: 356px;
+  border-radius: 18px;
+  font-size: 13px;
+  transform-origin: top right;
+}
+.pop-arrow {
+  position: absolute;
+  top: -6px;
+  width: 14px;
+  height: 14px;
+  right: 60px; /* re-aimed at the menu-bar extra by JS */
+  background: rgba(50, 53, 62, 0.82);
+  border-radius: 3px 0 0 0;
+  transform: rotate(45deg);
+  border-top: 0.5px solid rgba(255, 255, 255, 0.25);
+  border-left: 0.5px solid rgba(255, 255, 255, 0.25);
+  z-index: 0;
+}
+
+.pop-pad { padding: 14px 16px 0; }
+
+.pop-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 600;
+  font-size: 13px;
+}
+.pop-head .sparkles { color: var(--label); }
+.pop-head .spacer { flex: 1; }
+.icon-btn {
+  color: var(--label-2);
+  padding: 3px;
+  border-radius: 5px;
+  transition: background 150ms ease, color 150ms ease;
+}
+.icon-btn:hover { background: rgba(255, 255, 255, 0.1); color: var(--label); }
+
+.pop-big {
+  margin-top: 12px;
+  text-align: center;
+  font-family: var(--font-rounded);
+  font-size: 38px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.pop-sub {
+  margin-top: 2px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--label-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.clean-btn {
+  margin: 14px 0 16px;
+  width: 100%;
+  height: 38px;
+  border-radius: 19px;
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  background: linear-gradient(180deg, #2f97ff, #0a84ff 70%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 4px 14px rgba(10, 132, 255, 0.36);
+  transition: filter 180ms ease, transform 100ms ease, opacity 250ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.clean-btn:hover { filter: brightness(1.07); }
+.clean-btn:active { transform: scale(0.985); }
+.clean-btn.busy { opacity: 0.72; pointer-events: none; }
+
+.pop-sep { height: 0.5px; background: var(--sep); }
+
+/* live activity */
+.live { padding: 11px 16px; }
+.live-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--label-2);
+}
+.live-head .right { margin-left: auto; font-weight: 400; color: var(--label-3); letter-spacing: 0; }
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: livedot 1.8s ease-in-out infinite;
+}
+@keyframes livedot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+.lrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-radius: 8px;
+  transition: background 400ms ease;
+}
+.lrow.flash { background: rgba(50, 215, 75, 0.09); }
+.lrow .gicon { width: 20px; display: flex; justify-content: center; color: var(--green); flex: none; }
+.lrow.unknown .gicon { color: var(--orange); }
+.lrow .l-main { min-width: 0; flex: 1; }
+.lrow .l-name {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.lrow .l-name .txt { overflow: hidden; text-overflow: ellipsis; }
+.lrow .l-line2 {
+  display: block;
+  font-size: 10.5px;
+  color: var(--label-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lrow .l-line2 .up { color: var(--green); }
+.lrow .l-line2 .dim { color: var(--label-3); }
+.lrow .icon-btn { opacity: 0; }
+.lrow:hover .icon-btn { opacity: 1; }
+
+.badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2.5px 5px 2px;
+  border-radius: 99px;
+  line-height: 1;
+  /* keeps badges on the text baseline when used inline in copy */
+  vertical-align: middle;
+}
+.badge-new { color: var(--orange); background: rgba(255, 159, 10, 0.18); }
+.badge-learned { color: var(--teal); background: rgba(106, 196, 220, 0.16); }
+.badge-idle { color: rgba(235, 235, 245, 0.55); background: rgba(235, 235, 245, 0.12); }
+.badge-leftover { color: var(--indigo); background: rgba(125, 122, 255, 0.16); }
+.badge-admin { color: rgba(235, 235, 245, 0.55); background: rgba(235, 235, 245, 0.12); }
+.badge-inuse { color: var(--orange); background: rgba(255, 159, 10, 0.18); }
+
+/* category list */
+.pop-list { padding: 2px 0 4px; }
+.sec-h {
+  padding: 10px 16px 3px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--label-2);
+}
+.crow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 8px 16px;
+  transition: opacity 300ms ease;
+}
+/* inset hairline between rows, aligned past the icon tile  same rule the
+ * real popover uses (Divider().padding(.leading, s4 + iconTile + s3)) */
+.crow + .crow::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 57px;
+  right: 16px;
+  height: 0.5px;
+  background: var(--sep);
+}
+.crow.dim { opacity: 0.5; }
+.crow.cleaning { opacity: 0.45; }
+
+.tile {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--green);
+  background: rgba(50, 215, 75, 0.15);
+}
+.crow.caution .tile { color: var(--orange); background: rgba(255, 159, 10, 0.15); }
+
+.crow .c-main { flex: 1; min-width: 0; }
+.crow .c-name {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.crow .c-detail {
+  /* block, not inline: overflow/text-overflow are no-ops on inline spans,
+   * so long details would overlap the size column on narrow screens */
+  display: block;
+  font-size: 11px;
+  color: var(--label-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.crow .c-size {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  flex: none;
+  min-width: 62px;
+  text-align: right;
+}
+.crow .c-size.empty { color: var(--label-2); }
+.check { flex: none; width: 17px; height: 17px; color: var(--blue); }
+.check.off { color: rgba(235, 235, 245, 0.3); }
+
+.pop-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 12px;
+  color: var(--label-2);
+  font-variant-numeric: tabular-nums;
+}
+.pop-foot .spacer { flex: 1; }
+
+.spin { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ----------------------------------------------------------------- dock -- */
+
+.dock-wrap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 40;
+}
+.dock {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  padding: 7px 9px;
+  border-radius: 26px;
+  max-width: calc(100vw - 16px);
+}
+.dock-item {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  flex: none;
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+.dock-item img { width: 100%; height: 100%; }
+/* dock label  Liquid Glass like the OS: material + specular rim.
+ * A live backdrop-filter is fine here: it's tiny, hover-only, and hidden
+ * (visibility) when idle so it never costs a frame. */
+.dock-item::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: calc(100% + 14px);
+  left: 50%;
+  translate: -50% 0;
+  padding: 5px 11px;
+  border-radius: 10px;
+  background: rgba(44, 46, 54, 0.5);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  border: 0.5px solid rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 6px 18px rgba(0, 0, 6, 0.32);
+  font-size: 12.5px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 150ms ease, visibility 0s 150ms;
+}
+.dock-item:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 150ms ease;
+}
+.dock-sep {
+  width: 1px;
+  align-self: stretch;
+  margin: 6px 5px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* ------------------------------------------------------------- exhibits -- */
+
+.stage {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 60px 24px;
+}
+.stage-tight { padding-top: 0; }
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--label-2);
+  background: rgba(255, 255, 255, 0.12);
+  border: 0.5px solid rgba(255, 255, 255, 0.13);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.chip svg { color: var(--label-2); }
+
+.window {
+  border-radius: var(--radius-window);
+  overflow: hidden;
+  /* exhibits carry body copy  trade some transparency for HIG legibility */
+  background: rgba(16, 18, 24, 0.68);
+}
+.window::after { opacity: 0.45; }
+.titlebar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 16px;
+  border-bottom: 0.5px solid var(--sep);
+}
+.tl { width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; }
+.tl.r { background: #ff5f57; }
+.tl.y { background: #febc2e; }
+.tl.g { background: #28c840; }
+.win-title {
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--label-2);
+  white-space: nowrap;
+  /* never collide with the traffic lights on narrow screens */
+  max-width: calc(100% - 190px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.win-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  padding: 44px 48px;
+  align-items: center;
+}
+/* grid items default to min-width:auto — one nowrap row would blow the
+ * whole card past the viewport on mobile */
+.win-body > * { min-width: 0; }
+.win-body.flip .copy { order: 2; }
+.win-body.flip .demo { order: 1; }
+.win-body.single { grid-template-columns: 1fr; text-align: center; }
+.win-body.single .copy { max-width: 62ch; margin: 0 auto; }
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 12px;
+}
+.copy h2 {
+  font-size: clamp(26px, 3vw, 34px);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+.copy p {
+  overflow-wrap: break-word;
+  margin-top: 14px;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--label-2);
+}
+.copy ul {
+  margin-top: 16px;
+  list-style: none;
+  display: grid;
+  gap: 9px;
+}
+/* NOT flex: with mixed text nodes and inline elements (strong, badges),
+ * flex turns every fragment into its own wrapping column. The glyph is
+ * absolutely positioned and the text flows naturally. */
+.copy li {
+  position: relative;
+  padding-left: 25px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--label-2);
+}
+.copy li svg {
+  position: absolute;
+  left: 0;
+  top: 3px;
+  color: var(--green);
+}
+.copy code {
+  font: 12px/1.4 ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+  background: rgba(255, 255, 255, 0.09);
+  border-radius: 5px;
+  padding: 1px 6px;
+}
+
+/* demo panels inside windows */
+.demo-panel {
+  border-radius: 14px;
+  background: rgba(12, 13, 18, 0.5);
+  border: 0.5px solid var(--sep);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  padding: 14px;
+  font-size: 12px;
+}
+.demo-panel .lrow { padding: 6px 6px; }
+.demo-panel .crow { padding: 7px 6px; }
+
+.sparkline { margin-top: 10px; width: 100%; height: 56px; }
+.sparkline path { fill: none; stroke: var(--green); stroke-width: 1.6; }
+.sparkline .fill { fill: url(#sparkfill); stroke: none; opacity: 0.5; }
+
+.term {
+  font: 12px/1.75 ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+  color: var(--label-2);
+}
+.term .ok { color: var(--green); }
+.term .warn { color: var(--orange); }
+.term .path { color: var(--label); }
+.term .disc { color: var(--purple); }
+
+/* install */
+.dmg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(18px, 4vw, 44px);
+  padding: 34px 12px;
+}
+.dmg .slot { text-align: center; font-size: 12.5px; color: var(--label-2); }
+.dmg img { width: clamp(84px, 10vw, 116px); height: auto; margin: 0 auto 8px; }
+.dmg .dmg-arr { color: var(--label-2); }
+
+.steps {
+  margin-top: 18px;
+  display: grid;
+  gap: 10px;
+  counter-reset: step;
+}
+.steps li {
+  position: relative;
+  padding-left: 34px;
+  list-style: none;
+  font-size: 14px;
+  color: var(--label-2);
+  line-height: 1.55;
+}
+.steps li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(10, 132, 255, 0.22);
+  color: #79baff;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* final cta */
+.finale { text-align: center; padding: 90px 24px 70px; }
+.finale h2 {
+  font-size: clamp(34px, 4.6vw, 56px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.finale p { margin: 16px auto 0; max-width: 46ch; color: var(--label-2); font-size: 17px; line-height: 1.55; }
+.finale .hero-ctas { justify-content: center; }
+
+footer.site {
+  max-width: 1140px;
+  margin: 0 auto 34px;
+  padding: 18px 26px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--label-2);
+}
+footer.site .spacer { flex: 1; }
+/* links must be distinguishable without relying on color alone (a11y) */
+footer.site a {
+  color: var(--label);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(255, 255, 255, 0.35);
+}
+footer.site a:hover { text-decoration-color: currentColor; }
+
+/* ---------------------------------------------------------- responsive -- */
+
+@media (max-width: 1120px) {
+  .desktop { flex-direction: column; justify-content: center; align-items: flex-start; gap: 56px; padding-bottom: 130px; }
+  /* one alignment system everywhere: content sits left, like the desktop */
+  .popover { position: relative; top: 0; right: 0; transform-origin: center; }
+  .pop-arrow { display: none; }
+  .win-body { grid-template-columns: 1fr; gap: 30px; padding: 32px 28px; }
+  .win-body.flip .copy { order: 1; }
+  .win-body.flip .demo { order: 2; }
+}
+
+@media (max-width: 760px) {
+  .mb-desktop { display: none; }
+  .hero-copy h1 { font-size: clamp(42px, 12vw, 64px); }
+  .dock-item { width: 38px; height: 38px; }
+  /* keep the first six apps + Downloads & Trash so the shelf always fits */
+  .dock-item:nth-child(n + 7):not(:nth-last-child(-n + 2)) { display: none; }
+  .desktop { padding-inline: 20px; }
+  .popover { width: min(356px, 100%); }
+  .stage { padding-inline: 16px; }
+}
+
+@media (max-width: 430px) {
+  .dock-item { width: 34px; height: 34px; }
+  .dock-item:nth-child(n + 6):not(:nth-last-child(-n + 2)) { display: none; }
+}
+
+/* ------------------------------------------------------- reduced motion -- */
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .live-dot { animation: none; }
+  .spin { animation: none; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; }
+}

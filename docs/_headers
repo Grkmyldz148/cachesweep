@@ -1,0 +1,18 @@
+# Cloudflare Pages headers
+#
+# index.html is always revalidated; css/js carry ?v=<content-hash> from
+# index.html, so they can cache forever. Images bust by filename change.
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/img/*
+  Cache-Control: public, max-age=2592000, immutable
+
+/assets/css/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/js/*
+  Cache-Control: public, max-age=31536000, immutable

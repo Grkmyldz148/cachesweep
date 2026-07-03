@@ -1,0 +1,13 @@
+{
+  "name": "Cachesweep",
+  "short_name": "Cachesweep",
+  "description": "The menu-bar disk cleaner for macOS that shows you what's eating your space — live.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#10121a",
+  "theme_color": "#10121a",
+  "icons": [
+    { "src": "assets/img/app-icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/img/app-icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

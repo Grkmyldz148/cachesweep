@@ -1,0 +1,21 @@
+# Cachesweep
+
+> Cachesweep is a free, open-source (MIT) menu-bar disk cleaner for macOS 15+ that shows what is eating your disk space — live. It finds regenerable caches anywhere on disk (npm, Yarn, pnpm, Gradle, Xcode DerivedData, CocoaPods, pip, Homebrew, Ollama models, ~/.cache, Trash and more), watches file-system writes in real time via FSEvents, learns from what you clean, and reclaims space in one click.
+
+Key facts:
+
+- Platform: macOS 15 or later, Apple Silicon and Intel. Native Swift 6 / SwiftUI menu-bar app (LSUIElement, no Dock icon).
+- Smart discovery: instead of a hardcoded list, it finds cache-like folders via Spotlight (project manifests, CACHEDIR.TAG markers) and classifies what is safe to remove.
+- Live tracking: per-folder growth deltas and recency streamed from FSEvents; persistent growth history with sparklines across restarts.
+- Safety model: only clearly-safe, regenerable, idle caches are pre-selected. Data in active use is opt-in and never auto-picked. Destructive actions sit behind a confirmation dialog.
+- Accurate sizing: real on-disk allocation, so sparse files such as Docker.raw are measured honestly.
+- System areas: root-owned caches, pending updates and Time Machine snapshots are scanned only on request, behind a single administrator prompt.
+- Learning loop: cleaned locations are remembered, grow-back is detected, trusted kinds auto-promote. All data stays on-device.
+- Localized into 13 languages. Auto-updates via Sparkle (EdDSA-signed).
+- License: MIT. Author: Görkem Yıldız (https://gorkemyildiz.com).
+
+## Links
+
+- [Download the latest DMG](https://github.com/Grkmyldz148/cachesweep/releases/latest): signed installer image
+- [Source code on GitHub](https://github.com/Grkmyldz148/cachesweep): Swift package, build with `swift build`
+- [Report an issue](https://github.com/Grkmyldz148/cachesweep/issues)
