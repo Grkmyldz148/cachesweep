@@ -13,3 +13,10 @@ tools/preview/
 
 # macOS
 .DS_Store
+
+# Design source assets (Figma exports) — local only
+macbook-assets/
+
+# Wrangler state
+.wrangler/
+docs/.wrangler/
