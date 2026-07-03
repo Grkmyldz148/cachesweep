@@ -55,9 +55,8 @@ Cachesweep makes that **visible**, **explainable**, and **one-click reversible**
 1. Download **`Cachesweep-x.y.z.dmg`** from the
    [latest release](https://github.com/Grkmyldz148/cachesweep/releases/latest).
 2. Open it and drag **Cachesweep** onto **Applications**.
-3. First launch: right-click the app → **Open** (ad-hoc signed build; one time only).
-   On newer macOS, if it still refuses to open ("Apple could not verify…"):
-   System Settings → **Privacy & Security** → scroll down → **Open Anyway**.
+3. Launch it — builds are Developer ID-signed and notarized by Apple,
+   so it opens with a double-click. Updates install automatically via Sparkle.
 4. Grant **Full Disk Access** (System Settings → Privacy & Security) so it can
    scan `~/Library` fully.
 
@@ -148,7 +147,6 @@ The app's `SUFeedURL` points at `releases/latest/download/appcast.xml`, so users
 get new versions automatically. The signing private key lives in the
 `SPARKLE_PRIVATE_KEY` repository secret (public key embedded in Info.plist).
 
-> Builds are currently **ad-hoc signed** → first open needs right-click → Open.
 > Developer ID signing + notarization is on the roadmap for frictionless installs.
 
 ## Roadmap
