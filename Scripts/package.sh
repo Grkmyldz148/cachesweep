@@ -48,12 +48,30 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>SUFeedURL</key><string>$FEED</string>
   <key>SUPublicEDKey</key><string>$PUBKEY</string>
   <key>SUEnableAutomaticChecks</key><true/>
+  <key>SUAutomaticallyUpdate</key><true/>
   <key>SUScheduledCheckInterval</key><integer>86400</integer>
 </dict>
 </plist>
 PLIST
 
-echo "▶︎ Ad-hoc imzalama…"
-codesign --force --deep --sign - "$APP" 2>/dev/null || true
+echo "▶︎ İmzalama…"
+# Developer ID varsa gerçek imza (hardened runtime + timestamp), yoksa ad-hoc.
+IDENTITY="${CODESIGN_IDENTITY:-$(security find-identity -v -p codesigning 2>/dev/null | awk -F'"' '/Developer ID Application/{print $2; exit}')}"
+if [ -n "$IDENTITY" ]; then
+  echo "   Developer ID: $IDENTITY"
+  sign() { codesign --force --options runtime --timestamp --sign "$IDENTITY" "$@"; }
+  FW="$APP/Contents/Frameworks/Sparkle.framework"
+  # içten dışa: önce Sparkle'ın gömülü çalıştırılabilirleri (Sparkle 2 düzeni)
+  [ -e "$FW/Versions/B/XPCServices/Downloader.xpc" ] && sign --preserve-metadata=entitlements "$FW/Versions/B/XPCServices/Downloader.xpc"
+  [ -e "$FW/Versions/B/XPCServices/Installer.xpc" ]  && sign "$FW/Versions/B/XPCServices/Installer.xpc"
+  [ -e "$FW/Versions/B/Autoupdate" ]                 && sign "$FW/Versions/B/Autoupdate"
+  [ -e "$FW/Versions/B/Updater.app" ]                && sign "$FW/Versions/B/Updater.app"
+  sign "$FW"
+  sign "$APP"
+  codesign --verify --deep --strict "$APP" && echo "   ✓ imza doğrulandı"
+else
+  echo "   ⚠️  Developer ID sertifikası yok — ad-hoc imza (dağıtım için kullanma)"
+  codesign --force --deep --sign - "$APP" 2>/dev/null || true
+fi
 
 echo "✓ $APP  (v$VERSION)"

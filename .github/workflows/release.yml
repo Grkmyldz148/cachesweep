@@ -27,21 +27,30 @@ jobs:
             echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Build & package .app
-        run: bash Scripts/package.sh "${{ steps.ver.outputs.version }}"
-
-      - name: Zip (for Sparkle auto-update)
-        run: |
-          cd dist
-          ditto -c -k --keepParent Cachesweep.app "Cachesweep-${{ steps.ver.outputs.version }}.zip"
-
-      - name: Build DMG (for manual download)
-        run: bash Scripts/make_dmg.sh "${{ steps.ver.outputs.version }}"
-
-      - name: Sign update & generate appcast
+      - name: Import Developer ID certificate
         env:
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        run: |
+          KC="$RUNNER_TEMP/build.keychain-db"
+          security create-keychain -p ci-temp "$KC"
+          security set-keychain-settings -lut 21600 "$KC"
+          security unlock-keychain -p ci-temp "$KC"
+          echo "$MACOS_CERT_P12" | base64 -d > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KC" -P "$MACOS_CERT_PASSWORD" \
+            -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple: -s -k ci-temp "$KC" >/dev/null
+          security list-keychains -d user -s "$KC" login.keychain-db
+          rm -f "$RUNNER_TEMP/cert.p12"
+          security find-identity -v -p codesigning "$KC"
+
+      - name: Build, sign, notarize, staple (app + dmg) & appcast
+        env:
+          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+          NOTARY_TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
-        run: bash Scripts/make_appcast.sh "${{ steps.ver.outputs.version }}"
+        run: bash Scripts/release.sh "${{ steps.ver.outputs.version }}"
 
       - name: Create / update GitHub Release
         uses: softprops/action-gh-release@v2
