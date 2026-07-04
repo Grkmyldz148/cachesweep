@@ -5,6 +5,20 @@ import Foundation
 /// Settings) takes precedence and updates live.
 @MainActor
 enum Localizer {
+    /// The SwiftPM resource bundle. The generated `Bundle.module` accessor
+    /// only checks next to the executable and the *build directory* — not the
+    /// packaged app's Contents/Resources, where package.sh places it. On any
+    /// machine without the build tree that made `Bundle.module` trap at
+    /// launch. Resolve the real location first; keep `.module` for dev runs.
+    private static let resources: Bundle = {
+        if let url = Bundle.main.resourceURL?
+            .appendingPathComponent("Cachesweep_Cachesweep.bundle"),
+           let bundle = Bundle(url: url) {
+            return bundle
+        }
+        return .module
+    }()
+
     /// The active localization bundle (recomputed when the override changes).
     private(set) static var cached: Bundle = resolve(override: nil)
 
@@ -14,16 +28,16 @@ enum Localizer {
     }
 
     private static func resolve(override: String?) -> Bundle {
-        let available = Bundle.module.localizations
+        let available = resources.localizations
         let prefs = override.map { [$0] } ?? Locale.preferredLanguages
         for pref in prefs {
             if let match = bestMatch(pref, available),
-               let path = Bundle.module.path(forResource: match, ofType: "lproj"),
+               let path = resources.path(forResource: match, ofType: "lproj"),
                let localized = Bundle(path: path) {
                 return localized
             }
         }
-        return .module
+        return resources
     }
 
     /// Match "de-DE" / "pt-BR" / "zh-Hans-CN" against available codes,
