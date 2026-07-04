@@ -10,8 +10,8 @@ PUBKEY="DPfB2ibXtUxBqrHb3FBYwRpi66kARex0XPps4SB+cs0="
 FEED="https://github.com/Grkmyldz148/cachesweep/releases/latest/download/appcast.xml"
 
 echo "▶︎ Release derleniyor (v$VERSION)…"
-swift build -c release --package-path "$ROOT"
-BIN_DIR="$(swift build -c release --package-path "$ROOT" --show-bin-path)"
+swift build -c release --arch arm64 --arch x86_64 --package-path "$ROOT"
+BIN_DIR="$(swift build -c release --arch arm64 --arch x86_64 --package-path "$ROOT" --show-bin-path)"
 
 APP="$ROOT/dist/$APP_NAME.app"
 rm -rf "$APP"
