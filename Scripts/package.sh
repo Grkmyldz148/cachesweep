@@ -9,15 +9,20 @@ BUNDLE_ID="io.cachesweep.Cachesweep"
 PUBKEY="DPfB2ibXtUxBqrHb3FBYwRpi66kARex0XPps4SB+cs0="
 FEED="https://github.com/Grkmyldz148/cachesweep/releases/latest/download/appcast.xml"
 
-echo "▶︎ Release derleniyor (v$VERSION)…"
-swift build -c release --arch arm64 --arch x86_64 --package-path "$ROOT"
-BIN_DIR="$(swift build -c release --arch arm64 --arch x86_64 --package-path "$ROOT" --show-bin-path)"
+echo "▶︎ Release derleniyor (v$VERSION, arm64 + x86_64)…"
+# per-arch build + lipo: the combined --arch invocation trips a
+# "duplicate output file" SwiftDriver bug on some Xcode versions (CI runners)
+swift build -c release --triple arm64-apple-macosx --package-path "$ROOT"
+swift build -c release --triple x86_64-apple-macosx --package-path "$ROOT"
+BIN_ARM="$(swift build -c release --triple arm64-apple-macosx --package-path "$ROOT" --show-bin-path)"
+BIN_X86="$(swift build -c release --triple x86_64-apple-macosx --package-path "$ROOT" --show-bin-path)"
+BIN_DIR="$BIN_ARM"
 
 APP="$ROOT/dist/$APP_NAME.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Frameworks"
 
-cp "$BIN_DIR/$APP_NAME" "$APP/Contents/MacOS/$APP_NAME"
+lipo -create "$BIN_ARM/$APP_NAME" "$BIN_X86/$APP_NAME" -output "$APP/Contents/MacOS/$APP_NAME"
 cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 cp -R "$BIN_DIR/Sparkle.framework" "$APP/Contents/Frameworks/"
 
