@@ -147,7 +147,6 @@ The app's `SUFeedURL` points at `releases/latest/download/appcast.xml`, so users
 get new versions automatically. The signing private key lives in the
 `SPARKLE_PRIVATE_KEY` repository secret (public key embedded in Info.plist).
 
-> Developer ID signing + notarization is on the roadmap for frictionless installs.
 
 ## Roadmap
 
@@ -162,9 +161,9 @@ get new versions automatically. The signing private key lives in the
 - [x] Launch-at-login (`SMAppService`)
 - [x] Menu-bar reclaimable badge
 - [x] Unit tests + CI
-- [ ] Developer ID signing + notarization
-- [ ] SMAppService XPC helper (replaces the osascript admin prompt)
-- [ ] Liquid Glass polish (macOS 26 `.glassEffect`)
+- [x] Developer ID signing + notarization (CI ships signed, notarized, stapled releases)
+- [x] SMAppService XPC helper — root work over verified XPC, osascript stays as the pre-approval fallback
+- [x] Liquid Glass polish (macOS 26 glass button styles, graceful fallback)
 
 ## License
 
