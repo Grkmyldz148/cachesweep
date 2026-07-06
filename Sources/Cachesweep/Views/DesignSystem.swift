@@ -32,3 +32,29 @@ extension Safety {
         }
     }
 }
+
+// MARK: - Liquid Glass (macOS 26) with graceful fallback
+
+extension View {
+    /// Primary action chrome: Liquid Glass prominent on macOS 26,
+    /// borderedProminent elsewhere. (HIG: prefer the button styles over
+    /// applying .glassEffect directly to controls.)
+    @ViewBuilder
+    func prominentActionStyle() -> some View {
+        if #available(macOS 26.0, *) {
+            buttonStyle(.glassProminent)
+        } else {
+            buttonStyle(.borderedProminent)
+        }
+    }
+
+    /// Secondary action chrome: Liquid Glass on macOS 26, bordered elsewhere.
+    @ViewBuilder
+    func secondaryActionStyle() -> some View {
+        if #available(macOS 26.0, *) {
+            buttonStyle(.glass)
+        } else {
+            buttonStyle(.bordered)
+        }
+    }
+}

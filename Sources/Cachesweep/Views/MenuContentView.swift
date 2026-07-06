@@ -107,7 +107,7 @@ struct MenuContentView: View {
                 .frame(maxWidth: .infinity)
             }
             .controlSize(.large)
-            .buttonStyle(.borderedProminent)
+            .prominentActionStyle()
             .disabled(model.selectedCount == 0 || model.isCleaning || model.isScanning)
             .confirmationDialog(
                 Lf("clean.confirm.title", Int32(model.selectedCount), model.selectedReclaimable.fileSize),
@@ -179,6 +179,7 @@ struct MenuContentView: View {
                 }
             }
             .controlSize(.small)
+            .secondaryActionStyle()
         }
         .padding(DS.s3)
         .background(.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: DS.cardRadius))
@@ -217,6 +218,7 @@ struct MenuContentView: View {
                         Task { await model.scanSystemAreas() }
                     }
                     .controlSize(.small)
+                    .secondaryActionStyle()
                 }
             }
             .padding(.horizontal, DS.s4)
@@ -236,6 +238,7 @@ struct MenuContentView: View {
                         Text(L("system.clean"))
                             .frame(maxWidth: .infinity)
                     }
+                    .secondaryActionStyle()
                     .disabled(model.isSystemWorking)
                     .padding(.horizontal, DS.s4)
                     .padding(.vertical, DS.s2)
