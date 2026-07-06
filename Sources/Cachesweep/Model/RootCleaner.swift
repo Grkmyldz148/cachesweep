@@ -1,53 +1,48 @@
 import Foundation
+import CachesweepCore
 
-/// Root-owned "System Data" locations, scanned and cleaned through a one-shot
-/// administrator authorization (osascript `with administrator privileges`).
+/// Root-owned "System Data" locations, scanned and cleaned through the
+/// SMAppService XPC helper when it is registered and approved, falling back
+/// to a one-shot administrator authorization (osascript `with administrator
+/// privileges`) otherwise — so the feature works before approval and simply
+/// stops prompting for a password afterwards.
 ///
-/// Security model: a strict, hardcoded ALLOWLIST. Shell commands are composed
-/// only from the fixed paths below — never from user input or discovery.
-/// One password prompt per action (scan or clean), nothing runs silently.
-///
-/// TODO: upgrade to an SMAppService XPC helper once Developer ID signing lands.
+/// Security model: a strict, hardcoded ALLOWLIST, shared with the helper
+/// (`SystemAllowlist`). The helper only accepts entry ids — paths never cross
+/// the process boundary. The osascript fallback composes its commands from
+/// the same fixed table, never from user input or discovery.
 enum RootCleaner {
 
-    /// Curated root-owned locations that are safe to reclaim.
-    static let targets: [CleanTarget] = [
-        CleanTarget(id: "sys-root", name: "sys.root",
-                    detail: "/var/root (.gradle, .npm, Caches…)",
-                    symbol: "lock.shield",
-                    rawPaths: ["/private/var/root/Library/Caches",
-                               "/private/var/root/.gradle",
-                               "/private/var/root/.npm",
-                               "/private/var/root/.cache"],
-                    safety: .caution, strategy: .directory, needsAdmin: true),
-
-        CleanTarget(id: "sys-lib-caches", name: "sys.libcaches",
-                    detail: "/Library/Caches",
-                    symbol: "lock.shield",
-                    rawPaths: ["/Library/Caches"],
-                    safety: .caution, strategy: .contents, needsAdmin: true),
-
-        CleanTarget(id: "sys-updates", name: "sys.updates",
-                    detail: "/Library/Updates",
-                    symbol: "lock.shield",
-                    rawPaths: ["/Library/Updates"],
-                    safety: .caution, strategy: .contents, needsAdmin: true),
-
-        CleanTarget(id: "sys-lib-logs", name: "sys.syslogs",
-                    detail: "/Library/Logs",
-                    symbol: "lock.shield",
-                    rawPaths: ["/Library/Logs"],
-                    safety: .caution, strategy: .contents, needsAdmin: true),
-
-        CleanTarget(id: "sys-usrlocal", name: "sys.usrlocal",
-                    detail: "/usr/local/share/Library/Caches",
-                    symbol: "lock.shield",
-                    rawPaths: ["/usr/local/share/Library/Caches"],
-                    safety: .caution, strategy: .contents, needsAdmin: true),
+    /// Presentation metadata per allowlist id (the paths + strategy live in
+    /// `SystemAllowlist`, compiled into both the app and the helper).
+    private static let meta: [String: (name: String, detail: String)] = [
+        "sys-root": ("sys.root", "/var/root (.gradle, .npm, Caches…)"),
+        "sys-lib-caches": ("sys.libcaches", "/Library/Caches"),
+        "sys-updates": ("sys.updates", "/Library/Updates"),
+        "sys-lib-logs": ("sys.syslogs", "/Library/Logs"),
+        "sys-usrlocal": ("sys.usrlocal", "/usr/local/share/Library/Caches"),
     ]
 
-    /// One admin prompt: `du` every allowlisted path, return bytes per target id.
+    /// Curated root-owned locations that are safe to reclaim.
+    static let targets: [CleanTarget] = SystemAllowlist.entries.map { entry in
+        let m = meta[entry.id] ?? (entry.id, entry.paths.first ?? "")
+        return CleanTarget(id: entry.id, name: m.name,
+                           detail: m.detail,
+                           symbol: "lock.shield",
+                           rawPaths: entry.paths,
+                           safety: .caution,
+                           strategy: entry.strategy == .directory ? .directory : .contents,
+                           needsAdmin: true)
+    }
+
+    /// Sizes per target id — via the helper when available (no prompt),
+    /// otherwise one admin prompt for a `du` over the allowlist.
+    @MainActor
     static func scanSizes() async throws -> [String: UInt64] {
+        if let sizes = await HelperClient.shared.scanSizes() {
+            sweepDebug("🔒 sistem taraması helper üzerinden")
+            return sizes
+        }
         let paths = targets.flatMap(\.rawPaths)
         let quoted = paths.map { "'\($0)'" }.joined(separator: " ")
         let out = try await runPrivileged("/usr/bin/du -sk \(quoted) 2>/dev/null; exit 0")
@@ -64,14 +59,26 @@ enum RootCleaner {
         }
     }
 
-    /// One admin prompt: remove the chosen targets (allowlist paths only),
-    /// optionally deleting all local Time Machine snapshots in the same batch.
+    /// Remove the chosen targets (allowlist ids only), optionally deleting all
+    /// local Time Machine snapshots in the same batch. Helper first; one admin
+    /// prompt as fallback.
+    @MainActor
     static func clean(targets chosen: [CleanTarget], deleteSnapshots: Bool = false) async throws {
-        // Only ever operate on our own allowlist, whatever the caller passes.
-        let allowed = Set(targets.flatMap(\.rawPaths))
+        let validIDs = Set(targets.map(\.id))
+        let ids = chosen.map(\.id).filter(validIDs.contains)
+        guard !ids.isEmpty || deleteSnapshots else { return }
+
+        if try await HelperClient.shared.clean(ids: ids, deleteSnapshots: deleteSnapshots) {
+            sweepDebug("🔒 sistem temizliği helper üzerinden")
+            return
+        }
+
+        // Fallback: same table, one osascript admin prompt.
+        let byID = Dictionary(uniqueKeysWithValues: targets.map { ($0.id, $0) })
         var cmds: [String] = []
-        for t in chosen {
-            for p in t.rawPaths where allowed.contains(p) {
+        for id in ids {
+            guard let t = byID[id] else { continue }
+            for p in t.rawPaths {
                 switch t.strategy {
                 case .directory:
                     cmds.append("/bin/rm -rf '\(p)'")
@@ -106,7 +113,7 @@ enum RootCleaner {
         }.value
     }
 
-    // MARK: - Privileged runner
+    // MARK: - Privileged runner (fallback path)
 
     enum RootCleanerError: Error {
         case cancelled

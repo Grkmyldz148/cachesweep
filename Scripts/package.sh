@@ -23,6 +23,23 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Frameworks"
 
 lipo -create "$BIN_ARM/$APP_NAME" "$BIN_X86/$APP_NAME" -output "$APP/Contents/MacOS/$APP_NAME"
+
+# Root XPC helper (SMAppService daemon): binary + launchd plist in the bundle.
+HELPER="CachesweepHelper"
+mkdir -p "$APP/Contents/Library/LaunchDaemons"
+lipo -create "$BIN_ARM/$HELPER" "$BIN_X86/$HELPER" -output "$APP/Contents/MacOS/$HELPER"
+cat > "$APP/Contents/Library/LaunchDaemons/io.cachesweep.Helper.plist" <<HPLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>io.cachesweep.Helper</string>
+  <key>BundleProgram</key><string>Contents/MacOS/CachesweepHelper</string>
+  <key>MachServices</key><dict><key>io.cachesweep.Helper</key><true/></dict>
+  <key>AssociatedBundleIdentifiers</key><array><string>io.cachesweep.Cachesweep</string></array>
+</dict>
+</plist>
+HPLIST
 cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 cp -R "$BIN_DIR/Sparkle.framework" "$APP/Contents/Frameworks/"
 
@@ -65,6 +82,8 @@ IDENTITY="${CODESIGN_IDENTITY:-$(security find-identity -v -p codesigning 2>/dev
 if [ -n "$IDENTITY" ]; then
   echo "   Developer ID: $IDENTITY"
   sign() { codesign --force --options runtime --timestamp --sign "$IDENTITY" "$@"; }
+  # the root helper first (inside-out), with its own identifier
+  sign --identifier io.cachesweep.Helper "$APP/Contents/MacOS/CachesweepHelper"
   FW="$APP/Contents/Frameworks/Sparkle.framework"
   # içten dışa: önce Sparkle'ın gömülü çalıştırılabilirleri (Sparkle 2 düzeni)
   [ -e "$FW/Versions/B/XPCServices/Downloader.xpc" ] && sign --preserve-metadata=entitlements "$FW/Versions/B/XPCServices/Downloader.xpc"
