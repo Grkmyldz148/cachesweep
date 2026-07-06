@@ -14,7 +14,12 @@ enum Discovery {
 
     /// manifest filename → regenerable sibling dirs (proof: the manifest can rebuild them).
     static let manifestMap: [String: [String]] = [
-        "package.json":     ["node_modules", ".next", ".nuxt", ".turbo", ".parcel-cache", ".svelte-kit"],
+        "package.json":     ["node_modules", ".next", ".nuxt", ".turbo", ".parcel-cache", ".svelte-kit",
+                             ".angular", ".vite", ".expo"],
+        "Package.swift":    [".build"],
+        "Gemfile":          ["vendor/bundle"],
+        "requirements.txt": ["__pycache__", ".venv", "venv", ".pytest_cache"],
+        "mix.exs":          ["_build", "deps"],
         "Cargo.toml":       ["target"],
         "Podfile":          ["Pods"],
         "pubspec.yaml":     [".dart_tool"],
@@ -28,6 +33,15 @@ enum Discovery {
         "cache", "caches", ".cache", "tmp", "temp", "build", "dist", "target",
         "node_modules", "deriveddata", "__pycache__", ".gradle", "pods",
         ".next", ".nuxt", ".turbo", ".venv", "vendor", "logs", "cacheddata",
+        "code cache", "gpucache", "cachestorage", "shadercache", "cacheddata",
+        "dawngraphitecache", "dawnwebgpucache", "venv", "_build", ".build",
+    ]
+
+    /// Chromium/Electron per-app cache folders inside Application Support —
+    /// often the largest caches on a Mac, invisible to the Caches sweep.
+    static let electronCacheDirs = [
+        "Cache", "Code Cache", "GPUCache", "CacheStorage", "CachedData",
+        "ShaderCache", "DawnGraphiteCache", "DawnWebGPUCache",
     ]
 
     // MARK: Public entry
@@ -72,14 +86,14 @@ enum Discovery {
 
         for root in roots {
             // 1) CACHEDIR.TAG — the definitive "I am a cache" marker.
-            for tag in mdfind(["-onlyin", root, "-name", "CACHEDIR.TAG"]).prefix(2000) {
+            for tag in mdfind(["-onlyin", root, "-name", "CACHEDIR.TAG"]).prefix(6000) {
                 guard (tag as NSString).lastPathComponent == "CACHEDIR.TAG" else { continue }
                 consider((tag as NSString).deletingLastPathComponent, derived: true, hasTag: true, appleCaches: false)
             }
 
             // 2) Manifest-derived: a manifest proves its sibling outputs are regenerable.
             for (manifest, derivedDirs) in manifestMap {
-                for hit in mdfind(["-onlyin", root, "-name", manifest]).prefix(4000) {
+                for hit in mdfind(["-onlyin", root, "-name", manifest]).prefix(6000) {
                     guard (hit as NSString).lastPathComponent == manifest else { continue }
                     let dir = (hit as NSString).deletingLastPathComponent
                     if dir.contains("/node_modules/") || dir.contains("/.build/")
@@ -101,7 +115,22 @@ enum Discovery {
             }
         }
 
-        // 4) Leftovers from uninstalled apps — the opaque bulk of "System Data".
+        // 4) Electron/Chromium app caches + Group Container caches — big,
+        //    common, and outside ~/Library/Caches.
+        if roots.contains(home) {
+            let appSupport = "\(home)/Library/Application Support"
+            for app in (try? fm.contentsOfDirectory(atPath: appSupport)) ?? [] where !app.hasPrefix(".") {
+                for c in electronCacheDirs {
+                    consider("\(appSupport)/\(app)/\(c)", derived: false, hasTag: false, appleCaches: true)
+                }
+            }
+            let groups = "\(home)/Library/Group Containers"
+            for g in (try? fm.contentsOfDirectory(atPath: groups)) ?? [] where !g.hasPrefix(".") {
+                consider("\(groups)/\(g)/Library/Caches", derived: false, hasTag: false, appleCaches: true)
+            }
+        }
+
+        // 5) Leftovers from uninstalled apps — the opaque bulk of "System Data".
         //    Bundle-id-named folders in Application Support / Containers whose
         //    app no longer exists anywhere on the system.
         if roots.contains(home) {
@@ -119,7 +148,7 @@ enum Discovery {
                     leftovers.append((path, ageInDays(path, fm)))
                 }
                 // Stalest first; keep the list small — this is a hint, not a dragnet.
-                for l in leftovers.sorted(by: { ($0.age ?? 0) > ($1.age ?? 0) }).prefix(8) {
+                for l in leftovers.sorted(by: { ($0.age ?? 0) > ($1.age ?? 0) }).prefix(12) {
                     seen.insert(l.path)
                     scored.append((makeLeftoverTarget(l.path, age: l.age), 0.75))
                 }
@@ -137,7 +166,7 @@ enum Discovery {
         }
 
         // Strongest signals first, cap the fan-out.
-        return kept.sorted { $0.score > $1.score }.prefix(40).map(\.target)
+        return kept.sorted { $0.score > $1.score }.prefix(60).map(\.target)
     }
 
     // MARK: Classifier

@@ -110,6 +110,31 @@ struct CleanTarget: Identifiable, Sendable {
                     symbol: "iphone", rawPaths: ["~/Library/Developer/CoreSimulator/Caches"],
                     safety: .caution, strategy: .contents),
 
+        CleanTarget(id: "maven", name: "Maven Repository",
+                    detail: "~/.m2/repository",
+                    symbol: "shippingbox", rawPaths: ["~/.m2/repository"],
+                    safety: .safe, strategy: .directory),
+
+        CleanTarget(id: "gomod", name: "Go Cache",
+                    detail: "~/go/pkg/mod + go-build",
+                    symbol: "shippingbox", rawPaths: ["~/go/pkg/mod", "~/Library/Caches/go-build"],
+                    safety: .safe, strategy: .directory),
+
+        CleanTarget(id: "cargo", name: "Cargo Cache",
+                    detail: "~/.cargo/registry + git",
+                    symbol: "shippingbox", rawPaths: ["~/.cargo/registry", "~/.cargo/git"],
+                    safety: .safe, strategy: .directory),
+
+        CleanTarget(id: "bun", name: "Bun Cache",
+                    detail: "~/.bun/install/cache",
+                    symbol: "shippingbox", rawPaths: ["~/.bun/install/cache"],
+                    safety: .safe, strategy: .directory),
+
+        CleanTarget(id: "spm", name: "SwiftPM Cache",
+                    detail: "~/Library/Caches/org.swift.swiftpm",
+                    symbol: "shippingbox", rawPaths: ["~/Library/Caches/org.swift.swiftpm"],
+                    safety: .safe, strategy: .directory),
+
         CleanTarget(id: "pip", name: "pip Cache",
                     detail: "~/Library/Caches/pip",
                     symbol: "shippingbox", rawPaths: ["~/Library/Caches/pip"],
