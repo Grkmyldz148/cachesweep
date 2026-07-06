@@ -158,11 +158,8 @@ struct MenuContentView: View {
     private func rows(for cat: TargetCategory) -> [TargetState] {
         model.allStates
             .filter { $0.target.category == cat }
-            .filter { !($0.target.isDiscovered && $0.size == 0) }   // transient empties add noise
-            .sorted { a, b in
-                if (a.size == 0) != (b.size == 0) { return b.size == 0 }  // empties last
-                return a.size > b.size
-            }
+            .filter { $0.size > 0 }   // empties aren't options — don't render them
+            .sorted { $0.size > $1.size }
     }
 
     // MARK: Full Disk Access banner
@@ -227,7 +224,7 @@ struct MenuContentView: View {
             .padding(.bottom, DS.s2)
 
             if model.systemScanned {
-                ForEach(model.systemStates) { st in
+                ForEach(model.systemStates.filter { $0.size > 0 }) { st in
                     CategoryRow(state: st) { st.isSelected.toggle() }
                 }
                 if model.snapshotCount > 0 { snapshotRow }
