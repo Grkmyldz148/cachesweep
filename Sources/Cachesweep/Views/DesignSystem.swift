@@ -41,20 +41,30 @@ extension View {
     /// applying .glassEffect directly to controls.)
     @ViewBuilder
     func prominentActionStyle() -> some View {
+        // #available is a runtime check; the symbols also need a macOS 26 SDK
+        // at compile time (CI runners may build with an older Xcode).
+        #if compiler(>=6.2)
         if #available(macOS 26.0, *) {
             buttonStyle(.glassProminent)
         } else {
             buttonStyle(.borderedProminent)
         }
+        #else
+        buttonStyle(.borderedProminent)
+        #endif
     }
 
     /// Secondary action chrome: Liquid Glass on macOS 26, bordered elsewhere.
     @ViewBuilder
     func secondaryActionStyle() -> some View {
+        #if compiler(>=6.2)
         if #available(macOS 26.0, *) {
             buttonStyle(.glass)
         } else {
             buttonStyle(.bordered)
         }
+        #else
+        buttonStyle(.bordered)
+        #endif
     }
 }
