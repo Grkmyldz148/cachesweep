@@ -218,7 +218,10 @@ final class AppModel {
         for o in results.values { total.merge(o) }
         surfaceIfFailed(total)
         discoveryCache = nil          // cleaned folders must not reappear from cache
-        await scan()
+        // Drop the flag before rescanning — scan() guards on !isCleaning, so
+        // waiting for the defer would skip the refresh and freeze the sizes.
+        isCleaning = false
+        await scan(force: true)
     }
 
     // MARK: - System areas (admin)

@@ -117,3 +117,4 @@
 /* Clean failure alert */
 "clean.error.title" = "Bereinigung fehlgeschlagen";
 "clean.error.hint" = "%d Elemente konnten nicht gelöscht werden. macOS blockiert möglicherweise den Zugriff — gewähren Sie Festplattenvollzugriff in den Systemeinstellungen › Datenschutz & Sicherheit und versuchen Sie es erneut.";
+"section.selectAll" = "Alles in diesem Abschnitt aus-/abwählen";

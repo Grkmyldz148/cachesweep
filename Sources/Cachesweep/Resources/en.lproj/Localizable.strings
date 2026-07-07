@@ -117,3 +117,4 @@
 /* Clean failure alert */
 "clean.error.title" = "Could not clean";
 "clean.error.hint" = "%d items could not be deleted. macOS may be blocking access — grant Full Disk Access in System Settings › Privacy & Security, then try again.";
+"section.selectAll" = "Select all / none in this section";

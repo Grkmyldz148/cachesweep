@@ -117,3 +117,4 @@
 /* Clean failure alert */
 "clean.error.title" = "Temizlenemedi";
 "clean.error.hint" = "%d öğe silinemedi. macOS erişimi engelliyor olabilir — Sistem Ayarları › Gizlilik ve Güvenlik'ten Tam Disk Erişimi verin ve yeniden deneyin.";
+"section.selectAll" = "Bu bölümde tümünü seç / bırak";

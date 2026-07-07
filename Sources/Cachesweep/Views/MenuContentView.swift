@@ -154,7 +154,7 @@ struct MenuContentView: View {
                 ForEach(TargetCategory.allCases, id: \.self) { cat in
                     let rows = rows(for: cat)
                     if !rows.isEmpty {
-                        sectionHeader(cat.title)
+                        sectionHeader(cat.title, rows: rows)
                         ForEach(rows) { state in
                             CategoryRow(state: state) { state.isSelected.toggle() }
                             if state.id != rows.last?.id {
@@ -201,15 +201,33 @@ struct MenuContentView: View {
         .padding(.bottom, DS.s3)
     }
 
-    private func sectionHeader(_ title: String) -> some View {
-        Text(title)
-            .font(.caption2.weight(.semibold))
-            .tracking(0.5)
-            .foregroundStyle(.secondary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, DS.s4)
-            .padding(.top, DS.s3)
-            .padding(.bottom, DS.s1)
+    private func sectionHeader(_ title: String, rows: [TargetState] = []) -> some View {
+        HStack(spacing: DS.s2) {
+            Text(title)
+                .font(.caption2.weight(.semibold))
+                .tracking(0.5)
+                .foregroundStyle(.secondary)
+            Spacer()
+            if !rows.isEmpty {
+                let allOn = rows.allSatisfy(\.isSelected)
+                let noneOn = !rows.contains(where: \.isSelected)
+                Button {
+                    let target = !allOn
+                    for r in rows { r.isSelected = target }
+                } label: {
+                    Image(systemName: allOn ? "checkmark.circle.fill"
+                                     : noneOn ? "circle" : "minus.circle.fill")
+                        .font(.system(size: 13))
+                        .symbolRenderingMode(.hierarchical)
+                        .foregroundStyle(noneOn ? Color.secondary.opacity(0.5) : Color.accentColor)
+                }
+                .buttonStyle(.plain)
+                .help(L("section.selectAll"))
+            }
+        }
+        .padding(.horizontal, DS.s4)
+        .padding(.top, DS.s3)
+        .padding(.bottom, DS.s1)
     }
 
     // MARK: System areas (admin-gated)

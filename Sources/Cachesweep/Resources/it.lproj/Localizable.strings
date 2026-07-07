@@ -117,3 +117,4 @@
 /* Clean failure alert */
 "clean.error.title" = "Pulizia non riuscita";
 "clean.error.hint" = "%d elementi non sono stati eliminati. macOS potrebbe bloccare l'accesso: concedi Accesso completo al disco in Impostazioni di Sistema › Privacy e sicurezza e riprova.";
+"section.selectAll" = "Seleziona tutto / niente in questa sezione";

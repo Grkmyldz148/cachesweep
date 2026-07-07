@@ -117,3 +117,4 @@
 /* Clean failure alert */
 "clean.error.title" = "No se pudo limpiar";
 "clean.error.hint" = "%d elementos no se pudieron eliminar. Es posible que macOS esté bloqueando el acceso: conceda Acceso total al disco en Ajustes del Sistema › Privacidad y seguridad e inténtelo de nuevo.";
+"section.selectAll" = "Seleccionar todo / nada en esta sección";
