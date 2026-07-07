@@ -113,3 +113,7 @@
 "settings.launchAtLogin" = "ログイン時に起動";
 "notify.growth.title" = "ディスク増加";
 "notify.growth.body" = "%1$@ は今週 ▲%2$@ 増えました";
+
+/* Clean failure alert */
+"clean.error.title" = "クリーンアップできませんでした";
+"clean.error.hint" = "%d 個の項目を削除できませんでした。macOS がアクセスをブロックしている可能性があります。システム設定 › プライバシーとセキュリティで「フルディスクアクセス」を許可して、もう一度お試しください。";

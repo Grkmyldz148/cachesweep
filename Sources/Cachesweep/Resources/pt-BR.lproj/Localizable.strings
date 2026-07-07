@@ -113,3 +113,7 @@
 "settings.launchAtLogin" = "Abrir no login";
 "notify.growth.title" = "Crescimento do disco";
 "notify.growth.body" = "%1$@ cresceu ▲%2$@ esta semana";
+
+/* Clean failure alert */
+"clean.error.title" = "Não foi possível limpar";
+"clean.error.hint" = "%d itens não puderam ser apagados. O macOS pode estar bloqueando o acesso — conceda Acesso Total ao Disco em Ajustes do Sistema › Privacidade e Segurança e tente novamente.";

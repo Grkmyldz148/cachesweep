@@ -113,3 +113,7 @@
 "settings.launchAtLogin" = "تشغيل عند تسجيل الدخول";
 "notify.growth.title" = "نمو القرص";
 "notify.growth.body" = "زاد %1$@ بمقدار ▲%2$@ هذا الأسبوع";
+
+/* Clean failure alert */
+"clean.error.title" = "تعذّر التنظيف";
+"clean.error.hint" = "تعذّر حذف %d من العناصر. قد يحظر macOS الوصول — امنح «الوصول الكامل إلى القرص» في إعدادات النظام › الخصوصية والأمان ثم حاول مجددًا.";

@@ -35,6 +35,10 @@ final class AppModel {
     var lastFreed: UInt64 = 0
     var freeSpace: UInt64 = 0
 
+    /// Set when a clean action freed nothing because deletions failed —
+    /// drives the error alert (silent failure looks like a dead button).
+    var cleanError: String?
+
     // Smart discovery (Phase 1)
     var discovered: [TargetState] = []
 
@@ -193,23 +197,26 @@ final class AppModel {
             return t
         }
 
-        let results = await withTaskGroup(of: (String, UInt64).self) { group -> [String: UInt64] in
+        let results = await withTaskGroup(of: (String, CleanOutcome).self) { group -> [String: CleanOutcome] in
             for t in payload { group.addTask { (t.id, Cleaner.clean(t)) } }
-            var out: [String: UInt64] = [:]
-            for await (id, f) in group { out[id] = f }
+            var out: [String: CleanOutcome] = [:]
+            for await (id, o) in group { out[id] = o }
             return out
         }
 
         // Record "cleaned" only when bytes were actually freed (a permissions
         // failure should not count as evidence).
         for st in chosen where st.target.isDiscovered {
-            if (results[st.id] ?? 0) > 0, let p = st.target.expandedPaths.first {
+            if (results[st.id]?.freed ?? 0) > 0, let p = st.target.expandedPaths.first {
                 LearningStore.shared.recordCleaned(path: p)
             }
         }
 
         for state in chosen { state.isCleaning = false }
-        lastFreed = results.values.reduce(0, +)
+        lastFreed = results.values.reduce(0) { $0 + $1.freed }
+        var total = CleanOutcome()
+        for o in results.values { total.merge(o) }
+        surfaceIfFailed(total)
         discoveryCache = nil          // cleaned folders must not reappear from cache
         await scan()
     }
@@ -348,17 +355,27 @@ final class AppModel {
         let t = CleanTarget(id: "disc-\(entry.id)", name: entry.label, detail: entry.id,
                             symbol: entry.symbol, rawPaths: [entry.id],
                             safety: .caution, strategy: .contents)
-        let freed = await withTaskGroup(of: UInt64.self) { group -> UInt64 in
+        let outcome = await withTaskGroup(of: CleanOutcome.self) { group -> CleanOutcome in
             group.addTask { Cleaner.clean(t) }
-            var total: UInt64 = 0
-            for await f in group { total += f }
+            var total = CleanOutcome()
+            for await o in group { total.merge(o) }
             return total
         }
-        lastFreed = freed
+        lastFreed = outcome.freed
+        surfaceIfFailed(outcome)
         let newSize = await Scanner.size(of: [entry.id])
         entry.size = newSize
         entry.baseline = newSize
         refreshFreeSpace()
+    }
+
+    /// A clean that freed nothing but hit errors must not look like a dead
+    /// button — tell the user what happened (usually missing permissions).
+    private func surfaceIfFailed(_ outcome: CleanOutcome) {
+        guard outcome.freed == 0, outcome.failedCount > 0 else { return }
+        var message = Lf("clean.error.hint", Int32(outcome.failedCount))
+        if let detail = outcome.firstError { message += "\n\n" + detail }
+        cleanError = message
     }
 
     // MARK: - Disk

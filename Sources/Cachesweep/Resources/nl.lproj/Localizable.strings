@@ -113,3 +113,7 @@
 "settings.launchAtLogin" = "Start bij inloggen";
 "notify.growth.title" = "Schijfgroei";
 "notify.growth.body" = "%1$@ groeide deze week met ▲%2$@";
+
+/* Clean failure alert */
+"clean.error.title" = "Opschonen mislukt";
+"clean.error.hint" = "%d items konden niet worden verwijderd. macOS blokkeert mogelijk de toegang — geef Volledige schijftoegang in Systeeminstellingen › Privacy en beveiliging en probeer het opnieuw.";

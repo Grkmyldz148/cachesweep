@@ -113,3 +113,7 @@
 "settings.launchAtLogin" = "登录时启动";
 "notify.growth.title" = "磁盘增长";
 "notify.growth.body" = "%1$@ 本周增长了 ▲%2$@";
+
+/* Clean failure alert */
+"clean.error.title" = "无法清理";
+"clean.error.hint" = "%d 个项目无法删除。macOS 可能阻止了访问——请在“系统设置”›“隐私与安全性”中授予“完全磁盘访问权限”，然后重试。";

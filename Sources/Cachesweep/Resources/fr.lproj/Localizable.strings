@@ -113,3 +113,7 @@
 "settings.launchAtLogin" = "Ouvrir à la connexion";
 "notify.growth.title" = "Croissance du disque";
 "notify.growth.body" = "%1$@ a grossi de ▲%2$@ cette semaine";
+
+/* Clean failure alert */
+"clean.error.title" = "Nettoyage impossible";
+"clean.error.hint" = "%d éléments n'ont pas pu être supprimés. macOS bloque peut-être l'accès — accordez l'accès complet au disque dans Réglages Système › Confidentialité et sécurité, puis réessayez.";

@@ -113,3 +113,7 @@
 "settings.launchAtLogin" = "Bei Anmeldung starten";
 "notify.growth.title" = "Speicherwachstum";
 "notify.growth.body" = "%1$@ ist diese Woche um ▲%2$@ gewachsen";
+
+/* Clean failure alert */
+"clean.error.title" = "Bereinigung fehlgeschlagen";
+"clean.error.hint" = "%d Elemente konnten nicht gelöscht werden. macOS blockiert möglicherweise den Zugriff — gewähren Sie Festplattenvollzugriff in den Systemeinstellungen › Datenschutz & Sicherheit und versuchen Sie es erneut.";

@@ -27,15 +27,29 @@ struct MenuContentView: View {
                 get: { pendingDiscovery != nil },
                 set: { if !$0 { pendingDiscovery = nil } }
             ),
-            titleVisibility: .visible
-        ) {
+            titleVisibility: .visible,
+            // `presenting:` snapshots the entry for the action closures —
+            // reading `pendingDiscovery` there races with the isPresented
+            // binding, which some macOS versions reset before the action runs.
+            presenting: pendingDiscovery
+        ) { entry in
             Button(L("discovery.confirm.clean"), role: .destructive) {
-                if let e = pendingDiscovery { Task { await model.cleanDiscovered(e) } }
-                pendingDiscovery = nil
+                Task { await model.cleanDiscovered(entry) }
             }
-            Button(L("discovery.confirm.cancel"), role: .cancel) { pendingDiscovery = nil }
-        } message: {
+            Button(L("discovery.confirm.cancel"), role: .cancel) {}
+        } message: { _ in
             Text(L("discovery.confirm.message"))
+        }
+        .alert(
+            L("clean.error.title"),
+            isPresented: Binding(
+                get: { model.cleanError != nil },
+                set: { if !$0 { model.cleanError = nil } }
+            )
+        ) {
+            Button(L("welcome.ok"), role: .cancel) {}
+        } message: {
+            Text(model.cleanError ?? "")
         }
     }
 

@@ -113,3 +113,7 @@
 "settings.launchAtLogin" = "Apri all’accesso";
 "notify.growth.title" = "Crescita del disco";
 "notify.growth.body" = "%1$@ è cresciuto di ▲%2$@ questa settimana";
+
+/* Clean failure alert */
+"clean.error.title" = "Pulizia non riuscita";
+"clean.error.hint" = "%d elementi non sono stati eliminati. macOS potrebbe bloccare l'accesso: concedi Accesso completo al disco in Impostazioni di Sistema › Privacy e sicurezza e riprova.";
