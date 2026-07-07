@@ -218,10 +218,21 @@ final class AppModel {
         for o in results.values { total.merge(o) }
         surfaceIfFailed(total)
         discoveryCache = nil          // cleaned folders must not reappear from cache
-        // Drop the flag before rescanning — scan() guards on !isCleaning, so
-        // waiting for the defer would skip the refresh and freeze the sizes.
-        isCleaning = false
-        await scan(force: true)
+        // Re-size only what was cleaned — a full scan here (every target plus
+        // a discovery sweep) kept the spinner going long after deletion ended.
+        // The popover triggers a full scan on next open anyway.
+        await withTaskGroup(of: (String, UInt64).self) { group in
+            for st in chosen {
+                let id = st.target.id
+                let paths = allowedPaths(st.target)
+                group.addTask { (id, await Scanner.size(of: paths)) }
+            }
+            for await (id, size) in group {
+                chosen.first(where: { $0.id == id })?.size = size
+            }
+        }
+        refreshFreeSpace()
+        onTotalsChanged?()
     }
 
     // MARK: - System areas (admin)

@@ -4,6 +4,7 @@ import ServiceManagement
 
 struct SettingsView: View {
     private let settings = AppSettings.shared
+    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
 
     private static let languages: [(code: String, name: String)] = [
         ("en", "English"), ("tr", "Türkçe"), ("de", "Deutsch"), ("fr", "Français"),
@@ -27,13 +28,27 @@ struct SettingsView: View {
                 .labelsHidden()
                 .pickerStyle(.menu)
 
+                // Backed by @State — a computed binding never invalidates the
+                // view, so the toggle stayed off even after a successful
+                // register(). Re-read the real status after each change.
                 Toggle(L("settings.launchAtLogin"), isOn: Binding(
-                    get: { SMAppService.mainApp.status == .enabled },
+                    get: { launchAtLogin },
                     set: { on in
-                        if on { try? SMAppService.mainApp.register() }
-                        else { try? SMAppService.mainApp.unregister() }
+                        do {
+                            if on { try SMAppService.mainApp.register() }
+                            else { try SMAppService.mainApp.unregister() }
+                        } catch {
+                            sweepDebug("login item: \(error)")
+                        }
+                        let status = SMAppService.mainApp.status
+                        launchAtLogin = status == .enabled
+                        // macOS queued it pending user approval — take them there.
+                        if on, status == .requiresApproval {
+                            SMAppService.openSystemSettingsLoginItems()
+                        }
                     }
                 ))
+                .onAppear { launchAtLogin = SMAppService.mainApp.status == .enabled }
             } header: {
                 Text(L("settings.language"))
             }
