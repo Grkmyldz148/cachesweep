@@ -92,6 +92,7 @@
 "category.dev" = "КЭШИ РАЗРАБОТЧИКА";
 "category.app" = "КЭШИ ПРИЛОЖЕНИЙ";
 "category.leftovers" = "ОСТАТКИ ПРИЛОЖЕНИЙ";
+"category.ai" = "ДАННЫЕ ИИ-ИНСТРУМЕНТОВ";
 "category.other" = "ПРОЧЕЕ";
 
 /* Seeds, system, FDA, login, notify */
@@ -107,6 +108,7 @@
 "sys.syslogs" = "Системные журналы";
 "sys.usrlocal" = "Старые кэши пакетов (usr/local)";
 "sys.snapshots" = "Снимки Time Machine";
+"sys.orphans" = "Призрачные данные (извлечённые диски)";
 "fda.title" = "Нужен полный доступ к диску";
 "fda.message" = "Без него ~/Library не сканируется полностью. Дайте доступ и перезапустите приложение.";
 "fda.open" = "Открыть настройки";

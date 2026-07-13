@@ -24,13 +24,15 @@ enum TargetCategory: Int, CaseIterable, Sendable {
     case devCaches   // package managers & build outputs
     case appCaches   // per-app caches under ~/Library/Caches
     case leftovers   // remains of uninstalled apps
-    case other       // models, logs, trash
+    case aiData      // AI tool bulk data: models, VM images, session stores
+    case other       // logs, trash
 
     @MainActor var title: String {
         switch self {
         case .devCaches: return L("category.dev")
         case .appCaches: return L("category.app")
         case .leftovers: return L("category.leftovers")
+        case .aiData:    return L("category.ai")
         case .other:     return L("category.other")
         }
     }
@@ -150,10 +152,29 @@ struct CleanTarget: Identifiable, Sendable {
                     symbol: "mug", rawPaths: ["~/Library/Caches/Homebrew"],
                     safety: .safe, strategy: .contents),
 
+        // AI tool bulk data: never preselected (.caution). Models and VM
+        // images re-download on demand; session stores are past-conversation
+        // logs the tools keep forever and never prune.
         CleanTarget(id: "ollama", name: "seed.ollama",
                     detail: "~/.ollama/models",
                     symbol: "brain", rawPaths: ["~/.ollama/models"],
-                    safety: .caution, strategy: .directory, category: .other),
+                    safety: .caution, strategy: .directory, category: .aiData),
+
+        CleanTarget(id: "claude-vm", name: "Claude VM Bundles",
+                    detail: "~/Library/Application Support/Claude/vm_bundles",
+                    symbol: "cube.box",
+                    rawPaths: ["~/Library/Application Support/Claude/vm_bundles"],
+                    safety: .caution, strategy: .directory, category: .aiData),
+
+        CleanTarget(id: "grok-sessions", name: "Grok CLI Sessions",
+                    detail: "~/.grok/sessions",
+                    symbol: "text.bubble", rawPaths: ["~/.grok/sessions"],
+                    safety: .caution, strategy: .contents, category: .aiData),
+
+        CleanTarget(id: "codex-sessions", name: "Codex CLI Sessions",
+                    detail: "~/.codex/sessions",
+                    symbol: "text.bubble", rawPaths: ["~/.codex/sessions"],
+                    safety: .caution, strategy: .contents, category: .aiData),
 
         CleanTarget(id: "logs", name: "seed.logs",
                     detail: "~/Library/Logs",

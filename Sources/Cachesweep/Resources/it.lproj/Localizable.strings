@@ -92,6 +92,7 @@
 "category.dev" = "CACHE SVILUPPO";
 "category.app" = "CACHE APP";
 "category.leftovers" = "RESIDUI DI APP";
+"category.ai" = "DATI DEGLI STRUMENTI IA";
 "category.other" = "ALTRO";
 
 /* Seeds, system, FDA, login, notify */
@@ -107,6 +108,7 @@
 "sys.syslogs" = "Log di sistema";
 "sys.usrlocal" = "Vecchie cache di pacchetti (usr/local)";
 "sys.snapshots" = "Istantanee Time Machine";
+"sys.orphans" = "Dati fantasma (dischi espulsi)";
 "fda.title" = "Serve Accesso completo al disco";
 "fda.message" = "Senza, ~/Library non può essere analizzata completamente. Concedi l’accesso e riapri l’app.";
 "fda.open" = "Apri Impostazioni";

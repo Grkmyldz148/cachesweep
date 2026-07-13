@@ -92,6 +92,7 @@
 "category.dev" = "개발 캐시";
 "category.app" = "앱 캐시";
 "category.leftovers" = "앱 잔여물";
+"category.ai" = "AI 도구 데이터";
 "category.other" = "기타";
 
 /* Seeds, system, FDA, login, notify */
@@ -107,6 +108,7 @@
 "sys.syslogs" = "시스템 로그";
 "sys.usrlocal" = "오래된 패키지 캐시 (usr/local)";
 "sys.snapshots" = "Time Machine 스냅샷";
+"sys.orphans" = "고스트 데이터 (분리된 디스크)";
 "fda.title" = "전체 디스크 접근 권한 필요";
 "fda.message" = "없으면 ~/Library를 완전히 스캔할 수 없습니다. 권한을 부여한 후 앱을 다시 여세요.";
 "fda.open" = "설정 열기";

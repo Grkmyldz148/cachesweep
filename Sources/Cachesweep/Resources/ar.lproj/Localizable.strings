@@ -92,6 +92,7 @@
 "category.dev" = "ذواكر المطور";
 "category.app" = "ذواكر التطبيقات";
 "category.leftovers" = "بقايا التطبيقات";
+"category.ai" = "بيانات أدوات الذكاء الاصطناعي";
 "category.other" = "أخرى";
 
 /* Seeds, system, FDA, login, notify */
@@ -107,6 +108,7 @@
 "sys.syslogs" = "سجلات النظام";
 "sys.usrlocal" = "ذواكر حزم قديمة (usr/local)";
 "sys.snapshots" = "لقطات Time Machine";
+"sys.orphans" = "بيانات شبحية (أقراص مُخرجة)";
 "fda.title" = "مطلوب صلاحية الوصول الكامل للقرص";
 "fda.message" = "بدونها لا يمكن فحص ~/Library بالكامل. امنح الصلاحية ثم أعد فتح التطبيق.";
 "fda.open" = "افتح الإعدادات";

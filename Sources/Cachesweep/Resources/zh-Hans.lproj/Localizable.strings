@@ -92,6 +92,7 @@
 "category.dev" = "开发缓存";
 "category.app" = "应用缓存";
 "category.leftovers" = "应用残留";
+"category.ai" = "AI 工具数据";
 "category.other" = "其他";
 
 /* Seeds, system, FDA, login, notify */
@@ -107,6 +108,7 @@
 "sys.syslogs" = "系统日志";
 "sys.usrlocal" = "旧软件包缓存 (usr/local)";
 "sys.snapshots" = "时间机器快照";
+"sys.orphans" = "幽灵数据（已推出的磁盘）";
 "fda.title" = "需要完全磁盘访问权限";
 "fda.message" = "否则无法完整扫描 ~/Library。授予权限后请重新打开应用。";
 "fda.open" = "打开设置";

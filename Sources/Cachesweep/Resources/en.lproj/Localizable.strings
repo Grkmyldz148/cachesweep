@@ -92,6 +92,7 @@
 "category.dev" = "DEVELOPER CACHES";
 "category.app" = "APP CACHES";
 "category.leftovers" = "APP LEFTOVERS";
+"category.ai" = "AI TOOL DATA";
 "category.other" = "OTHER";
 
 /* Seeds, system, FDA, login, notify */
@@ -107,6 +108,7 @@
 "sys.syslogs" = "System Logs";
 "sys.usrlocal" = "Old Package Caches (usr/local)";
 "sys.snapshots" = "Time Machine Snapshots";
+"sys.orphans" = "Ghost Data (Ejected Disks)";
 "fda.title" = "Full Disk Access needed";
 "fda.message" = "Without it, ~/Library cannot be scanned fully. Grant access, then relaunch the app.";
 "fda.open" = "Open Settings";

@@ -92,6 +92,7 @@
 "category.dev" = "ENTWICKLER-CACHES";
 "category.app" = "APP-CACHES";
 "category.leftovers" = "APP-ÜBERRESTE";
+"category.ai" = "KI-TOOL-DATEN";
 "category.other" = "SONSTIGES";
 
 /* Seeds, system, FDA, login, notify */
@@ -107,6 +108,7 @@
 "sys.syslogs" = "Systemprotokolle";
 "sys.usrlocal" = "Alte Paket-Caches (usr/local)";
 "sys.snapshots" = "Time Machine-Schnappschüsse";
+"sys.orphans" = "Geisterdaten (ausgeworfene Volumes)";
 "fda.title" = "Voller Festplattenzugriff nötig";
 "fda.message" = "Ohne ihn kann ~/Library nicht vollständig gescannt werden. Zugriff gewähren und App neu starten.";
 "fda.open" = "Einstellungen öffnen";

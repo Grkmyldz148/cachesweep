@@ -18,6 +18,8 @@ final class HelperService: NSObject, CachesweepHelperProtocol {
         for entry in SystemAllowlist.entries {
             sizes[entry.id] = entry.paths.reduce(0) { $0 + Self.sizeOf($1) }
         }
+        sizes[SystemAllowlist.orphanVolumesID] = OrphanVolumes.orphanDirectories()
+            .reduce(0) { $0 + Self.sizeOf($1) }
         reply((try? JSONEncoder().encode(sizes)) ?? Data())
     }
 
@@ -41,6 +43,19 @@ final class HelperService: NSObject, CachesweepHelperProtocol {
                     }
                 } catch {
                     if firstError == nil { firstError = "\(path): \(error.localizedDescription)" }
+                }
+            }
+        }
+
+        if wanted.contains(SystemAllowlist.orphanVolumesID) {
+            for dir in OrphanVolumes.orphanDirectories() {
+                // The disk may have been mounted since the scan; deleting the
+                // path would then hit the real volume. Re-check right before.
+                guard OrphanVolumes.isStillOrphan(dir) else { continue }
+                do {
+                    try fm.removeItem(atPath: dir)
+                } catch {
+                    if firstError == nil { firstError = "\(dir): \(error.localizedDescription)" }
                 }
             }
         }

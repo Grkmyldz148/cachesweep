@@ -92,6 +92,7 @@
 "category.dev" = "開発キャッシュ";
 "category.app" = "アプリキャッシュ";
 "category.leftovers" = "アプリの残留物";
+"category.ai" = "AIツールのデータ";
 "category.other" = "その他";
 
 /* Seeds, system, FDA, login, notify */
@@ -107,6 +108,7 @@
 "sys.syslogs" = "システムログ";
 "sys.usrlocal" = "古いパッケージキャッシュ (usr/local)";
 "sys.snapshots" = "Time Machine スナップショット";
+"sys.orphans" = "ゴーストデータ（取り出したディスク）";
 "fda.title" = "フルディスクアクセスが必要です";
 "fda.message" = "ないと ~/Library を完全にスキャンできません。許可してからアプリを再起動してください。";
 "fda.open" = "設定を開く";

@@ -1,4 +1,5 @@
 import XCTest
+import CachesweepCore
 @testable import Cachesweep
 
 final class BucketsTests: XCTestCase {
@@ -70,6 +71,32 @@ final class RootCleanerTests: XCTestCase {
                 XCTAssertFalse(p.hasPrefix(home), "system allowlist must not include \(p)")
             }
         }
+    }
+}
+
+final class OrphanVolumesTests: XCTestCase {
+    func testMountedVolumesAreNeverOrphans() {
+        // Anything currently mounted must never be offered for deletion.
+        let mounted = FileManager.default.mountedVolumeURLs(
+            includingResourceValuesForKeys: nil, options: []) ?? []
+        let orphans = Set(OrphanVolumes.orphanDirectories())
+        for url in mounted {
+            XCTAssertFalse(orphans.contains(url.path), "\(url.path) is mounted")
+        }
+    }
+
+    func testOrphansAreDirectChildrenOfVolumes() {
+        for p in OrphanVolumes.orphanDirectories() {
+            XCTAssertTrue(p.hasPrefix("/Volumes/"), p)
+            XCTAssertFalse(p.dropFirst("/Volumes/".count).contains("/"), p)
+        }
+    }
+
+    func testIsStillOrphanRejectsForeignPaths() {
+        XCTAssertFalse(OrphanVolumes.isStillOrphan("/tmp"))
+        XCTAssertFalse(OrphanVolumes.isStillOrphan("/Volumes"))
+        XCTAssertFalse(OrphanVolumes.isStillOrphan("/Volumes/a/b"))
+        XCTAssertFalse(OrphanVolumes.isStillOrphan(NSHomeDirectory()))
     }
 }
 

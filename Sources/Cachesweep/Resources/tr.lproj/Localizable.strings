@@ -92,6 +92,7 @@
 "category.dev" = "GELİŞTİRİCİ CACHE’LERİ";
 "category.app" = "UYGULAMA CACHE’LERİ";
 "category.leftovers" = "UYGULAMA KALINTILARI";
+"category.ai" = "AI ARAÇ VERİLERİ";
 "category.other" = "DİĞER";
 
 /* Seeds, system, FDA, login, notify */
@@ -107,6 +108,7 @@
 "sys.syslogs" = "Sistem Logları";
 "sys.usrlocal" = "Eski Paket Cache’leri (usr/local)";
 "sys.snapshots" = "Time Machine Anlık Kopyaları";
+"sys.orphans" = "Hayalet Disk Verisi (Çıkarılmış Diskler)";
 "fda.title" = "Tam Disk Erişimi gerekli";
 "fda.message" = "Verilmezse ~/Library tam taranamaz. İzni verin, sonra uygulamayı yeniden açın.";
 "fda.open" = "Ayarları Aç";

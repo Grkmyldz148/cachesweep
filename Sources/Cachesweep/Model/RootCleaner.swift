@@ -23,7 +23,10 @@ enum RootCleaner {
         "sys-usrlocal": ("sys.usrlocal", "/usr/local/share/Library/Caches"),
     ]
 
-    /// Curated root-owned locations that are safe to reclaim.
+    /// Curated root-owned locations that are safe to reclaim, plus the
+    /// dynamic "ghost data" entry: directories under /Volumes that are not
+    /// mount points but hold data (written while a disk was ejected). Its
+    /// paths are computed at scan/clean time, never stored here.
     static let targets: [CleanTarget] = SystemAllowlist.entries.map { entry in
         let m = meta[entry.id] ?? (entry.id, entry.paths.first ?? "")
         return CleanTarget(id: entry.id, name: m.name,
@@ -33,7 +36,13 @@ enum RootCleaner {
                            safety: .caution,
                            strategy: entry.strategy == .directory ? .directory : .contents,
                            needsAdmin: true)
-    }
+    } + [
+        CleanTarget(id: SystemAllowlist.orphanVolumesID, name: "sys.orphans",
+                    detail: "/Volumes/*",
+                    symbol: "externaldrive.badge.xmark",
+                    rawPaths: [],
+                    safety: .caution, strategy: .directory, needsAdmin: true)
+    ]
 
     /// Sizes per target id — via the helper when available (no prompt),
     /// otherwise one admin prompt for a `du` over the allowlist.
@@ -43,8 +52,9 @@ enum RootCleaner {
             sweepDebug("🔒 sistem taraması helper üzerinden")
             return sizes
         }
-        let paths = targets.flatMap(\.rawPaths)
-        let quoted = paths.map { "'\($0)'" }.joined(separator: " ")
+        let orphans = OrphanVolumes.orphanDirectories()
+        let paths = targets.flatMap(\.rawPaths) + orphans
+        let quoted = paths.map(shellQuote).joined(separator: " ")
         let out = try await runPrivileged("/usr/bin/du -sk \(quoted) 2>/dev/null; exit 0")
 
         var perPath: [String: UInt64] = [:]
@@ -54,9 +64,11 @@ enum RootCleaner {
                   let kb = UInt64(parts[0].trimmingCharacters(in: .whitespaces)) else { continue }
             perPath[String(parts[1])] = kb * 1024
         }
-        return targets.reduce(into: [:]) { acc, t in
+        var sizes: [String: UInt64] = targets.reduce(into: [:]) { acc, t in
             acc[t.id] = t.rawPaths.reduce(0) { $0 + (perPath[$1] ?? 0) }
         }
+        sizes[SystemAllowlist.orphanVolumesID] = orphans.reduce(0) { $0 + (perPath[$1] ?? 0) }
+        return sizes
     }
 
     /// Remove the chosen targets (allowlist ids only), optionally deleting all
@@ -77,6 +89,15 @@ enum RootCleaner {
         let byID = Dictionary(uniqueKeysWithValues: targets.map { ($0.id, $0) })
         var cmds: [String] = []
         for id in ids {
+            if id == SystemAllowlist.orphanVolumesID {
+                for dir in OrphanVolumes.orphanDirectories() {
+                    let q = shellQuote(dir)
+                    // Refuse if the disk was mounted since the scan: a mount
+                    // point sits on its own device, unlike /Volumes itself.
+                    cmds.append("[ \"$(/usr/bin/stat -f%d \(q))\" = \"$(/usr/bin/stat -f%d /Volumes)\" ] && /bin/rm -rf \(q)")
+                }
+                continue
+            }
             guard let t = byID[id] else { continue }
             for p in t.rawPaths {
                 switch t.strategy {
@@ -111,6 +132,12 @@ enum RootCleaner {
                 .filter { $0.contains("com.apple.TimeMachine") }
                 .count
         }.value
+    }
+
+    /// Single-quote for /bin/sh. Allowlist paths are fixed and quote-free,
+    /// but orphan volume names come from disk labels: spaces and quotes.
+    private static func shellQuote(_ s: String) -> String {
+        "'" + s.replacingOccurrences(of: "'", with: "'\\''") + "'"
     }
 
     // MARK: - Privileged runner (fallback path)

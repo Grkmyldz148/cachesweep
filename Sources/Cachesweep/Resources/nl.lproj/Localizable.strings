@@ -92,6 +92,7 @@
 "category.dev" = "ONTWIKKELAARSCACHES";
 "category.app" = "APP-CACHES";
 "category.leftovers" = "APP-RESTANTEN";
+"category.ai" = "AI-TOOLGEGEVENS";
 "category.other" = "OVERIG";
 
 /* Seeds, system, FDA, login, notify */
@@ -107,6 +108,7 @@
 "sys.syslogs" = "Systeemlogboeken";
 "sys.usrlocal" = "Oude pakketcaches (usr/local)";
 "sys.snapshots" = "Time Machine-momentopnamen";
+"sys.orphans" = "Spookdata (uitgeworpen schijven)";
 "fda.title" = "Volledige schijftoegang vereist";
 "fda.message" = "Zonder kan ~/Library niet volledig worden gescand. Verleen toegang en herstart de app.";
 "fda.open" = "Open Instellingen";

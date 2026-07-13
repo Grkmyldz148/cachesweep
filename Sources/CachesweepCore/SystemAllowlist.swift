@@ -7,7 +7,12 @@ import Foundation
 public enum SystemAllowlist {
 
     public static let machService = "io.cachesweep.Helper"
-    public static let helperVersion = "1"
+    public static let helperVersion = "2"
+
+    /// Dynamic entry: ghost data under /Volumes (see `OrphanVolumes`). Only
+    /// the id crosses the XPC boundary; the helper recomputes the paths
+    /// itself, so the "no caller-supplied paths" guarantee still holds.
+    public static let orphanVolumesID = "sys-orphan-volumes"
 
     /// Code-signing requirement the helper enforces on connecting clients.
     public static let clientRequirement =
