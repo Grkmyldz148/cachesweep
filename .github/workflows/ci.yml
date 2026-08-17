@@ -9,6 +9,52 @@ jobs:
   test:
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build & test
         run: swift test
+
+      # `swift test` never touches the bundle, so until this existed the
+      # packaging path was first exercised by release.yml — which only runs on
+      # a version tag, i.e. during the release itself, after notarising and
+      # while publishing the appcast that every installed copy polls. A
+      # dependency bump that broke packaging stayed invisible until then.
+      #
+      # No Developer ID here: package.sh falls back to ad-hoc signing without
+      # one, which still exercises every step and passes strict verification.
+      - name: Package smoke test
+        run: |
+          set -euo pipefail
+          bash Scripts/package.sh 0.0.0-ci
+          APP=dist/Cachesweep.app
+
+          # lipo produced a real universal binary
+          archs="$(lipo -archs "$APP/Contents/MacOS/Cachesweep")"
+          for arch in arm64 x86_64; do
+            case "$archs" in *"$arch"*) ;; *) echo "::error::$arch missing ($archs)"; exit 1;; esac
+          done
+
+          # Everything the bundle needs to actually run, and the four nested
+          # Sparkle executables package.sh signs one by one — a Sparkle
+          # release that moves any of them would otherwise ship unsigned
+          # components, and only fail once users' updaters reached for them.
+          FW="$APP/Contents/Frameworks/Sparkle.framework"
+          for path in \
+            "$APP/Contents/MacOS/CachesweepHelper" \
+            "$APP/Contents/Library/LaunchDaemons/io.cachesweep.Helper.plist" \
+            "$APP/Contents/Resources/Cachesweep_Cachesweep.bundle" \
+            "$APP/Contents/Resources/AppIcon.icns" \
+            "$FW/Versions/B/XPCServices/Downloader.xpc" \
+            "$FW/Versions/B/XPCServices/Installer.xpc" \
+            "$FW/Versions/B/Autoupdate" \
+            "$FW/Versions/B/Updater.app"
+          do
+            [ -e "$path" ] || { echo "::error::missing $path"; exit 1; }
+          done
+
+          # The Sparkle feed and key have to survive into Info.plist, or the
+          # app ships unable to update itself.
+          /usr/libexec/PlistBuddy -c "Print :SUFeedURL" "$APP/Contents/Info.plist" >/dev/null
+          /usr/libexec/PlistBuddy -c "Print :SUPublicEDKey" "$APP/Contents/Info.plist" >/dev/null
+
+          codesign --verify --deep --strict "$APP"
+          echo "✓ bundle packaged, structured and signed"

@@ -120,3 +120,29 @@
 "clean.error.title" = "정리할 수 없음";
 "clean.error.hint" = "%d개 항목을 삭제할 수 없습니다. macOS가 접근을 차단하고 있을 수 있습니다. 시스템 설정 › 개인정보 보호 및 보안에서 '전체 디스크 접근 권한'을 허용한 후 다시 시도하세요.";
 "section.selectAll" = "이 섹션 모두 선택 / 해제";
+
+/* Invisible space */
+"invisible.title" = "보이지 않는 공간";
+"invisible.help" = "파일 검사로는 볼 수 없는 공간입니다. 스왑, 업데이트 준비 데이터, 봉인된 시스템 등 macOS가 파일 밖에서 관리합니다.";
+"invisible.swap" = "스왑(가상 메모리)";
+"invisible.swap.detail" = "VM 볼륨 · 재시동하면 비워짐";
+"invisible.boot" = "부팅 및 업데이트 파일";
+"invisible.boot.detail" = "Preboot + Update 볼륨";
+"invisible.system" = "macOS 시스템";
+"invisible.system.detail" = "System + Recovery(봉인됨)";
+"invisible.purgeable" = "제거 가능한 공간";
+"invisible.purgeable.detail" = "필요할 때 macOS가 자동으로 비움";
+"invisible.pending.title" = "완료되지 않은 macOS 업데이트";
+"invisible.pending.message" = "업데이트가 준비되었지만 설치되지 않았습니다. 완료될 때까지 스냅샷과 업데이트 공간을 점유합니다.";
+"invisible.pending.open" = "소프트웨어 업데이트…";
+
+/* Space that lives outside the home folder */
+"seed.usercache" = "임시 시스템 캐시";
+"seed.installers" = "오래된 설치 파일";
+"sys.simcaches" = "시뮬레이터 캐시";
+
+/* Unscanned disk advisor */
+"root.suggest.title" = "‘%@’은(는) 검사 대상이 아닙니다";
+"root.suggest.message" = "이 디스크에서 프로젝트 흔적 %d개를 찾았습니다";
+"root.suggest.add" = "검사";
+"root.suggest.dismiss" = "다시 묻지 않기";

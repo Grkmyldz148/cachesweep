@@ -120,3 +120,29 @@
 "clean.error.title" = "No se pudo limpiar";
 "clean.error.hint" = "%d elementos no se pudieron eliminar. Es posible que macOS esté bloqueando el acceso: conceda Acceso total al disco en Ajustes del Sistema › Privacidad y seguridad e inténtelo de nuevo.";
 "section.selectAll" = "Seleccionar todo / nada en esta sección";
+
+/* Invisible space */
+"invisible.title" = "ESPACIO INVISIBLE";
+"invisible.help" = "Espacio que ningún análisis de archivos puede ver. macOS lo gestiona fuera de tus archivos: swap, preparación de actualizaciones, el sistema sellado.";
+"invisible.swap" = "Swap (memoria virtual)";
+"invisible.swap.detail" = "Volumen VM · se vacía al reiniciar";
+"invisible.boot" = "Archivos de arranque y actualización";
+"invisible.boot.detail" = "Volúmenes Preboot + Update";
+"invisible.system" = "Sistema macOS";
+"invisible.system.detail" = "System + Recovery (sellado)";
+"invisible.purgeable" = "Espacio purgable";
+"invisible.purgeable.detail" = "macOS lo libera cuando hace falta";
+"invisible.pending.title" = "Actualización de macOS sin terminar";
+"invisible.pending.message" = "Hay una actualización preparada pero no instalada; hasta que termine retiene instantáneas y espacio de actualización.";
+"invisible.pending.open" = "Actualización de software…";
+
+/* Space that lives outside the home folder */
+"seed.usercache" = "Caché temporal del sistema";
+"seed.installers" = "Instaladores antiguos";
+"sys.simcaches" = "Cachés del simulador";
+
+/* Unscanned disk advisor */
+"root.suggest.title" = "«%@» no se está analizando";
+"root.suggest.message" = "Se encontraron %d indicios de proyectos en este disco";
+"root.suggest.add" = "Analizar";
+"root.suggest.dismiss" = "No preguntar más";

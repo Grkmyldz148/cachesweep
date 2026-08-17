@@ -18,6 +18,7 @@ final class AppSettings {
         static let custom = "customFolders"
         static let excluded = "excludedPaths"
         static let language = "language"
+        static let dismissedRoots = "dismissedRootSuggestions"
     }
 
     /// Locations the smart scanner searches.
@@ -28,12 +29,16 @@ final class AppSettings {
     var excludedPaths: [String]
     /// Manual language override, or "system" to follow the device.
     var language: String
+    /// Disks the advisor offered and the user said no to — asked once, then
+    /// never again.
+    var dismissedRoots: [String]
 
     private init() {
         scanRoots = store.stringArray(forKey: Key.roots) ?? [NSHomeDirectory()]
         customFolders = store.stringArray(forKey: Key.custom) ?? []
         excludedPaths = store.stringArray(forKey: Key.excluded) ?? []
         language = store.string(forKey: Key.language) ?? "system"
+        dismissedRoots = store.stringArray(forKey: Key.dismissedRoots) ?? []
         Localizer.apply(language == "system" ? nil : language)
     }
 
@@ -48,6 +53,13 @@ final class AppSettings {
         store.set(customFolders, forKey: Key.custom)
         store.set(excludedPaths, forKey: Key.excluded)
         store.set(language, forKey: Key.language)
+        store.set(dismissedRoots, forKey: Key.dismissedRoots)
+    }
+
+    /// Stop offering this disk as a scan root.
+    func dismissRootSuggestion(_ path: String) {
+        if !dismissedRoots.contains(path) { dismissedRoots.append(path) }
+        save()
     }
 
     // MARK: Scan roots
@@ -89,7 +101,7 @@ final class AppSettings {
 
     // MARK: Mounted volumes
 
-    static func mountedVolumes() -> [(name: String, path: String)] {
+    nonisolated static func mountedVolumes() -> [(name: String, path: String)] {
         let keys: [URLResourceKey] = [.volumeNameKey, .volumeIsBrowsableKey]
         let urls = FileManager.default.mountedVolumeURLs(
             includingResourceValuesForKeys: keys, options: [.skipHiddenVolumes]) ?? []

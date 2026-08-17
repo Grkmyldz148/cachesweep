@@ -23,13 +23,16 @@ enum GrowthNotifier {
         let title = L("notify.growth.title")
         let body = Lf("notify.growth.body", top.record.label, UInt64(top.growth).fileSize)
 
-        let center = UNUserNotificationCenter.current()
-        center.requestAuthorization(options: [.alert]) { granted, _ in
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert]) { granted, _ in
             guard granted else { return }
             let content = UNMutableNotificationContent()
             content.title = title
             content.body = body
-            center.add(UNNotificationRequest(identifier: "growth", content: content, trigger: nil))
+            // Fetch the singleton again rather than capturing it: the callback
+            // is @Sendable and UNUserNotificationCenter is not, so holding one
+            // across the boundary is the warning (and an error in Swift 6).
+            UNUserNotificationCenter.current()
+                .add(UNNotificationRequest(identifier: "growth", content: content, trigger: nil))
         }
     }
 }

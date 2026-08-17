@@ -1,0 +1,29 @@
+version: 2
+
+updates:
+  # The only Swift dependency is Sparkle — and it is the framework the
+  # shipped app trusts to verify the signature on its own updates, so its
+  # patches are the ones worth hearing about promptly.
+  #
+  # Do not auto-merge these: CI runs `swift test` and never touches
+  # packaging, signing or notarisation, so a green check here does not prove
+  # the release path still works. Run Scripts/package.sh before merging.
+  - package-ecosystem: swift
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: deps
+
+  # The release workflow signs and notarises the app, so a major bump in an
+  # action it depends on deserves a read rather than a rubber stamp.
+  # Grouped: three pins should not become three pull requests.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: ci

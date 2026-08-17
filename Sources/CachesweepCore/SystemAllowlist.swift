@@ -7,7 +7,11 @@ import Foundation
 public enum SystemAllowlist {
 
     public static let machService = "io.cachesweep.Helper"
-    public static let helperVersion = "2"
+    /// Bump whenever `entries` changes: an older installed helper silently
+    /// ignores ids it doesn't know, which would look like a successful clean
+    /// that freed nothing. The client falls back to the admin prompt on a
+    /// mismatch.
+    public static let helperVersion = "3"
 
     /// Dynamic entry: ghost data under /Volumes (see `OrphanVolumes`). Only
     /// the id crosses the XPC boundary; the helper recomputes the paths
@@ -44,6 +48,12 @@ public enum SystemAllowlist {
         Entry(id: "sys-updates", strategy: .contents, paths: ["/Library/Updates"]),
         Entry(id: "sys-lib-logs", strategy: .contents, paths: ["/Library/Logs"]),
         Entry(id: "sys-usrlocal", strategy: .contents, paths: ["/usr/local/share/Library/Caches"]),
+        // CoreSimulator's shared caches (dyld shared caches per runtime, most
+        // of all). Root-owned and outside every home folder, so nothing else
+        // in the app can see them; multiple gigabytes on any Mac with Xcode,
+        // and CoreSimulator rebuilds them on the next simulator launch.
+        Entry(id: "sys-simcaches", strategy: .contents,
+              paths: ["/Library/Developer/CoreSimulator/Caches"]),
     ]
 }
 

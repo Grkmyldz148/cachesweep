@@ -17,6 +17,30 @@ final class HelperClient {
 
     private var service: SMAppService { SMAppService.daemon(plistName: Self.plistName) }
 
+    /// True when the daemon is registered, approved, *and* built from the
+    /// current allowlist. A stale helper silently ignores ids added since it
+    /// was installed, which would look like a clean that freed nothing — so
+    /// on a version mismatch we report unusable and let the caller fall back
+    /// to the admin prompt, which always uses the current table.
+    func isUsable() async -> Bool {
+        guard ensureRegistered() else { return false }
+        return await version() == SystemAllowlist.helperVersion
+    }
+
+    private func version() async -> String? {
+        let c = ensureConnection()
+        return await withCheckedContinuation { cont in
+            let finished = Atomic(false)
+            let finish: (@Sendable (String?) -> Void) = { value in
+                guard finished.take() else { return }
+                cont.resume(returning: value)
+            }
+            guard let p = c.remoteObjectProxyWithErrorHandler({ _ in finish(nil) })
+                    as? CachesweepHelperProtocol else { finish(nil); return }
+            p.helperVersion { finish($0) }
+        }
+    }
+
     /// True when the daemon is registered and approved. Attempts registration
     /// when possible; never blocks or prompts by itself (approval lives in
     /// System Settings → Login Items).
@@ -51,7 +75,7 @@ final class HelperClient {
 
     /// Sizes per allowlist id, or nil when the helper isn't usable.
     func scanSizes() async -> [String: UInt64]? {
-        guard ensureRegistered() else { return nil }
+        guard await isUsable() else { return nil }
         let c = ensureConnection()
         return await withCheckedContinuation { cont in
             let finished = Atomic(false)
@@ -70,7 +94,7 @@ final class HelperClient {
     /// Cleans the given allowlist ids; returns false when the helper isn't
     /// usable (caller should fall back), throws on a real helper-side error.
     func clean(ids: [String], deleteSnapshots: Bool) async throws -> Bool {
-        guard ensureRegistered() else { return false }
+        guard await isUsable() else { return false }
         let c = ensureConnection()
         return try await withCheckedThrowingContinuation { cont in
             let finished = Atomic(false)

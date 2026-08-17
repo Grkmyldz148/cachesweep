@@ -10,6 +10,7 @@ struct MenuContentView: View {
         VStack(spacing: 0) {
             header
             if !model.fdaGranted { fdaBanner }
+            if let suggestion = model.rootSuggestions.first { rootBanner(suggestion) }
             Divider()
             if !model.activity.isEmpty {
                 liveSection
@@ -164,6 +165,9 @@ struct MenuContentView: View {
                     }
                 }
                 systemSection
+                if let inv = model.invisible, inv.hiddenTotal > 0 {
+                    invisibleSection(inv)
+                }
             }
             .padding(.vertical, DS.s1)
         }
@@ -197,6 +201,42 @@ struct MenuContentView: View {
         }
         .padding(DS.s3)
         .background(.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: DS.cardRadius))
+        .padding(.horizontal, DS.s4)
+        .padding(.bottom, DS.s3)
+    }
+
+    // MARK: Unscanned disk
+
+    /// A disk full of projects that nothing is looking at. Without this the
+    /// app reports "nothing found" and the user has no way to know the scan
+    /// was pointed at the wrong place.
+    private func rootBanner(_ s: RootAdvisor.Suggestion) -> some View {
+        HStack(spacing: DS.s2) {
+            Image(systemName: "externaldrive.badge.questionmark")
+                .foregroundStyle(.blue)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(Lf("root.suggest.title", s.name)).font(.caption.weight(.semibold))
+                Text(Lf("root.suggest.message", Int32(s.hits)))
+                    .font(.caption2).foregroundStyle(.secondary)
+            }
+            Spacer(minLength: DS.s1)
+            Button(L("root.suggest.add")) {
+                Task { await model.acceptRootSuggestion(s) }
+            }
+            .controlSize(.small)
+            .secondaryActionStyle()
+            Button {
+                model.dismissRootSuggestion(s)
+            } label: {
+                Image(systemName: "xmark")
+            }
+            .buttonStyle(.borderless)
+            .controlSize(.small)
+            .foregroundStyle(.secondary)
+            .help(L("root.suggest.dismiss"))
+        }
+        .padding(DS.s3)
+        .background(.blue.opacity(0.12), in: RoundedRectangle(cornerRadius: DS.cardRadius))
         .padding(.horizontal, DS.s4)
         .padding(.bottom, DS.s3)
     }
@@ -314,6 +354,109 @@ struct MenuContentView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: Invisible space (informational)
+
+    /// Space no file scan can account for: swap, update staging, the sealed
+    /// system. Nothing here is user-deletable, so the rows carry no checkbox —
+    /// the section exists to answer "the disk is full but nothing was found".
+    private func invisibleSection(_ inv: InvisibleSpaceReport) -> some View {
+        VStack(spacing: 0) {
+            HStack(spacing: DS.s2) {
+                Image(systemName: "eye.slash")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                Text(L("invisible.title"))
+                    .font(.caption2.weight(.semibold))
+                    .tracking(0.5)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text(inv.hiddenTotal.fileSize)
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(.tertiary)
+            }
+            .help(L("invisible.help"))
+            .padding(.horizontal, DS.s4)
+            .padding(.top, DS.s4)
+            .padding(.bottom, DS.s2)
+
+            if inv.pendingUpdate { pendingUpdateBanner }
+
+            if inv.swapUsed > 0 {
+                infoRow(symbol: "memorychip", tint: .purple,
+                        name: L("invisible.swap"),
+                        detail: L("invisible.swap.detail"),
+                        size: inv.swapUsed)
+            }
+            if inv.bootUsed > 0 {
+                infoRow(symbol: "square.and.arrow.down", tint: .blue,
+                        name: L("invisible.boot"),
+                        detail: L("invisible.boot.detail"),
+                        size: inv.bootUsed)
+            }
+            if inv.systemUsed > 0 {
+                infoRow(symbol: "apple.logo", tint: .gray,
+                        name: L("invisible.system"),
+                        detail: L("invisible.system.detail"),
+                        size: inv.systemUsed)
+            }
+            if inv.purgeable > 1_000_000_000 {
+                infoRow(symbol: "trash.slash", tint: .teal,
+                        name: L("invisible.purgeable"),
+                        detail: L("invisible.purgeable.detail"),
+                        size: inv.purgeable)
+            }
+        }
+    }
+
+    /// A macOS update was downloaded and staged but never installed — until it
+    /// finishes it pins undeletable snapshots and Preboot staging. The one
+    /// thing the user can actually do about invisible space, so it gets a CTA.
+    private var pendingUpdateBanner: some View {
+        HStack(spacing: DS.s2) {
+            Image(systemName: "exclamationmark.arrow.trianglehead.2.clockwise.rotate.90")
+                .foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(L("invisible.pending.title")).font(.caption.weight(.semibold))
+                Text(L("invisible.pending.message")).font(.caption2).foregroundStyle(.secondary)
+            }
+            Spacer(minLength: DS.s1)
+            Button(L("invisible.pending.open")) {
+                if let url = URL(string: "x-apple.systempreferences:com.apple.Software-Update-Settings.extension") {
+                    NSWorkspace.shared.open(url)
+                }
+            }
+            .controlSize(.small)
+            .secondaryActionStyle()
+        }
+        .padding(DS.s3)
+        .background(.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: DS.cardRadius))
+        .padding(.horizontal, DS.s4)
+        .padding(.bottom, DS.s2)
+    }
+
+    /// Read-only counterpart of CategoryRow: icon tile + name + size, no
+    /// selection circle, no reveal (these paths are not browsable folders).
+    private func infoRow(symbol: String, tint: Color,
+                         name: String, detail: String, size: UInt64) -> some View {
+        HStack(spacing: DS.s3) {
+            Image(systemName: symbol)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(tint)
+                .frame(width: DS.iconTile, height: DS.iconTile)
+                .background(tint.opacity(0.15), in: RoundedRectangle(cornerRadius: DS.iconRadius))
+            VStack(alignment: .leading, spacing: 1) {
+                Text(name).font(.callout.weight(.medium))
+                Text(detail).font(.footnote).foregroundStyle(.secondary)
+            }
+            Spacer(minLength: DS.s2)
+            Text(size.fileSize)
+                .font(.callout.monospacedDigit())
+                .foregroundStyle(.secondary)
+        }
+        .padding(.vertical, DS.s2)
+        .padding(.horizontal, DS.s4)
     }
 
     // MARK: Footer

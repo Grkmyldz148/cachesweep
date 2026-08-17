@@ -120,3 +120,29 @@
 "clean.error.title" = "Не удалось очистить";
 "clean.error.hint" = "%d объектов не удалось удалить. Возможно, macOS блокирует доступ — предоставьте «Полный доступ к диску» в Системных настройках › Конфиденциальность и безопасность и повторите попытку.";
 "section.selectAll" = "Выбрать все / снять выбор в этом разделе";
+
+/* Invisible space */
+"invisible.title" = "НЕВИДИМОЕ ПРОСТРАНСТВО";
+"invisible.help" = "Пространство, которое не видит ни одно сканирование файлов. macOS управляет им вне ваших файлов: своп, подготовка обновлений, запечатанная система.";
+"invisible.swap" = "Своп (виртуальная память)";
+"invisible.swap.detail" = "Том VM · очищается при перезагрузке";
+"invisible.boot" = "Файлы загрузки и обновления";
+"invisible.boot.detail" = "Тома Preboot + Update";
+"invisible.system" = "Система macOS";
+"invisible.system.detail" = "System + Recovery (запечатано)";
+"invisible.purgeable" = "Очищаемое пространство";
+"invisible.purgeable.detail" = "macOS освобождает его при необходимости";
+"invisible.pending.title" = "Незавершённое обновление macOS";
+"invisible.pending.message" = "Обновление подготовлено, но не установлено; пока оно не завершится, оно удерживает снимки и место под обновление.";
+"invisible.pending.open" = "Обновление ПО…";
+
+/* Space that lives outside the home folder */
+"seed.usercache" = "Временный системный кэш";
+"seed.installers" = "Старые установщики";
+"sys.simcaches" = "Кэши симулятора";
+
+/* Unscanned disk advisor */
+"root.suggest.title" = "«%@» не сканируется";
+"root.suggest.message" = "На этом диске найдено следов проектов: %d";
+"root.suggest.add" = "Сканировать";
+"root.suggest.dismiss" = "Больше не спрашивать";
