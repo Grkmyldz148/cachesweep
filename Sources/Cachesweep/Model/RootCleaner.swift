@@ -21,6 +21,7 @@ enum RootCleaner {
         "sys-updates": ("sys.updates", "/Library/Updates"),
         "sys-lib-logs": ("sys.syslogs", "/Library/Logs"),
         "sys-usrlocal": ("sys.usrlocal", "/usr/local/share/Library/Caches"),
+        "sys-simcaches": ("sys.simcaches", "/Library/Developer/CoreSimulator/Caches"),
     ]
 
     /// Curated root-owned locations that are safe to reclaim, plus the
@@ -105,6 +106,8 @@ enum RootCleaner {
                     cmds.append("/bin/rm -rf '\(p)'")
                 case .contents:
                     cmds.append("/bin/rm -rf '\(p)'/* '\(p)'/.[!.]*")
+                case .simulatorRuntime:
+                    continue        // simctl territory, never a root rm
                 }
             }
         }

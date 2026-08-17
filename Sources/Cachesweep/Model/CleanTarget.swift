@@ -17,6 +17,10 @@ enum Safety: String, Sendable {
 enum CleanStrategy: Sendable {
     case directory   // remove the path itself (the tool recreates it)
     case contents    // remove the children, keep the folder
+    /// Hand the removal to `simctl`: the bytes live in system-owned asset
+    /// storage, and deleting them behind CoreSimulator's back leaves it with
+    /// a runtime it will neither use nor re-download.
+    case simulatorRuntime(id: String)
 }
 
 /// Display grouping for the main list.
@@ -54,13 +58,41 @@ struct CleanTarget: Identifiable, Sendable {
     var learned = false         // promoted by accumulated learning (Phase 3)
     var isLeftover = false      // orphaned data from an app that is no longer installed
     var needsAdmin = false      // root-owned; cleaned via administrator authorization
+    /// Lives outside the user's scan roots (system-managed storage), so the
+    /// scan-root filter must not hide it.
+    var externalScope = false
+    /// Size reported by the owning tool — no directory walk can find it.
+    var knownSize: UInt64? = nil
     var category: TargetCategory = .devCaches
 
     var expandedPaths: [String] {
         rawPaths.map { ($0 as NSString).expandingTildeInPath }
     }
 
-    /// Curated, dev-focused, non-overlapping cache locations.
+    /// `/var/folders/<…>/C`, the per-user Darwin cache directory. Derived
+    /// from the temp dir's sibling so it stays correct per user and per boot.
+    /// nil under a sandbox, where the temp dir points inside the container.
+    static let darwinUserCacheDir: String? = {
+        let temp = (NSTemporaryDirectory() as NSString).standardizingPath
+        guard temp.hasSuffix("/T"),
+              temp.hasPrefix("/var/folders/") || temp.hasPrefix("/private/var/folders/")
+        else { return nil }
+        return (temp as NSString).deletingLastPathComponent + "/C"
+    }()
+
+    /// The fallback catalogue: locations that can only be named, because the
+    /// tool that owns them has no way to answer for itself and their layout
+    /// follows no convention.
+    ///
+    /// Deliberately *not* the primary mechanism. A hardcoded path is a guess
+    /// about someone else's machine, and a tool that isn't listed here is
+    /// invisible — which is exactly how this app came to find nothing. Two
+    /// generic mechanisms run ahead of this list and should catch most of
+    /// what it would: `ToolProbe` asks each installed tool where it actually
+    /// keeps its cache, and `Discovery`'s convention pass finds
+    /// `~/.<tool>/cache` without knowing what the tool is. Only add an entry
+    /// here when neither can work.
+    ///
     /// `name` may be a localization key ("seed.*") — resolved at display time;
     /// non-key names (product names like "npm Cache") pass through unchanged.
     static let all: [CleanTarget] = [
@@ -152,6 +184,35 @@ struct CleanTarget: Identifiable, Sendable {
                     symbol: "mug", rawPaths: ["~/Library/Caches/Homebrew"],
                     safety: .safe, strategy: .contents),
 
+        CleanTarget(id: "npx", name: "npx Cache",
+                    detail: "~/.npm/_npx",
+                    symbol: "shippingbox", rawPaths: ["~/.npm/_npx"],
+                    safety: .safe, strategy: .directory),
+
+        CleanTarget(id: "nuget", name: "NuGet Cache",
+                    detail: "~/.nuget/packages + ~/.local/share/NuGet",
+                    symbol: "shippingbox",
+                    rawPaths: ["~/.nuget/packages", "~/.local/share/NuGet"],
+                    safety: .safe, strategy: .directory),
+
+        CleanTarget(id: "uv", name: "uv Cache",
+                    detail: "~/.local/share/uv",
+                    symbol: "shippingbox", rawPaths: ["~/.local/share/uv"],
+                    safety: .safe, strategy: .directory),
+
+        CleanTarget(id: "gradle-wrapper", name: "Gradle Wrapper",
+                    detail: "~/.gradle/wrapper/dists",
+                    symbol: "hammer", rawPaths: ["~/.gradle/wrapper/dists"],
+                    safety: .safe, strategy: .directory),
+
+        // Emulator system images are gigabytes each and re-download from the
+        // SDK manager, but an AVD holds the device's state — opt-in.
+        CleanTarget(id: "android", name: "Android Emulator Images",
+                    detail: "~/.android/avd + SDK system-images",
+                    symbol: "iphone",
+                    rawPaths: ["~/.android/avd", "~/Library/Android/sdk/system-images"],
+                    safety: .caution, strategy: .directory),
+
         // AI tool bulk data: never preselected (.caution). Models and VM
         // images re-download on demand; session stores are past-conversation
         // logs the tools keep forever and never prune.
@@ -175,6 +236,22 @@ struct CleanTarget: Identifiable, Sendable {
                     detail: "~/.codex/sessions",
                     symbol: "text.bubble", rawPaths: ["~/.codex/sessions"],
                     safety: .caution, strategy: .contents, category: .aiData),
+
+        CleanTarget(id: "claude-projects", name: "Claude Code Sessions",
+                    detail: "~/.claude/projects",
+                    symbol: "text.bubble", rawPaths: ["~/.claude/projects"],
+                    safety: .caution, strategy: .contents, category: .aiData),
+
+        // The per-user Darwin cache. Every non-sandboxed app parks temporary
+        // data here and almost none of it prunes; it is routinely a gigabyte
+        // or more, and it sits outside the home folder, so a scan of
+        // ~/Library never sees a byte of it.
+        CleanTarget(id: "darwin-cache", name: "seed.usercache",
+                    detail: darwinUserCacheDir ?? "/var/folders/…/C",
+                    symbol: "clock.arrow.circlepath",
+                    rawPaths: [darwinUserCacheDir].compactMap { $0 },
+                    safety: .caution, strategy: .contents,
+                    externalScope: true, category: .other),
 
         CleanTarget(id: "logs", name: "seed.logs",
                     detail: "~/Library/Logs",

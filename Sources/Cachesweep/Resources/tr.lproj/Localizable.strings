@@ -120,3 +120,29 @@
 "clean.error.title" = "Temizlenemedi";
 "clean.error.hint" = "%d öğe silinemedi. macOS erişimi engelliyor olabilir — Sistem Ayarları › Gizlilik ve Güvenlik'ten Tam Disk Erişimi verin ve yeniden deneyin.";
 "section.selectAll" = "Bu bölümde tümünü seç / bırak";
+
+/* Invisible space */
+"invisible.title" = "GÖRÜNMEZ ALAN";
+"invisible.help" = "Hiçbir dosya taramasının göremediği alan. macOS bunu dosyalarınızın dışında yönetir: swap, güncelleme hazırlığı, mühürlü sistem.";
+"invisible.swap" = "Swap (sanal bellek)";
+"invisible.swap.detail" = "VM birimi · yeniden başlatınca boşalır";
+"invisible.boot" = "Önyükleme ve güncelleme dosyaları";
+"invisible.boot.detail" = "Preboot + Update birimleri";
+"invisible.system" = "macOS sistemi";
+"invisible.system.detail" = "System + Recovery (mühürlü)";
+"invisible.purgeable" = "Arındırılabilir alan";
+"invisible.purgeable.detail" = "macOS gerekince kendisi boşaltır";
+"invisible.pending.title" = "Yarım kalmış macOS güncellemesi";
+"invisible.pending.message" = "Bir güncelleme hazırlanmış ama kurulmamış; bitene kadar anlık kopyaları ve güncelleme alanını rehin tutuyor.";
+"invisible.pending.open" = "Yazılım Güncelleme…";
+
+/* Space that lives outside the home folder */
+"seed.usercache" = "Geçici Sistem Cache’i";
+"seed.installers" = "Eski Kurulum Dosyaları";
+"sys.simcaches" = "Simülatör Cache’leri";
+
+/* Unscanned disk advisor */
+"root.suggest.title" = "“%@” taranmıyor";
+"root.suggest.message" = "Bu diskte %d proje izi bulundu";
+"root.suggest.add" = "Tara";
+"root.suggest.dismiss" = "Bir daha sorma";

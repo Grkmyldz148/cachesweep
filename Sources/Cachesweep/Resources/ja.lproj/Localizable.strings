@@ -120,3 +120,29 @@
 "clean.error.title" = "クリーンアップできませんでした";
 "clean.error.hint" = "%d 個の項目を削除できませんでした。macOS がアクセスをブロックしている可能性があります。システム設定 › プライバシーとセキュリティで「フルディスクアクセス」を許可して、もう一度お試しください。";
 "section.selectAll" = "このセクションをすべて選択 / 解除";
+
+/* Invisible space */
+"invisible.title" = "見えない領域";
+"invisible.help" = "ファイルスキャンでは見えない領域。スワップ、アップデートの準備データ、封印されたシステムなど、macOSがファイルの外で管理します。";
+"invisible.swap" = "スワップ(仮想メモリ)";
+"invisible.swap.detail" = "VMボリューム · 再起動で解放";
+"invisible.boot" = "起動・アップデートファイル";
+"invisible.boot.detail" = "Preboot + Updateボリューム";
+"invisible.system" = "macOSシステム";
+"invisible.system.detail" = "System + Recovery(封印済み)";
+"invisible.purgeable" = "パージ可能な領域";
+"invisible.purgeable.detail" = "必要に応じてmacOSが解放";
+"invisible.pending.title" = "未完了のmacOSアップデート";
+"invisible.pending.message" = "アップデートが準備されたまま未インストールです。完了するまでスナップショットと領域を占有し続けます。";
+"invisible.pending.open" = "ソフトウェアアップデート…";
+
+/* Space that lives outside the home folder */
+"seed.usercache" = "一時システムキャッシュ";
+"seed.installers" = "古いインストーラ";
+"sys.simcaches" = "シミュレータキャッシュ";
+
+/* Unscanned disk advisor */
+"root.suggest.title" = "「%@」はスキャン対象外です";
+"root.suggest.message" = "このディスクでプロジェクトの痕跡が %d 件見つかりました";
+"root.suggest.add" = "スキャン";
+"root.suggest.dismiss" = "今後表示しない";

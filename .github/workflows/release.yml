@@ -16,7 +16,7 @@ jobs:
   build:
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Resolve version
         id: ver
@@ -53,7 +53,7 @@ jobs:
         run: bash Scripts/release.sh "${{ steps.ver.outputs.version }}"
 
       - name: Create / update GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ steps.ver.outputs.version }}
           name: Cachesweep ${{ steps.ver.outputs.version }}

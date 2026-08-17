@@ -28,7 +28,9 @@ final class TargetState: Identifiable {
 @MainActor
 @Observable
 final class AppModel {
-    var targets: [TargetState] = CleanTarget.all.map(TargetState.init)
+    /// Seeds for *this* machine, rebuilt on every scan: what is installed
+    /// here, plus what the user's own cleaning history says to check.
+    var targets: [TargetState] = DeviceProfile.seeds().map(TargetState.init)
     var isScanning = false
     var isCleaning = false
     var lastScan: Date?
@@ -42,12 +44,24 @@ final class AppModel {
     // Smart discovery (Phase 1)
     var discovered: [TargetState] = []
 
+    // Xcode simulator runtimes — system-owned assets no file scan can reach,
+    // and usually the largest single reclaimable item on a developer's Mac.
+    var runtimes: [TargetState] = []
+
     // System areas (root-owned, admin-gated)
     var systemStates: [TargetState] = RootCleaner.targets.map(TargetState.init)
     var systemScanned = false
     var isSystemWorking = false
     var snapshotCount = 0
     var snapshotsSelected = false
+
+    // Invisible space (informational): swap, update staging, sealed system —
+    // the part of a full disk no file scan can account for.
+    var invisible: InvisibleSpaceReport?
+
+    // Disks that hold caches but aren't being scanned. An empty result looks
+    // the same whether there was nothing to clean or nobody looked there.
+    var rootSuggestions: [RootAdvisor.Suggestion] = []
 
     // Full Disk Access — without it ~/Library scans silently return zeros.
     var fdaGranted = true
@@ -68,18 +82,25 @@ final class AppModel {
     // results unless forced (refresh button) or invalidated (after cleaning).
     @ObservationIgnored private var discoveryCache: (key: String, at: Date, found: [CleanTarget])?
 
-    /// Seeds (curated) + discovered (smart) — minus anything whose scan root
-    /// is disabled or that the user excluded in Settings.
+    /// Seeds (curated) + discovered (smart) + simulator runtimes — minus
+    /// anything whose scan root is disabled or that the user excluded.
     var allStates: [TargetState] {
-        (targets + discovered).filter { !allowedPaths($0.target).isEmpty }
+        // A target with no paths of its own (system-managed storage the owning
+        // tool reports and removes) can't be filtered by path — keep it.
+        (targets + discovered + runtimes).filter {
+            $0.target.rawPaths.isEmpty || !allowedPaths($0.target).isEmpty
+        }
     }
 
     /// A target's paths restricted to enabled scan roots and user exclusions.
+    /// `externalScope` targets sit outside the home folder by definition
+    /// (/var/folders, system asset storage), so the root filter would always
+    /// reject them; only the user's exclusions apply there.
     private func allowedPaths(_ t: CleanTarget) -> [String] {
         let roots = AppSettings.shared.scanRoots
         let ex = AppSettings.shared.excludedPaths
         return t.expandedPaths.filter { p in
-            roots.contains(where: { p == $0 || p.hasPrefix($0 + "/") })
+            (t.externalScope || roots.contains(where: { p == $0 || p.hasPrefix($0 + "/") }))
                 && !ex.contains(where: { p == $0 || p.hasPrefix($0 + "/") })
         }
     }
@@ -109,6 +130,21 @@ final class AppModel {
         syncMonitoredRoots()
         probeFullDiskAccess()
 
+        // Concurrent with the file scan — one diskutil/tmutil pass, no files touched.
+        async let invisibleReport = InvisibleSpace.report()
+        // Likewise: simctl reports its own sizes, so this costs one process
+        // rather than a walk of storage the user can't even read.
+        async let runtimeList = SimulatorRuntimes.list()
+
+        // Re-profile the machine: a tool installed since the last scan should
+        // show up, one that was uninstalled should stop being probed, and a
+        // place the user has cleaned since then should now be offered.
+        if force {
+            ToolProbe.invalidate()
+            RootAdvisor.invalidate()
+        }
+        await refreshSeeds()
+
         let roots = AppSettings.shared.scanRoots
         let excludes = AppSettings.shared.excludedPaths
         let cacheKey = roots.joined(separator: "|") + "‖" + excludes.joined(separator: "|")
@@ -129,7 +165,9 @@ final class AppModel {
                                              excluding: seedPaths,
                                              excludes: excludes,
                                              activePaths: activePaths,
-                                             learn: LearningStore.shared.boosts())
+                                             learn: LearningStore.shared.boosts(),
+                                             expect: LearningStore.shared.expectations(),
+                                             hotSpots: LearningStore.shared.hotSpots())
             discoveryCache = (cacheKey, Date(), found)
             sweepDebug("🔭 keşif: \(found.count) aday — " + found.prefix(12).map { t in
                 let flag = t.safety == .safe ? "🟢" : "🟠"
@@ -147,6 +185,30 @@ final class AppModel {
             return s
         }
 
+        // A learned place sitting inside something discovery found this scan
+        // would count its bytes twice; the discovered parent already covers it.
+        let discoveredPaths = discovered.flatMap { $0.target.expandedPaths }
+        targets.removeAll { st in
+            st.target.id.hasPrefix(DeviceProfile.learnedPrefix)
+                && st.target.expandedPaths.contains { p in
+                    discoveredPaths.contains { p.hasPrefix($0 + "/") }
+                }
+        }
+
+        let prevRuntimeSel = Dictionary(runtimes.map { ($0.id, $0.isSelected) },
+                                        uniquingKeysWith: { a, _ in a })
+        runtimes = await runtimeList.map { rt in
+            let s = TargetState(target: SimulatorRuntimes.target(for: rt))
+            s.size = rt.size
+            if let was = prevRuntimeSel[s.id] { s.isSelected = was }
+            return s
+        }
+        if !runtimes.isEmpty {
+            sweepDebug("📱 simülatör çalışma zamanları: " +
+                       runtimes.map { "\($0.target.name)=\($0.size.fileSize)" }
+                           .joined(separator: ", "))
+        }
+
         // Size seeds + discovered concurrently (only settings-allowed paths).
         let states = targets + discovered
         await withTaskGroup(of: (String, UInt64).self) { group in
@@ -159,9 +221,56 @@ final class AppModel {
                 if let s = states.first(where: { $0.id == id }) { s.size = size }
             }
         }
+        invisible = await invisibleReport
+        rootSuggestions = await RootAdvisor.suggestions(
+            roots: roots, excludes: excludes,
+            dismissed: AppSettings.shared.dismissedRoots,
+            probed: targets.flatMap { $0.target.expandedPaths },
+            places: LearningStore.shared.knownPlaces())
+        if !rootSuggestions.isEmpty {
+            sweepDebug("🧭 taranmayan disk önerisi: " +
+                       rootSuggestions.map { "\($0.name)(\($0.hits) iz\($0.named ? ", adı geçti" : ""))" }
+                           .joined(separator: ", "))
+        }
         lastScan = Date()
         refreshFreeSpace()
         onTotalsChanged?()
+    }
+
+    /// Rebuild the seed list from the machine as it is right now, keeping the
+    /// selection of anything that survives.
+    private func refreshSeeds() async {
+        let probed = await ToolProbe.detect()
+        let previous = Dictionary(targets.map { ($0.id, $0.isSelected) },
+                                  uniquingKeysWith: { a, _ in a })
+        let seeds = DeviceProfile.seeds(knownPlaces: LearningStore.shared.knownPlaces(),
+                                        probed: probed)
+        targets = seeds.map { t in
+            let s = TargetState(target: t)
+            if let was = previous[t.id] { s.isSelected = was }
+            return s
+        }
+        let learned = seeds.filter { $0.id.hasPrefix(DeviceProfile.learnedPrefix) }
+        sweepDebug("🖥️ cihaz profili: \(seeds.count) tohum · \(probed.count) araç kendi yolunu bildirdi"
+                   + " · katalogdan \(seeds.count - probed.count - learned.count)"
+                   + (learned.isEmpty ? "" : " · \(learned.count) öğrenilen yer"))
+        if !probed.isEmpty {
+            sweepDebug("🔧 " + probed.map { "\($0.name)→\($0.detail)" }.joined(separator: ", "))
+        }
+    }
+
+    /// Start scanning a disk the advisor found, and rescan straight away so
+    /// the user sees what was there all along.
+    func acceptRootSuggestion(_ s: RootAdvisor.Suggestion) async {
+        AppSettings.shared.addCustomFolder(s.path)
+        rootSuggestions.removeAll { $0.path == s.path }
+        discoveryCache = nil
+        await scan(force: true)
+    }
+
+    func dismissRootSuggestion(_ s: RootAdvisor.Suggestion) {
+        AppSettings.shared.dismissRootSuggestion(s.path)
+        rootSuggestions.removeAll { $0.path == s.path }
     }
 
     /// TCC probe: a protected path readable ⇒ Full Disk Access is granted.
@@ -205,10 +314,13 @@ final class AppModel {
         }
 
         // Record "cleaned" only when bytes were actually freed (a permissions
-        // failure should not count as evidence).
+        // failure should not count as evidence). The byte count travels with
+        // it: how much a kind actually returns is what lets the next scan
+        // rank it, and what makes a place worth probing again.
         for st in chosen where st.target.isDiscovered {
-            if (results[st.id]?.freed ?? 0) > 0, let p = st.target.expandedPaths.first {
-                LearningStore.shared.recordCleaned(path: p)
+            let freed = results[st.id]?.freed ?? 0
+            if freed > 0, let p = st.target.expandedPaths.first {
+                LearningStore.shared.recordCleaned(path: p, freed: freed)
             }
         }
 
@@ -222,13 +334,21 @@ final class AppModel {
         // a discovery sweep) kept the spinner going long after deletion ended.
         // The popover triggers a full scan on next open anyway.
         await withTaskGroup(of: (String, UInt64).self) { group in
-            for st in chosen {
+            for st in chosen where !st.target.rawPaths.isEmpty {
                 let id = st.target.id
                 let paths = allowedPaths(st.target)
                 group.addTask { (id, await Scanner.size(of: paths)) }
             }
             for await (id, size) in group {
                 chosen.first(where: { $0.id == id })?.size = size
+            }
+        }
+        // Path-less targets have nothing to re-walk: ask the owning tool
+        // again, so a refused deletion can't read as space freed.
+        if chosen.contains(where: { $0.target.rawPaths.isEmpty }) {
+            let live = await SimulatorRuntimes.list()
+            for st in runtimes {
+                st.size = live.first { "simrt:\($0.id)" == st.id }?.size ?? 0
             }
         }
         refreshFreeSpace()

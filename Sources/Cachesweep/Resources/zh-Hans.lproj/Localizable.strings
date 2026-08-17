@@ -120,3 +120,29 @@
 "clean.error.title" = "无法清理";
 "clean.error.hint" = "%d 个项目无法删除。macOS 可能阻止了访问——请在“系统设置”›“隐私与安全性”中授予“完全磁盘访问权限”，然后重试。";
 "section.selectAll" = "全选 / 取消选择此部分";
+
+/* Invisible space */
+"invisible.title" = "不可见空间";
+"invisible.help" = "任何文件扫描都看不到的空间。macOS 在你的文件之外管理它:交换文件、更新暂存、密封的系统。";
+"invisible.swap" = "交换文件(虚拟内存)";
+"invisible.swap.detail" = "VM 宗卷 · 重启后清空";
+"invisible.boot" = "启动与更新文件";
+"invisible.boot.detail" = "Preboot + Update 宗卷";
+"invisible.system" = "macOS 系统";
+"invisible.system.detail" = "System + Recovery(已密封)";
+"invisible.purgeable" = "可清除空间";
+"invisible.purgeable.detail" = "macOS 会在需要时自动释放";
+"invisible.pending.title" = "未完成的 macOS 更新";
+"invisible.pending.message" = "有一个更新已暂存但未安装;在完成之前会一直占用快照和更新空间。";
+"invisible.pending.open" = "软件更新…";
+
+/* Space that lives outside the home folder */
+"seed.usercache" = "临时系统缓存";
+"seed.installers" = "旧安装包";
+"sys.simcaches" = "模拟器缓存";
+
+/* Unscanned disk advisor */
+"root.suggest.title" = "未扫描“%@”";
+"root.suggest.message" = "在此磁盘上发现 %d 处项目痕迹";
+"root.suggest.add" = "扫描";
+"root.suggest.dismiss" = "不再询问";

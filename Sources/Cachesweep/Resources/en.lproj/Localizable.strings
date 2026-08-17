@@ -120,3 +120,29 @@
 "clean.error.title" = "Could not clean";
 "clean.error.hint" = "%d items could not be deleted. macOS may be blocking access — grant Full Disk Access in System Settings › Privacy & Security, then try again.";
 "section.selectAll" = "Select all / none in this section";
+
+/* Invisible space */
+"invisible.title" = "INVISIBLE SPACE";
+"invisible.help" = "Space no file scan can see. macOS manages it outside your files: swap, update staging, the sealed system.";
+"invisible.swap" = "Swap (virtual memory)";
+"invisible.swap.detail" = "VM volume · a restart clears it";
+"invisible.boot" = "Boot & update files";
+"invisible.boot.detail" = "Preboot + Update volumes";
+"invisible.system" = "macOS system";
+"invisible.system.detail" = "System + Recovery (sealed)";
+"invisible.purgeable" = "Purgeable space";
+"invisible.purgeable.detail" = "macOS frees it on demand";
+"invisible.pending.title" = "Unfinished macOS update";
+"invisible.pending.message" = "An update is staged but not installed; until it finishes it pins snapshots and update space.";
+"invisible.pending.open" = "Software Update…";
+
+/* Space that lives outside the home folder */
+"seed.usercache" = "Temporary System Cache";
+"seed.installers" = "Old Installers";
+"sys.simcaches" = "Simulator Caches";
+
+/* Unscanned disk advisor */
+"root.suggest.title" = "“%@” isn’t being scanned";
+"root.suggest.message" = "%d project markers found on this disk";
+"root.suggest.add" = "Scan it";
+"root.suggest.dismiss" = "Don’t ask again";

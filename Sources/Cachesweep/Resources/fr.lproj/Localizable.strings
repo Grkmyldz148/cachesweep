@@ -120,3 +120,29 @@
 "clean.error.title" = "Nettoyage impossible";
 "clean.error.hint" = "%d éléments n'ont pas pu être supprimés. macOS bloque peut-être l'accès — accordez l'accès complet au disque dans Réglages Système › Confidentialité et sécurité, puis réessayez.";
 "section.selectAll" = "Tout sélectionner / désélectionner dans cette section";
+
+/* Invisible space */
+"invisible.title" = "ESPACE INVISIBLE";
+"invisible.help" = "Espace qu'aucune analyse de fichiers ne peut voir. macOS le gère en dehors de vos fichiers : swap, préparation des mises à jour, système scellé.";
+"invisible.swap" = "Swap (mémoire virtuelle)";
+"invisible.swap.detail" = "Volume VM · vidé au redémarrage";
+"invisible.boot" = "Fichiers de démarrage et de mise à jour";
+"invisible.boot.detail" = "Volumes Preboot + Update";
+"invisible.system" = "Système macOS";
+"invisible.system.detail" = "System + Recovery (scellé)";
+"invisible.purgeable" = "Espace purgeable";
+"invisible.purgeable.detail" = "macOS le libère au besoin";
+"invisible.pending.title" = "Mise à jour macOS inachevée";
+"invisible.pending.message" = "Une mise à jour est préparée mais pas installée ; elle retient des instantanés et de l'espace tant qu'elle n'est pas terminée.";
+"invisible.pending.open" = "Mise à jour de logiciels…";
+
+/* Space that lives outside the home folder */
+"seed.usercache" = "Cache système temporaire";
+"seed.installers" = "Anciens installateurs";
+"sys.simcaches" = "Caches du simulateur";
+
+/* Unscanned disk advisor */
+"root.suggest.title" = "« %@ » n’est pas analysé";
+"root.suggest.message" = "%d indices de projets trouvés sur ce disque";
+"root.suggest.add" = "Analyser";
+"root.suggest.dismiss" = "Ne plus demander";

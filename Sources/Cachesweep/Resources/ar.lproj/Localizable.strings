@@ -120,3 +120,29 @@
 "clean.error.title" = "تعذّر التنظيف";
 "clean.error.hint" = "تعذّر حذف %d من العناصر. قد يحظر macOS الوصول — امنح «الوصول الكامل إلى القرص» في إعدادات النظام › الخصوصية والأمان ثم حاول مجددًا.";
 "section.selectAll" = "تحديد الكل / إلغاء التحديد في هذا القسم";
+
+/* Invisible space */
+"invisible.title" = "مساحة غير مرئية";
+"invisible.help" = "مساحة لا يستطيع أي فحص للملفات رؤيتها. يديرها macOS خارج ملفاتك: التبديل، وتجهيز التحديثات، والنظام المختوم.";
+"invisible.swap" = "التبديل (الذاكرة الافتراضية)";
+"invisible.swap.detail" = "وحدة تخزين VM · تُفرَّغ عند إعادة التشغيل";
+"invisible.boot" = "ملفات الإقلاع والتحديث";
+"invisible.boot.detail" = "وحدتا Preboot + Update";
+"invisible.system" = "نظام macOS";
+"invisible.system.detail" = "System + Recovery (مختوم)";
+"invisible.purgeable" = "مساحة قابلة للتفريغ";
+"invisible.purgeable.detail" = "يحررها macOS عند الحاجة";
+"invisible.pending.title" = "تحديث macOS غير مكتمل";
+"invisible.pending.message" = "هناك تحديث مجهّز لكنه غير مثبّت؛ وإلى أن يكتمل يحتجز اللقطات ومساحة التحديث.";
+"invisible.pending.open" = "تحديث البرامج…";
+
+/* Space that lives outside the home folder */
+"seed.usercache" = "ذاكرة النظام المؤقتة";
+"seed.installers" = "ملفات التثبيت القديمة";
+"sys.simcaches" = "ذواكر المحاكي";
+
+/* Unscanned disk advisor */
+"root.suggest.title" = "لا يتم فحص \u201c%@\u201d";
+"root.suggest.message" = "تم العثور على %d أثر لمشاريع على هذا القرص";
+"root.suggest.add" = "افحص";
+"root.suggest.dismiss" = "لا تسأل مرة أخرى";

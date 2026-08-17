@@ -29,6 +29,17 @@ enum Cleaner {
         let fm = FileManager()
         var outcome = CleanOutcome()
 
+        // System-owned storage with a tool that owns it: no paths to walk.
+        if case .simulatorRuntime(let id) = target.strategy {
+            do {
+                try SimulatorRuntimes.delete(id: id)
+                outcome.freed += target.knownSize ?? 0
+            } catch {
+                outcome.recordFailure(error)
+            }
+            return outcome
+        }
+
         for path in target.expandedPaths {
             guard fm.fileExists(atPath: path) else { continue }
             let url = URL(fileURLWithPath: path)
@@ -62,6 +73,9 @@ enum Cleaner {
                         outcome.recordFailure(error)
                     }
                 }
+
+            case .simulatorRuntime:
+                break               // handled above, before the path loop
             }
         }
         return outcome

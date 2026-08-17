@@ -120,3 +120,29 @@
 "clean.error.title" = "Bereinigung fehlgeschlagen";
 "clean.error.hint" = "%d Elemente konnten nicht gelöscht werden. macOS blockiert möglicherweise den Zugriff — gewähren Sie Festplattenvollzugriff in den Systemeinstellungen › Datenschutz & Sicherheit und versuchen Sie es erneut.";
 "section.selectAll" = "Alles in diesem Abschnitt aus-/abwählen";
+
+/* Invisible space */
+"invisible.title" = "UNSICHTBARER SPEICHER";
+"invisible.help" = "Speicher, den kein Dateiscan sieht. macOS verwaltet ihn außerhalb Ihrer Dateien: Swap, Update-Staging, das versiegelte System.";
+"invisible.swap" = "Swap (virtueller Speicher)";
+"invisible.swap.detail" = "VM-Volume · ein Neustart leert es";
+"invisible.boot" = "Boot- und Update-Dateien";
+"invisible.boot.detail" = "Preboot- + Update-Volumes";
+"invisible.system" = "macOS-System";
+"invisible.system.detail" = "System + Recovery (versiegelt)";
+"invisible.purgeable" = "Freigebbarer Speicher";
+"invisible.purgeable.detail" = "macOS gibt ihn bei Bedarf frei";
+"invisible.pending.title" = "Unvollständiges macOS-Update";
+"invisible.pending.message" = "Ein Update ist vorbereitet, aber nicht installiert; bis zum Abschluss belegt es Schnappschüsse und Update-Speicher.";
+"invisible.pending.open" = "Softwareupdate…";
+
+/* Space that lives outside the home folder */
+"seed.usercache" = "Temporärer Systemcache";
+"seed.installers" = "Alte Installationsdateien";
+"sys.simcaches" = "Simulator-Caches";
+
+/* Unscanned disk advisor */
+"root.suggest.title" = "„%@“ wird nicht durchsucht";
+"root.suggest.message" = "%d Projektspuren auf diesem Volume gefunden";
+"root.suggest.add" = "Durchsuchen";
+"root.suggest.dismiss" = "Nicht mehr fragen";

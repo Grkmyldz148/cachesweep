@@ -120,3 +120,29 @@
 "clean.error.title" = "Opschonen mislukt";
 "clean.error.hint" = "%d items konden niet worden verwijderd. macOS blokkeert mogelijk de toegang — geef Volledige schijftoegang in Systeeminstellingen › Privacy en beveiliging en probeer het opnieuw.";
 "section.selectAll" = "Alles in deze sectie selecteren / deselecteren";
+
+/* Invisible space */
+"invisible.title" = "ONZICHTBARE RUIMTE";
+"invisible.help" = "Ruimte die geen enkele bestandsscan kan zien. macOS beheert deze buiten je bestanden om: swap, updatevoorbereiding, het verzegelde systeem.";
+"invisible.swap" = "Swap (virtueel geheugen)";
+"invisible.swap.detail" = "VM-volume · leeg na herstart";
+"invisible.boot" = "Opstart- en updatebestanden";
+"invisible.boot.detail" = "Preboot- + Update-volumes";
+"invisible.system" = "macOS-systeem";
+"invisible.system.detail" = "System + Recovery (verzegeld)";
+"invisible.purgeable" = "Wisbare ruimte";
+"invisible.purgeable.detail" = "macOS maakt deze vrij wanneer nodig";
+"invisible.pending.title" = "Onvoltooide macOS-update";
+"invisible.pending.message" = "Een update is voorbereid maar niet geïnstalleerd; tot die klaar is houdt hij snapshots en updateruimte vast.";
+"invisible.pending.open" = "Software-update…";
+
+/* Space that lives outside the home folder */
+"seed.usercache" = "Tijdelijke systeemcache";
+"seed.installers" = "Oude installatiebestanden";
+"sys.simcaches" = "Simulator-caches";
+
+/* Unscanned disk advisor */
+"root.suggest.title" = "‘%@’ wordt niet gescand";
+"root.suggest.message" = "%d projectsporen op deze schijf gevonden";
+"root.suggest.add" = "Scannen";
+"root.suggest.dismiss" = "Niet meer vragen";
