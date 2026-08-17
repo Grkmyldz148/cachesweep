@@ -294,3 +294,30 @@ final class RootAdvisorTests: XCTestCase {
                                            by: [NSHomeDirectory()]))
     }
 }
+
+/// These probes run other people's programs, some of which would rather ask
+/// a question than answer one.
+final class ToolProbeHardeningTests: XCTestCase {
+
+    /// `cat` with no arguments reads stdin until EOF. With stdin inherited
+    /// this blocks forever, which is exactly how a corepack shim's download
+    /// prompt wedged the whole scan — refreshSeeds() is awaited before
+    /// anything else and isScanning would never clear again.
+    func testAProbeThatReadsStdinReturnsInsteadOfHanging() {
+        let probe = ToolProbe.Probe(id: "stdin", name: "n", symbol: "s",
+                                    executable: "cat", arguments: [])
+        let done = expectation(description: "probe returned")
+        DispatchQueue.global().async {
+            _ = ToolProbe.ask(probe)
+            done.fulfill()
+        }
+        wait(for: [done], timeout: 5)
+    }
+
+    func testTimeoutsAreBoundedAndOrdered() {
+        XCTAssertLessThanOrEqual(ToolProbe.probeTimeout, 30,
+                                 "a config question must not hold the scan open")
+        XCTAssertGreaterThan(SimulatorRuntimes.deleteTimeout, SimulatorRuntimes.listTimeout,
+                             "moving gigabytes needs longer than asking a question")
+    }
+}
