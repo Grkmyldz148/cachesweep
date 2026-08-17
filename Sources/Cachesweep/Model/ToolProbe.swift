@@ -172,17 +172,46 @@ enum ToolProbe {
 
     // MARK: Process plumbing
 
+    /// How long a tool gets to answer a question about its own configuration.
+    /// Generous for a `config get`, short enough that a wedged tool cannot
+    /// hold the scan open.
+    static let probeTimeout: TimeInterval = 10
+
+    /// These are other people's programs, and some of them would rather ask a
+    /// question than answer one: `pnpm` here is a corepack shim that ships
+    /// with `COREPACK_ENABLE_DOWNLOAD_PROMPT` on, so it can print a prompt and
+    /// block on stdin waiting for a yes. Inheriting stdin and waiting forever
+    /// meant one such tool wedged the whole scan — `refreshSeeds()` is awaited
+    /// before anything else, and `isScanning` would never clear again.
+    ///
+    /// So: no stdin to read from, a hostile-to-interactivity environment, and
+    /// a hard deadline after which the process is killed. Terminating also
+    /// closes the pipe, which frees the read below if output ever filled it.
     private static func run(_ tool: String, _ arguments: [String], in cwd: String) -> String? {
         let p = Process()
         p.executableURL = URL(fileURLWithPath: tool)
         p.arguments = arguments
         p.currentDirectoryURL = URL(fileURLWithPath: cwd)
+
+        var env = ProcessInfo.processInfo.environment
+        env["COREPACK_ENABLE_DOWNLOAD_PROMPT"] = "0"
+        env["CI"] = "1"                    // the conventional "do not prompt me"
+        env["NO_COLOR"] = "1"
+        p.environment = env
+
         let pipe = Pipe()
         p.standardOutput = pipe
         p.standardError = FileHandle.nullDevice
+        p.standardInput = FileHandle.nullDevice
         guard (try? p.run()) != nil else { return nil }
+
+        let killer = DispatchWorkItem { if p.isRunning { p.terminate() } }
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + probeTimeout,
+                                                       execute: killer)
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         p.waitUntilExit()
+        killer.cancel()
+
         guard p.terminationStatus == 0 else { return nil }
         return String(decoding: data, as: UTF8.self)
     }

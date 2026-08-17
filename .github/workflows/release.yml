@@ -57,6 +57,11 @@ jobs:
         with:
           tag_name: v${{ steps.ver.outputs.version }}
           name: Cachesweep ${{ steps.ver.outputs.version }}
+          # A semver pre-release (0.8.0-rc1) must not become "Latest": the
+          # app's SUFeedURL is releases/latest/download/appcast.xml, so
+          # publishing one as a normal release would hand every installed
+          # copy the release candidate's feed and auto-update the lot.
+          prerelease: ${{ contains(steps.ver.outputs.version, '-') }}
           files: |
             dist/Cachesweep-${{ steps.ver.outputs.version }}.zip
             dist/Cachesweep-${{ steps.ver.outputs.version }}.dmg

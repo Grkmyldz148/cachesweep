@@ -100,7 +100,7 @@ enum SimulatorRuntimes {
     /// Remove one runtime. Throws simctl's own message — it refuses while a
     /// simulator using the runtime is booted, and the user needs to see why.
     nonisolated static func delete(id: String) throws {
-        guard let out = run(["simctl", "runtime", "delete", id]) else {
+        guard let out = run(["simctl", "runtime", "delete", id], timeout: deleteTimeout) else {
             throw RuntimeError.unavailable
         }
         guard out.status == 0 else {
@@ -122,17 +122,29 @@ enum SimulatorRuntimes {
         return run(["-p"], tool: "/usr/bin/xcode-select")?.status == 0
     }
 
+    /// Listing is a question and should be instant; deleting moves gigabytes
+    /// out of asset storage and is allowed to take its time.
+    static let listTimeout: TimeInterval = 20
+    static let deleteTimeout: TimeInterval = 300
+
     private static func run(_ arguments: [String],
-                            tool: String = "/usr/bin/xcrun") -> (status: Int32, data: Data)? {
+                            tool: String = "/usr/bin/xcrun",
+                            timeout: TimeInterval = listTimeout) -> (status: Int32, data: Data)? {
         let p = Process()
         p.executableURL = URL(fileURLWithPath: tool)
         p.arguments = arguments
         let pipe = Pipe()
         p.standardOutput = pipe
-        p.standardError = pipe          // simctl explains refusals on stderr
+        p.standardError = pipe              // simctl explains refusals on stderr
+        p.standardInput = FileHandle.nullDevice   // nothing here may wait on an answer
         guard (try? p.run()) != nil else { return nil }
+
+        let killer = DispatchWorkItem { if p.isRunning { p.terminate() } }
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + timeout, execute: killer)
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         p.waitUntilExit()
+        killer.cancel()
+
         return (p.terminationStatus, data)
     }
 }
