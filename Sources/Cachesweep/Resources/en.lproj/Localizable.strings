@@ -14,7 +14,7 @@
 "clean.confirm.message" = "These are regenerable caches. This cannot be undone.";
 "subtitle.scanning" = "Scanning…";
 "subtitle.lastClean" = "Last cleanup: %1$@ freed · %2$@ found";
-"subtitle.selected" = "%1$d selected · %2$@ found in total";
+"subtitle.selected" = "%1$d categories selected · %2$@ found in total";
 
 /* Live activity */
 "live.title" = "LIVE ACTIVITY";
@@ -146,3 +146,20 @@
 "root.suggest.message" = "%d project markers found on this disk";
 "root.suggest.add" = "Scan it";
 "root.suggest.dismiss" = "Don’t ask again";
+
+/* UX pass: amount CTA, collapsible live section, worded select-all,
+   tiny-row grouping, idle-days detail */
+"action.cleanAmount" = "Clean %@";
+"live.locations" = "%d locations";
+"live.session" = "▲ %@ this session";
+"activity.clean" = "Clean…";
+"section.selectAllBtn" = "Select All";
+"section.deselectAll" = "Deselect All";
+"tiny.title" = "%d small caches";
+"tiny.detail" = "all under 1 MB";
+"detail.idleDays" = "idle for %d days";
+
+/* Smart scan: per-volume trash, old-version families, boomerang hint */
+"seed.volumetrash" = "External Disk Trash";
+"detail.oldVersions" = "old versions";
+"detail.boomerang" = "refills right away";

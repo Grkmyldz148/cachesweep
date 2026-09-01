@@ -14,7 +14,7 @@
 "clean.confirm.message" = "다시 생성되는 캐시입니다. 이 작업은 되돌릴 수 없습니다.";
 "subtitle.scanning" = "스캔 중…";
 "subtitle.lastClean" = "마지막 정리: %1$@ 확보 · %2$@ 발견";
-"subtitle.selected" = "%1$d개 선택 · 총 %2$@ 발견";
+"subtitle.selected" = "%1$d개 카테고리 선택 · 총 %2$@ 발견";
 
 /* Live activity */
 "live.title" = "실시간 활동";
@@ -146,3 +146,20 @@
 "root.suggest.message" = "이 디스크에서 프로젝트 흔적 %d개를 찾았습니다";
 "root.suggest.add" = "검사";
 "root.suggest.dismiss" = "다시 묻지 않기";
+
+/* UX pass: amount CTA, collapsible live section, worded select-all,
+   tiny-row grouping, idle-days detail */
+"action.cleanAmount" = "%@ 정리";
+"live.locations" = "%d개 위치";
+"live.session" = "이번 세션 ▲ %@";
+"activity.clean" = "정리…";
+"section.selectAllBtn" = "모두 선택";
+"section.deselectAll" = "모두 해제";
+"tiny.title" = "작은 캐시 %d개";
+"tiny.detail" = "모두 1 MB 미만";
+"detail.idleDays" = "%d일간 미사용";
+
+/* Smart scan: per-volume trash, old-version families, boomerang hint */
+"seed.volumetrash" = "외장 디스크 휴지통";
+"detail.oldVersions" = "이전 버전";
+"detail.boomerang" = "바로 다시 채워짐";

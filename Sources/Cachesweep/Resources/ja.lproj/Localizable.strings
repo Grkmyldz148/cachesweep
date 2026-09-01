@@ -14,7 +14,7 @@
 "clean.confirm.message" = "これらは再生成されるキャッシュです。この操作は取り消せません。";
 "subtitle.scanning" = "スキャン中…";
 "subtitle.lastClean" = "前回のクリーンアップ：%1$@ 解放 · %2$@ 検出";
-"subtitle.selected" = "%1$d 件選択 · 合計 %2$@ 検出";
+"subtitle.selected" = "%1$d 個のカテゴリを選択中 · 合計 %2$@ 検出";
 
 /* Live activity */
 "live.title" = "ライブアクティビティ";
@@ -146,3 +146,20 @@
 "root.suggest.message" = "このディスクでプロジェクトの痕跡が %d 件見つかりました";
 "root.suggest.add" = "スキャン";
 "root.suggest.dismiss" = "今後表示しない";
+
+/* UX pass: amount CTA, collapsible live section, worded select-all,
+   tiny-row grouping, idle-days detail */
+"action.cleanAmount" = "%@ をクリーン";
+"live.locations" = "%d 箇所";
+"live.session" = "このセッションで ▲ %@";
+"activity.clean" = "クリーン…";
+"section.selectAllBtn" = "すべて選択";
+"section.deselectAll" = "すべて解除";
+"tiny.title" = "小さなキャッシュ %d 件";
+"tiny.detail" = "すべて 1 MB 未満";
+"detail.idleDays" = "%d 日間未使用";
+
+/* Smart scan: per-volume trash, old-version families, boomerang hint */
+"seed.volumetrash" = "外部ディスクのゴミ箱";
+"detail.oldVersions" = "古いバージョン";
+"detail.boomerang" = "すぐに元に戻る";

@@ -32,7 +32,7 @@ struct ActivityRow: View {
                         .font(.caption.weight(.medium))
                     if !entry.isKnown {
                         Text(L("badge.new"))
-                            .font(.system(size: 9, weight: .bold))
+                            .font(.system(size: 10, weight: .bold))
                             .padding(.horizontal, 4).padding(.vertical, 1)
                             .background(Color.orange.opacity(0.18), in: Capsule())
                             .foregroundStyle(.orange)
@@ -43,28 +43,23 @@ struct ActivityRow: View {
 
             Spacer(minLength: DS.s1)
 
-            Button {
-                Reveal.inFinder(entry.id)
-            } label: {
-                Image(systemName: "arrow.up.forward.app")
-            }
-            .buttonStyle(.borderless)
-            .controlSize(.small)
-            .foregroundStyle(.secondary)
-            .help(L("reveal.help"))
-            .opacity(isHovering ? 1 : 0)
-            .allowsHitTesting(isHovering)
-
+            // A worded button instead of a bare trash glyph: a destructive
+            // action should say what it does, and the ellipsis promises the
+            // confirmation step before anything is deleted.
             if let onClean, !entry.isKnown, entry.size > 0 {
-                Button(action: onClean) {
-                    Image(systemName: "trash")
-                }
-                .buttonStyle(.borderless)
-                .controlSize(.small)
-                .help(L("activity.cleanHelp"))
+                Button(L("activity.clean"), action: onClean)
+                    .buttonStyle(.borderless)
+                    .controlSize(.small)
+                    .font(.caption)
+                    .help(L("activity.cleanHelp"))
+                    .opacity(isHovering ? 1 : 0)
+                    .allowsHitTesting(isHovering)
             }
         }
         .onHover { isHovering = $0 }
+        .contextMenu {
+            Button(L("reveal.help")) { Reveal.inFinder(entry.id) }
+        }
     }
 
     @ViewBuilder
@@ -72,11 +67,15 @@ struct ActivityRow: View {
         HStack(spacing: DS.s1) {
             if entry.size > 0 { Text(entry.size.fileSize) }
             if entry.delta > 0 {
-                Text("▲ \(UInt64(entry.delta).fileSize)").foregroundStyle(.green)
+                // Growth is the bad news here — never paint it green (green
+                // means "safe" elsewhere). Neutral normally, orange when the
+                // session's growth is big enough to care about.
+                Text("▲ \(UInt64(entry.delta).fileSize)")
+                    .foregroundStyle(entry.delta >= 100_000_000 ? Color.orange : Color.secondary)
             } else if entry.delta < 0 {
                 Text("▼ \(UInt64(-entry.delta).fileSize)").foregroundStyle(.secondary)
             }
-            Text("· \(recency)").foregroundStyle(.tertiary)
+            Text("· \(recency)")
         }
         .font(.caption2.monospacedDigit())
         .foregroundStyle(.secondary)

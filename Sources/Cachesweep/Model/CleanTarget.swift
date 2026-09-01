@@ -63,10 +63,28 @@ struct CleanTarget: Identifiable, Sendable {
     var externalScope = false
     /// Size reported by the owning tool — no directory walk can find it.
     var knownSize: UInt64? = nil
+    /// Superseded version folders of one product ("IntelliJIdea2023.1"
+    /// beside a live 2024.x) collected into a single row.
+    var isVersionFamily = false
+    /// Learning proved this kind refills right after every clean — offered,
+    /// but never preselected, and the row says why.
+    var boomerang = false
     var category: TargetCategory = .devCaches
 
     var expandedPaths: [String] {
         rawPaths.map { ($0 as NSString).expandingTildeInPath }
+    }
+
+    /// Human-readable name for a filesystem-derived target: bundle ids read
+    /// by their product part ("com.apple.Safari" → "Safari"), everything else
+    /// keeps its parent for context ("Library · Caches"). The full path stays
+    /// in the detail line either way.
+    static func displayName(leaf: String, parent: String) -> String {
+        let parts = leaf.split(separator: ".")
+        if parts.count >= 3, !leaf.contains(" "), let last = parts.last {
+            return String(last)
+        }
+        return parent.isEmpty ? leaf : "\(parent) · \(leaf)"
     }
 
     /// `/var/folders/<…>/C`, the per-user Darwin cache directory. Derived

@@ -75,6 +75,18 @@ enum Discovery {
     /// this big to be worth a row — see the sweep for why.
     static let selfDeclaredMinBytes: UInt64 = 50 * 1024 * 1024
 
+    /// Forgotten large files: on a disk that is actually full the answer is
+    /// often not a cache at all — a VM disk, a raw video, an old backup.
+    /// Spotlight answers the size question for free; only old, plainly
+    /// visible files qualify, and they are always opt-in.
+    static let largeFileMinBytes: UInt64 = 1_073_741_824
+    static let largeFileMinAgeDays = 30
+    static let largeFileCap = 8
+
+    /// A superseded version folder has to be untouched this long before it
+    /// counts as dead.
+    static let versionStaleAgeDays = 30
+
     // MARK: Public entry
 
     /// Discover and classify cache-like dirs across the user's chosen `roots`.
@@ -83,10 +95,12 @@ enum Discovery {
                          excludes: [String], activePaths: Set<String>,
                          learn: [String: Double],
                          expect: [String: UInt64] = [:],
-                         hotSpots: [String: Set<String>] = [:]) async -> [CleanTarget] {
+                         hotSpots: [String: Set<String>] = [:],
+                         boomerang: Set<String> = []) async -> [CleanTarget] {
         await Task.detached(priority: .utility) {
             run(roots: roots, excluding: seedPaths, excludes: excludes,
-                activePaths: activePaths, learn: learn, expect: expect, hotSpots: hotSpots)
+                activePaths: activePaths, learn: learn, expect: expect,
+                hotSpots: hotSpots, boomerang: boomerang)
         }.value
     }
 
@@ -109,7 +123,8 @@ enum Discovery {
     private static func run(roots: [String], excluding seedPaths: Set<String>,
                             excludes: [String], activePaths: Set<String>,
                             learn: [String: Double], expect: [String: UInt64],
-                            hotSpots: [String: Set<String>]) -> [CleanTarget] {
+                            hotSpots: [String: Set<String>],
+                            boomerang: Set<String>) -> [CleanTarget] {
         let fm = FileManager()
         let home = NSHomeDirectory()
         var seen = Set<String>()
@@ -138,9 +153,16 @@ enum Discovery {
                                    selfDeclared: selfDeclared, excludes: excludes,
                                    ageDays: age, active: active, learnBoost: learnBoost) else { return }
             seen.insert(path)
+            // A proven boomerang stays offered (it is a cache) but sinks in
+            // rank: its expected-bytes credit is exactly what should not
+            // promote it, since those bytes come straight back.
+            let isBoomerang = boomerang.contains(sig)
             scored.append((makeTarget(path, v, ageDays: age, inUse: active, learned: learnBoost > 0,
+                                      boomerang: isBoomerang,
                                       category: designated ? .appCaches : .devCaches),
-                           priority(score: v.score, expectedBytes: expect[sig] ?? 0), capped))
+                           priority(score: v.score, expectedBytes: expect[sig] ?? 0)
+                               - (isBoomerang ? 0.5 : 0),
+                           capped))
         }
 
         for root in roots {
@@ -184,11 +206,51 @@ enum Discovery {
         }
 
         // 3) ~/Library/Caches/* — only when the home root is enabled.
+        //    Version families first: "IntelliJIdea2023.1" beside a live
+        //    2024.x is a superseded cache nobody will ever read again. The
+        //    stale versions become one clean row, and whatever family member
+        //    is current is offered on its own — never the vendor folder as a
+        //    whole, which would count the same bytes twice.
         if roots.contains(home) {
             let cachesRoot = "\(home)/Library/Caches"
             if let subs = try? fm.contentsOfDirectory(atPath: cachesRoot) {
+                var familyCovered = Set<String>()
+
+                func emitFamilies(in dir: String) -> Bool {
+                    var emitted = false
+                    for fam in staleVersionFamilies(in: dir, fm: fm) {
+                        let paths = fam.stalePaths.filter { p in
+                            !seen.contains(p)
+                                && !seedPaths.contains(where: { p == $0 || p.hasPrefix($0 + "/") })
+                                && !denylisted(p, excludes: excludes)
+                        }
+                        guard !paths.isEmpty else { continue }
+                        for p in paths { seen.insert(p); familyCovered.insert(p) }
+                        scored.append((makeOldVersionsTarget(stem: fam.stem, dir: dir,
+                                                             paths: paths, age: fam.staleAge),
+                                       0.95, false))
+                        emitted = true
+                    }
+                    return emitted
+                }
+
+                _ = emitFamilies(in: cachesRoot)
                 for s in subs where !s.hasPrefix(".") {
-                    consider("\(cachesRoot)/\(s)", derived: false, hasTag: false, designated: true)
+                    let child = "\(cachesRoot)/\(s)"
+                    // Already swept up into a family aggregate — offering it
+                    // again as a plain folder would race two deletes.
+                    guard !familyCovered.contains(child) else { continue }
+                    if emitFamilies(in: child) {
+                        // The vendor folder splits into per-version rows: the
+                        // stale ones are aggregated above, the rest (current
+                        // version, shared dirs) stand on their own.
+                        for g in (try? fm.contentsOfDirectory(atPath: child)) ?? []
+                        where !g.hasPrefix(".") && !familyCovered.contains("\(child)/\(g)") {
+                            consider("\(child)/\(g)", derived: false, hasTag: false, designated: true)
+                        }
+                    } else {
+                        consider(child, derived: false, hasTag: false, designated: true)
+                    }
                 }
             }
         }
@@ -331,6 +393,20 @@ enum Discovery {
             scored.append((installers, 0.9, false))
         }
 
+        // 7) Forgotten large files. Spotlight answers "which single files
+        //    hold gigabytes" for free; the filter keeps only old, plainly
+        //    visible ones — never anything inside Library, a hidden folder or
+        //    an app bundle, where a big file is an app's live data store.
+        var bigCandidates: [String] = []
+        for root in roots {
+            bigCandidates += mdfind(["-onlyin", root,
+                                     "kMDItemFSSize >= \(largeFileMinBytes)"]).prefix(2000)
+        }
+        for t in largeFileTargets(from: bigCandidates, home: home,
+                                  excludes: excludes, seedPaths: seedPaths) {
+            scored.append((t, 0.85, false))
+        }
+
         // Drop candidates nested inside a shallower candidate — the parent
         // already covers their bytes (prevents double counting and racing
         // deletes like `target` + `target/wasm32-unknown-unknown`).
@@ -445,6 +521,144 @@ enum Discovery {
         )
     }
 
+    // MARK: Version families
+
+    struct VersionFamily {
+        let stem: String          // display name ("IntelliJIdea"), never empty
+        let stalePaths: [String]  // superseded versions, oldest activity ≥ threshold
+        let staleAge: Int         // most recent activity among the stale ones
+    }
+
+    /// "Foo 2023.1" → ("Foo", [2023, 1]). Conservative: the name has to end
+    /// in a plainly numeric version chunk; anything else is not a version.
+    static func parseVersionedName(_ name: String) -> (stem: String, version: [Int])? {
+        let chars = Array(name)
+        var i = chars.count
+        while i > 0, chars[i - 1].isNumber || chars[i - 1] == "." || chars[i - 1] == "_" {
+            i -= 1
+        }
+        guard i < chars.count else { return nil }
+        var versionPart = String(chars[i...])
+        while let f = versionPart.first, !f.isNumber { versionPart.removeFirst() }
+        let version = versionPart
+            .split(whereSeparator: { $0 == "." || $0 == "_" })
+            .compactMap { Int($0) }
+        guard !version.isEmpty, versionPart.last?.isNumber == true else { return nil }
+        var stem = String(chars[..<i])
+        while let l = stem.last, l == " " || l == "." || l == "_" || l == "-" {
+            stem.removeLast()
+        }
+        return (stem, version)
+    }
+
+    /// Sibling folders of one product that differ only by version, where the
+    /// highest version supersedes the rest. Members other than the newest
+    /// that nobody has touched in `staleAgeDays` are dead weight: the product
+    /// reads its current version's folder and nothing ever migrates back.
+    static func staleVersionFamilies(in dir: String, fm: FileManager,
+                                     staleAgeDays: Int = versionStaleAgeDays) -> [VersionFamily] {
+        guard let names = try? fm.contentsOfDirectory(atPath: dir) else { return [] }
+        var groups: [String: [(name: String, version: [Int])]] = [:]
+        for n in names where !n.hasPrefix(".") {
+            guard let p = parseVersionedName(n), isDir("\(dir)/\(n)", fm) else { continue }
+            groups[p.stem.lowercased(), default: []].append((n, p.version))
+        }
+        var out: [VersionFamily] = []
+        for (key, members) in groups where members.count >= 2 {
+            let sorted = members.sorted { $0.version.lexicographicallyPrecedes($1.version) }
+            var staleAge = Int.max
+            let stale = sorted.dropLast().compactMap { m -> String? in
+                let p = "\(dir)/\(m.name)"
+                guard let age = ageInDays(p, fm), age >= staleAgeDays else { return nil }
+                staleAge = min(staleAge, age)
+                return p
+            }
+            guard !stale.isEmpty else { continue }
+            let stem = key.isEmpty ? (dir as NSString).lastPathComponent
+                                   : parseVersionedName(sorted.last!.name)?.stem ?? key
+            out.append(VersionFamily(stem: stem, stalePaths: stale, staleAge: staleAge))
+        }
+        return out.sorted { $0.stem < $1.stem }
+    }
+
+    private static func makeOldVersionsTarget(stem: String, dir: String,
+                                              paths: [String], age: Int) -> CleanTarget {
+        CleanTarget(
+            id: "oldver:\(dir)/\(stem)",
+            name: stem,
+            detail: "\(tildeAbbreviate(dir)) · \(paths.count)",
+            symbol: "clock.arrow.circlepath",
+            rawPaths: paths.sorted(),
+            safety: .safe,              // superseded cache versions under a Caches root
+            strategy: .directory,
+            isDiscovered: true,
+            ageDays: age,
+            isVersionFamily: true,
+            category: .appCaches
+        )
+    }
+
+    // MARK: Forgotten large files
+
+    /// Filter Spotlight's size hits down to files worth a row: real files,
+    /// verified big, untouched for a month, sitting in plain sight. Anything
+    /// under a Library, a hidden folder or an app bundle is an app's problem,
+    /// not the user's; installers in ~/Downloads belong to the installer row.
+    static func largeFileTargets(from candidates: [String], home: String,
+                                 excludes: [String], seedPaths: Set<String>,
+                                 minBytes: UInt64 = largeFileMinBytes,
+                                 minAgeDays: Int = largeFileMinAgeDays,
+                                 cap: Int = largeFileCap,
+                                 now: Date = Date()) -> [CleanTarget] {
+        let keys: Set<URLResourceKey> = [.totalFileAllocatedSizeKey, .isRegularFileKey,
+                                         .contentModificationDateKey]
+        var picked: [(path: String, size: UInt64, age: Int)] = []
+        var seenPaths = Set<String>()
+        for path in candidates {
+            guard !seenPaths.contains(path) else { continue }
+            seenPaths.insert(path)
+            let comps = (path as NSString).pathComponents
+            guard !comps.contains(where: {
+                $0.hasPrefix(".") || $0 == "Library" || $0.hasSuffix(".app")
+            }) else { continue }
+            if denylisted(path, excludes: excludes) { continue }
+            if seedPaths.contains(where: { path == $0 || path.hasPrefix($0 + "/") }) { continue }
+            let ext = (path as NSString).pathExtension.lowercased()
+            if installerExtensions.contains(ext), path.hasPrefix(home + "/Downloads/") { continue }
+            // Spotlight metadata can be stale — re-verify against the filesystem.
+            guard let v = try? URL(fileURLWithPath: path).resourceValues(forKeys: keys),
+                  v.isRegularFile == true,
+                  let bytes = v.totalFileAllocatedSize, UInt64(bytes) >= minBytes,
+                  let modified = v.contentModificationDate else { continue }
+            let age = Int(now.timeIntervalSince(modified) / 86_400)
+            guard age >= minAgeDays else { continue }
+            picked.append((path, UInt64(bytes), age))
+        }
+        return picked.sorted { $0.size > $1.size }.prefix(cap).map { f in
+            CleanTarget(
+                id: "bigfile:\(f.path)",
+                name: (f.path as NSString).lastPathComponent,
+                detail: tildeAbbreviate((f.path as NSString).deletingLastPathComponent),
+                symbol: fileSymbol(for: (f.path as NSString).pathExtension.lowercased()),
+                rawPaths: [f.path],
+                safety: .caution,       // a real file — always the user's call
+                strategy: .directory,
+                isDiscovered: true,
+                ageDays: f.age,
+                category: .other
+            )
+        }
+    }
+
+    private static func fileSymbol(for ext: String) -> String {
+        switch ext {
+        case "mov", "mp4", "mkv", "avi", "webm":            return "film"
+        case "zip", "tar", "gz", "tgz", "7z", "rar":        return "doc.zipper"
+        case "dmg", "iso", "img", "raw", "vdi", "vmdk", "qcow2": return "externaldrive"
+        default:                                            return "doc"
+        }
+    }
+
     // MARK: Classifier
 
     struct Verdict { let safety: Safety; let score: Double }
@@ -513,12 +727,13 @@ enum Discovery {
     // MARK: Helpers
 
     private static func makeTarget(_ path: String, _ v: Verdict, ageDays: Int?, inUse: Bool,
-                                   learned: Bool, category: TargetCategory) -> CleanTarget {
+                                   learned: Bool, boomerang: Bool,
+                                   category: TargetCategory) -> CleanTarget {
         let leaf = (path as NSString).lastPathComponent
         let parent = ((path as NSString).deletingLastPathComponent as NSString).lastPathComponent
         return CleanTarget(
             id: "disc:\(path)",
-            name: parent.isEmpty ? leaf : "\(parent) · \(leaf)",
+            name: CleanTarget.displayName(leaf: leaf, parent: parent),
             detail: tildeAbbreviate(path),
             symbol: symbol(for: leaf),
             rawPaths: [path],
@@ -528,6 +743,7 @@ enum Discovery {
             ageDays: ageDays,
             inUse: inUse,
             learned: learned,
+            boomerang: boomerang,
             category: category
         )
     }

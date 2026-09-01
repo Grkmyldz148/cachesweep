@@ -14,7 +14,7 @@
 "clean.confirm.message" = "Dit zijn opnieuw aan te maken caches. Dit kan niet ongedaan worden gemaakt.";
 "subtitle.scanning" = "Scannen…";
 "subtitle.lastClean" = "Laatste opschoning: %1$@ vrijgemaakt · %2$@ gevonden";
-"subtitle.selected" = "%1$d geselecteerd · %2$@ in totaal gevonden";
+"subtitle.selected" = "%1$d categorieën geselecteerd · %2$@ in totaal gevonden";
 
 /* Live activity */
 "live.title" = "LIVE-ACTIVITEIT";
@@ -146,3 +146,20 @@
 "root.suggest.message" = "%d projectsporen op deze schijf gevonden";
 "root.suggest.add" = "Scannen";
 "root.suggest.dismiss" = "Niet meer vragen";
+
+/* UX pass: amount CTA, collapsible live section, worded select-all,
+   tiny-row grouping, idle-days detail */
+"action.cleanAmount" = "%@ opruimen";
+"live.locations" = "%d locaties";
+"live.session" = "▲ %@ deze sessie";
+"activity.clean" = "Opruimen…";
+"section.selectAllBtn" = "Alles selecteren";
+"section.deselectAll" = "Alles deselecteren";
+"tiny.title" = "%d kleine caches";
+"tiny.detail" = "allemaal onder 1 MB";
+"detail.idleDays" = "%d dagen inactief";
+
+/* Smart scan: per-volume trash, old-version families, boomerang hint */
+"seed.volumetrash" = "Prullenmand externe schijven";
+"detail.oldVersions" = "oude versies";
+"detail.boomerang" = "loopt meteen weer vol";

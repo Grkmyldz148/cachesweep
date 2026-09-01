@@ -8,16 +8,18 @@ struct Knowledge: Codable {
     var regenerated = 0          // times it grew back afterwards (proof it's regenerable)
     var skipped = 0              // times the user deliberately left it unselected
     var freedBytes: UInt64 = 0   // how much this kind has actually returned, in total
+    var boomerang = 0            // times it refilled to most of its size within days
 
     init() {}
 
-    /// Hand-written so a store written before `freedBytes` existed still loads.
+    /// Hand-written so a store written before the newer fields existed still loads.
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         cleaned = try c.decodeIfPresent(Int.self, forKey: .cleaned) ?? 0
         regenerated = try c.decodeIfPresent(Int.self, forKey: .regenerated) ?? 0
         skipped = try c.decodeIfPresent(Int.self, forKey: .skipped) ?? 0
         freedBytes = try c.decodeIfPresent(UInt64.self, forKey: .freedBytes) ?? 0
+        boomerang = try c.decodeIfPresent(Int.self, forKey: .boomerang) ?? 0
     }
 }
 
@@ -34,6 +36,15 @@ struct Place: Codable {
 /// A clean waiting for its "did it come back?" answer.
 struct PendingClean: Codable {
     let signature: String
+    var at = Date()
+}
+
+/// A clean waiting for its "how much of it came back?" answer. Separate from
+/// `PendingClean`: regeneration proof consumes its entry on the first write,
+/// while this one has to survive until somebody measures the folder again.
+struct SizeWatch: Codable {
+    let signature: String
+    let freed: UInt64
     var at = Date()
 }
 
@@ -55,6 +66,8 @@ final class LearningStore {
     /// cleanedPath → the clean awaiting a regeneration signal (persisted, so
     /// the proof survives an app restart).
     @ObservationIgnored private var pending: [String: PendingClean] = [:]
+    /// cleanedPath → the clean awaiting a refill measurement (boomerang test).
+    @ObservationIgnored private var sizeWatch: [String: SizeWatch] = [:]
     private let url: URL
 
     /// How long a clean waits for its cache to come back before we stop
@@ -64,12 +77,22 @@ final class LearningStore {
     private static let placeTTL: TimeInterval = 120 * 86_400
     private static let maxPlaces = 200
 
+    /// Boomerang test: a clean under this size isn't worth second-guessing…
+    nonisolated static let boomerangMinBytes: UInt64 = 50 * 1024 * 1024
+    /// …and only a refill inside this window counts as "right away".
+    nonisolated static let boomerangWindow: TimeInterval = 7 * 86_400
+    /// The fraction of the freed bytes that has to be back.
+    nonisolated static let boomerangRefillFraction = 0.6
+    /// Watches that never got an answer are dropped after this long.
+    private static let sizeWatchTTL: TimeInterval = 14 * 86_400
+
     /// On-disk layout, with migration from both older formats.
     private struct Store: Codable {
         var version = 2
         var knowledge: [String: Knowledge]
         var pending: [String: PendingClean]
         var places: [String: Place]
+        var sizeWatch: [String: SizeWatch]? = nil   // absent in older stores
     }
 
     private init() {
@@ -215,8 +238,46 @@ final class LearningStore {
         places[path] = place
 
         pending[path] = PendingClean(signature: sig)
+        if freed >= Self.boomerangMinBytes {
+            sizeWatch[path] = SizeWatch(signature: sig, freed: freed)
+        }
         prune()
         save()
+    }
+
+    /// The boomerang test, as a pure decision so it can be reasoned about:
+    /// nil = keep watching, true = it refilled right away (churn, not a win),
+    /// false = the window closed without a refill (a real clean).
+    nonisolated static func refillVerdict(freed: UInt64, measured: UInt64,
+                                          cleanedAt: Date, now: Date = Date()) -> Bool? {
+        if now.timeIntervalSince(cleanedAt) > boomerangWindow { return false }
+        if Double(measured) >= Double(freed) * boomerangRefillFraction { return true }
+        return nil
+    }
+
+    /// Fed by anything that measures a folder (scan sizing, the live
+    /// tracker's resize): if a recently cleaned place is back to most of its
+    /// old size within days, cleaning it again is churn — record that, so the
+    /// row can say so and discovery can rank it down.
+    func noticeMeasuredSize(path: String, size: UInt64) {
+        guard let w = sizeWatch[path] else { return }
+        switch Self.refillVerdict(freed: w.freed, measured: size, cleanedAt: w.at) {
+        case nil:
+            return                              // window still open — keep watching
+        case true?:
+            knowledge[w.signature, default: Knowledge()].boomerang += 1
+            sweepDebug("🧠 bumerang: \(w.signature) temizlendi → günler içinde geri doldu")
+        case false?:
+            break                               // stayed clean — nothing to record
+        }
+        sizeWatch[path] = nil
+        save()
+    }
+
+    /// Kinds proven to refill right after cleaning — still offered (they are
+    /// caches), but never preselected and ranked below everything else.
+    func boomerangKinds() -> Set<String> {
+        Set(knowledge.filter { $0.value.boomerang >= 1 }.keys)
     }
 
     /// One skip per kind per clean action (callers dedupe by signature) —
@@ -255,6 +316,7 @@ final class LearningStore {
     private func prune() {
         let now = Date()
         pending = pending.filter { now.timeIntervalSince($0.value.at) < Self.pendingTTL }
+        sizeWatch = sizeWatch.filter { now.timeIntervalSince($0.value.at) < Self.sizeWatchTTL }
         places = places.filter {
             $0.value.regenerated > 0 || now.timeIntervalSince($0.value.lastCleaned) < Self.placeTTL
         }
@@ -273,6 +335,7 @@ final class LearningStore {
             knowledge = store.knowledge
             pending = store.pending
             places = store.places
+            sizeWatch = store.sizeWatch ?? [:]
         } else if let old = try? JSONDecoder().decode(LegacyStore.self, from: data) {
             knowledge = old.knowledge
             pending = old.pending.mapValues { PendingClean(signature: $0) }
@@ -296,7 +359,8 @@ final class LearningStore {
     }
 
     private func save() {
-        let store = Store(knowledge: knowledge, pending: pending, places: places)
+        let store = Store(knowledge: knowledge, pending: pending, places: places,
+                          sizeWatch: sizeWatch)
         if let data = try? JSONEncoder().encode(store) { try? data.write(to: url) }
     }
 }

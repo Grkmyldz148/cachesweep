@@ -14,7 +14,7 @@
 "clean.confirm.message" = "Это восстанавливаемые кэши. Действие нельзя отменить.";
 "subtitle.scanning" = "Сканирование…";
 "subtitle.lastClean" = "Последняя очистка: освобождено %1$@ · найдено %2$@";
-"subtitle.selected" = "Выбрано %1$d · всего найдено %2$@";
+"subtitle.selected" = "Выбрано категорий: %1$d · всего найдено %2$@";
 
 /* Live activity */
 "live.title" = "АКТИВНОСТЬ В РЕАЛЬНОМ ВРЕМЕНИ";
@@ -146,3 +146,20 @@
 "root.suggest.message" = "На этом диске найдено следов проектов: %d";
 "root.suggest.add" = "Сканировать";
 "root.suggest.dismiss" = "Больше не спрашивать";
+
+/* UX pass: amount CTA, collapsible live section, worded select-all,
+   tiny-row grouping, idle-days detail */
+"action.cleanAmount" = "Очистить %@";
+"live.locations" = "%d мест";
+"live.session" = "▲ %@ за сеанс";
+"activity.clean" = "Очистить…";
+"section.selectAllBtn" = "Выбрать все";
+"section.deselectAll" = "Снять выбор";
+"tiny.title" = "Маленькие кэши: %d";
+"tiny.detail" = "все меньше 1 МБ";
+"detail.idleDays" = "не использовался %d дн.";
+
+/* Smart scan: per-volume trash, old-version families, boomerang hint */
+"seed.volumetrash" = "Корзины внешних дисков";
+"detail.oldVersions" = "старые версии";
+"detail.boomerang" = "тут же заполняется снова";

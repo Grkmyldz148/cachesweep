@@ -5,6 +5,14 @@ struct MenuContentView: View {
     @Bindable var model: AppModel
     @State private var confirming = false
     @State private var pendingDiscovery: ActivityEntry?
+    /// Live tracking is ambient status, not the popover's job — collapsed by
+    /// default so the actionable list gets the space.
+    @AppStorage("liveExpanded") private var liveExpanded = false
+    /// Categories whose sub-megabyte rows are shown individually.
+    @State private var expandedTiny: Set<TargetCategory> = []
+
+    /// Below this, a row is noise on its own: grouped into one line per category.
+    private static let tinyThreshold: UInt64 = 1_000_000
 
     var body: some View {
         VStack(spacing: 0) {
@@ -58,24 +66,52 @@ struct MenuContentView: View {
 
     private var liveSection: some View {
         VStack(alignment: .leading, spacing: DS.s2) {
-            HStack(spacing: DS.s2) {
-                LiveDot()
-                Text(L("live.title"))
-                    .font(.caption2.weight(.semibold))
-                    .tracking(0.5)
-                    .foregroundStyle(.secondary)
-                Spacer()
-                Text(L("live.writingNow"))
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
+            Button {
+                withAnimation(.easeInOut(duration: 0.18)) { liveExpanded.toggle() }
+            } label: {
+                HStack(spacing: DS.s2) {
+                    LiveDot()
+                    Text(L("live.title"))
+                        .font(.caption2.weight(.semibold))
+                        .tracking(0.5)
+                        .foregroundStyle(.secondary)
+                    Text(verbatim: "· " + Lf("live.locations", Int32(model.activity.count)))
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    if !liveExpanded, sessionGrowth > 0 {
+                        Text(Lf("live.session", sessionGrowth.fileSize))
+                            .font(.caption2.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text(L("live.writingNow"))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .rotationEffect(.degrees(liveExpanded ? 0 : -90))
+                }
+                .contentShape(Rectangle())
             }
-            ForEach(model.activity.prefix(4)) { entry in
-                ActivityRow(entry: entry,
-                            onClean: entry.isKnown ? nil : { pendingDiscovery = entry })
+            .buttonStyle(.plain)
+
+            if liveExpanded {
+                ForEach(model.activity.prefix(4)) { entry in
+                    ActivityRow(entry: entry,
+                                onClean: entry.isKnown ? nil : { pendingDiscovery = entry })
+                }
             }
         }
         .padding(.horizontal, DS.s4)
         .padding(.vertical, DS.s3)
+    }
+
+    /// Net growth across every tracked location this session — the collapsed
+    /// section's one-line summary.
+    private var sessionGrowth: UInt64 {
+        UInt64(model.activity.map { max(0, $0.delta) }.reduce(0, +))
     }
 
     // MARK: Header
@@ -104,6 +140,7 @@ struct MenuContentView: View {
                     .font(.system(size: 36, weight: .semibold, design: .rounded))
                     .monospacedDigit()
                     .contentTransition(.numericText())
+                if model.grandTotal > 0 { selectionGauge }
                 Text(subtitle)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
@@ -116,7 +153,7 @@ struct MenuContentView: View {
             } label: {
                 HStack(spacing: DS.s2) {
                     if model.isCleaning { ProgressView().controlSize(.small) }
-                    Text(model.isCleaning ? L("action.cleaning") : L("action.cleanSelected"))
+                    Text(ctaTitle)
                         .fontWeight(.medium)
                 }
                 .frame(maxWidth: .infinity)
@@ -147,19 +184,60 @@ struct MenuContentView: View {
         return Lf("subtitle.selected", Int32(model.selectedCount), model.grandTotal.fileSize)
     }
 
+    /// The button says what it will do: "Clean 9.2 GB", not just "Clean".
+    private var ctaTitle: String {
+        if model.isCleaning { return L("action.cleaning") }
+        if model.selectedReclaimable > 0 {
+            return Lf("action.cleanAmount", model.selectedReclaimable.fileSize)
+        }
+        return L("action.cleanSelected")
+    }
+
+    /// Selected-of-found at a glance. The headline number alone kept reading
+    /// as "this is all the app found" — the bar shows how much more is there.
+    private var selectionGauge: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                Capsule().fill(Color.secondary.opacity(0.25))
+                Capsule().fill(Color.accentColor)
+                    .frame(width: gaugeRatio == 0 ? 0 : max(4, geo.size.width * gaugeRatio))
+            }
+        }
+        .frame(width: 220, height: 4)
+        .padding(.vertical, 2)
+        .animation(.easeInOut(duration: 0.25), value: gaugeRatio)
+    }
+
+    private var gaugeRatio: CGFloat {
+        guard model.grandTotal > 0 else { return 0 }
+        return min(1, CGFloat(Double(model.selectedReclaimable) / Double(model.grandTotal)))
+    }
+
     // MARK: List
 
     private var list: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 ForEach(TargetCategory.allCases, id: \.self) { cat in
-                    let rows = rows(for: cat)
-                    if !rows.isEmpty {
-                        sectionHeader(cat.title, rows: rows)
-                        ForEach(rows) { state in
+                    let all = rows(for: cat)
+                    let tiny = all.filter { $0.size < Self.tinyThreshold }
+                    // Grouping one or two rows saves nothing — inline those.
+                    let grouped = tiny.count >= 3
+                    let inline = grouped ? all.filter { $0.size >= Self.tinyThreshold } : all
+                    if !all.isEmpty {
+                        sectionHeader(cat.title, rows: all)
+                        ForEach(inline) { state in
                             CategoryRow(state: state) { state.isSelected.toggle() }
-                            if state.id != rows.last?.id {
+                            if state.id != inline.last?.id || grouped {
                                 Divider().padding(.leading, DS.s4 + DS.iconTile + DS.s3)
+                            }
+                        }
+                        if grouped {
+                            tinyRow(cat, rows: tiny)
+                            if expandedTiny.contains(cat) {
+                                ForEach(tiny) { state in
+                                    CategoryRow(state: state) { state.isSelected.toggle() }
+                                }
                             }
                         }
                     }
@@ -171,6 +249,14 @@ struct MenuContentView: View {
             }
             .padding(.vertical, DS.s1)
         }
+        // Rows sliding under the header used to cut off hard; ease them out.
+        .mask(
+            VStack(spacing: 0) {
+                LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
+                    .frame(height: 6)
+                Color.black
+            }
+        )
     }
 
     private func rows(for cat: TargetCategory) -> [TargetState] {
@@ -178,6 +264,63 @@ struct MenuContentView: View {
             .filter { $0.target.category == cat }
             .filter { $0.size > 0 }   // empties aren't options — don't render them
             .sorted { $0.size > $1.size }
+    }
+
+    /// Sub-megabyte rows drowned the list one 4 kB line at a time — collapse
+    /// them into a single row per category with one collective checkbox.
+    private func tinyRow(_ cat: TargetCategory, rows: [TargetState]) -> some View {
+        let total = rows.reduce(UInt64(0)) { $0 + $1.size }
+        let allOn = rows.allSatisfy(\.isSelected)
+        let noneOn = !rows.contains(where: \.isSelected)
+        let expanded = expandedTiny.contains(cat)
+        return HStack(spacing: DS.s3) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    if expanded { expandedTiny.remove(cat) } else { expandedTiny.insert(cat) }
+                }
+            } label: {
+                HStack(spacing: DS.s3) {
+                    Image(systemName: "square.stack.3d.up")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .frame(width: DS.iconTile, height: DS.iconTile)
+                        .background(Color.secondary.opacity(0.12),
+                                    in: RoundedRectangle(cornerRadius: DS.iconRadius))
+                    VStack(alignment: .leading, spacing: 1) {
+                        HStack(spacing: DS.s1) {
+                            Text(Lf("tiny.title", Int32(rows.count)))
+                                .font(.callout.weight(.medium))
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 9, weight: .semibold))
+                                .foregroundStyle(.secondary)
+                                .rotationEffect(.degrees(expanded ? 90 : 0))
+                        }
+                        Text(L("tiny.detail"))
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: DS.s2)
+                    Text(total.fileSize)
+                        .font(.callout.monospacedDigit())
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            Button {
+                let target = !allOn
+                for r in rows { r.isSelected = target }
+            } label: {
+                Image(systemName: allOn ? "checkmark.circle.fill"
+                                 : noneOn ? "circle" : "minus.circle.fill")
+                    .font(.system(size: 16))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(noneOn ? Color.secondary.opacity(0.5) : Color.accentColor)
+            }
+            .buttonStyle(.plain)
+            .help(L("section.selectAll"))
+        }
+        .padding(.vertical, DS.s2)
+        .padding(.horizontal, DS.s4)
     }
 
     // MARK: Full Disk Access banner
@@ -249,19 +392,16 @@ struct MenuContentView: View {
                 .foregroundStyle(.secondary)
             Spacer()
             if !rows.isEmpty {
+                // A worded control, not a circle: the old header circle read
+                // as one more row checkbox and its effect was a surprise.
                 let allOn = rows.allSatisfy(\.isSelected)
-                let noneOn = !rows.contains(where: \.isSelected)
-                Button {
+                Button(allOn ? L("section.deselectAll") : L("section.selectAllBtn")) {
                     let target = !allOn
                     for r in rows { r.isSelected = target }
-                } label: {
-                    Image(systemName: allOn ? "checkmark.circle.fill"
-                                     : noneOn ? "circle" : "minus.circle.fill")
-                        .font(.system(size: 13))
-                        .symbolRenderingMode(.hierarchical)
-                        .foregroundStyle(noneOn ? Color.secondary.opacity(0.5) : Color.accentColor)
                 }
                 .buttonStyle(.plain)
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(Color.accentColor)
                 .help(L("section.selectAll"))
             }
         }

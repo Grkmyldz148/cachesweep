@@ -14,7 +14,7 @@
 "clean.confirm.message" = "Bunlar yeniden oluşan önbelleklerdir. İşlem geri alınamaz.";
 "subtitle.scanning" = "Taranıyor…";
 "subtitle.lastClean" = "Son temizlik: %1$@ açıldı · %2$@ bulundu";
-"subtitle.selected" = "%1$d seçili · toplam %2$@ bulundu";
+"subtitle.selected" = "%1$d kategori seçili · toplam %2$@ bulundu";
 
 /* Live activity */
 "live.title" = "CANLI AKTİVİTE";
@@ -146,3 +146,20 @@
 "root.suggest.message" = "Bu diskte %d proje izi bulundu";
 "root.suggest.add" = "Tara";
 "root.suggest.dismiss" = "Bir daha sorma";
+
+/* UX pass: amount CTA, collapsible live section, worded select-all,
+   tiny-row grouping, idle-days detail */
+"action.cleanAmount" = "%@ Temizle";
+"live.locations" = "%d konum";
+"live.session" = "bu oturum ▲ %@";
+"activity.clean" = "Temizle…";
+"section.selectAllBtn" = "Tümünü Seç";
+"section.deselectAll" = "Tümünü Bırak";
+"tiny.title" = "%d küçük cache";
+"tiny.detail" = "tümü 1 MB altı";
+"detail.idleDays" = "%d gündür boşta";
+
+/* Smart scan: per-volume trash, old-version families, boomerang hint */
+"seed.volumetrash" = "Harici Disk Çöpleri";
+"detail.oldVersions" = "eski sürümler";
+"detail.boomerang" = "hemen geri doluyor";

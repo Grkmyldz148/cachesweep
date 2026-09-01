@@ -27,9 +27,49 @@ enum DeviceProfile {
             // has to have at least one that exists here.
             target.rawPaths.isEmpty || target.expandedPaths.contains(where: isDirectory)
         }
-        let deduped = dropNested(probed + present + rustToolchains())
+        let deduped = dropNested(probed + present + rustToolchains() + volumeTrashes())
         let covered = Set(deduped.flatMap(\.expandedPaths))
         return deduped + learnedTargets(knownPlaces, covered: covered)
+    }
+
+    // MARK: Per-volume trash
+
+    /// Every mounted volume keeps its own trash under `.Trashes/<uid>` —
+    /// files deleted there never pass through `~/.Trash`, so the home seed
+    /// misses them entirely. One aggregate row for all of them: it is all
+    /// trash the user already threw away.
+    static func volumeTrashes(volumesDir: String = "/Volumes") -> [CleanTarget] {
+        let fm = FileManager.default
+        guard let vols = try? fm.contentsOfDirectory(atPath: volumesDir) else { return [] }
+        var paths: [String] = []
+        var names: [String] = []
+        for v in vols where !v.hasPrefix(".") {
+            let volPath = volumesDir + "/" + v
+            // The boot volume appears here as a symlink to "/" — its trash is
+            // the home-folder seed's job.
+            if (try? fm.destinationOfSymbolicLink(atPath: volPath)) != nil { continue }
+            let keys: Set<URLResourceKey> = [.volumeIsLocalKey, .volumeIsReadOnlyKey]
+            guard let rv = try? URL(fileURLWithPath: volPath).resourceValues(forKeys: keys),
+                  rv.volumeIsLocal == true,           // never walk a network mount
+                  rv.volumeIsReadOnly != true else { continue }
+            let trash = volPath + "/.Trashes/\(getuid())"
+            guard let contents = try? fm.contentsOfDirectory(atPath: trash),
+                  !contents.isEmpty else { continue }
+            paths.append(trash)
+            names.append(v)
+        }
+        guard !paths.isEmpty else { return [] }
+        return [CleanTarget(
+            id: "volume-trashes",
+            name: "seed.volumetrash",
+            detail: names.sorted().joined(separator: ", "),
+            symbol: "trash",
+            rawPaths: paths.sorted(),
+            safety: .safe,                  // already deleted by the user
+            strategy: .contents,
+            externalScope: true,            // outside every scan root by definition
+            category: .other
+        )]
     }
 
     /// Two seeds that overlap would count the same bytes twice and race two
@@ -118,9 +158,11 @@ enum DeviceProfile {
             let parent = ((path as NSString).deletingLastPathComponent as NSString).lastPathComponent
             return CleanTarget(
                 id: learnedPrefix + path,
-                name: parent.isEmpty ? leaf : "\(parent) · \(leaf)",
+                name: CleanTarget.displayName(leaf: leaf, parent: parent),
                 detail: tildeAbbreviate(path),
-                symbol: "brain",
+                // Not "brain": that glyph is the AI-data category's. A learned
+                // place is still a cache — the detail line says how we know it.
+                symbol: "tray.full",
                 rawPaths: [path],
                 safety: .caution,           // learned, not proven — still opt-in
                 strategy: .directory,

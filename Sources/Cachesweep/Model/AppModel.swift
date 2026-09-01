@@ -20,8 +20,14 @@ final class TargetState: Identifiable {
 
     init(target: CleanTarget) {
         self.target = target
-        // Pre-select clearly-safe caches, but never something in active use.
-        self.isSelected = target.safety == .safe && !target.inUse
+        // Pre-select clearly-safe caches, but never something in active use,
+        // and never a proven boomerang (it refills right away — cleaning it
+        // by default is churn). Learned caution places earn preselection:
+        // the user has cleaned them before and they grew back — their own
+        // judgement, recorded. Everything else cautious (leftovers, AI data,
+        // runtimes) stays strictly opt-in.
+        self.isSelected = !target.inUse && !target.boomerang
+            && (target.safety == .safe || (target.learned && !target.isLeftover))
     }
 }
 
@@ -167,7 +173,8 @@ final class AppModel {
                                              activePaths: activePaths,
                                              learn: LearningStore.shared.boosts(),
                                              expect: LearningStore.shared.expectations(),
-                                             hotSpots: LearningStore.shared.hotSpots())
+                                             hotSpots: LearningStore.shared.hotSpots(),
+                                             boomerang: LearningStore.shared.boomerangKinds())
             discoveryCache = (cacheKey, Date(), found)
             sweepDebug("🔭 keşif: \(found.count) aday — " + found.prefix(12).map { t in
                 let flag = t.safety == .safe ? "🟢" : "🟠"
@@ -219,6 +226,14 @@ final class AppModel {
             }
             for await (id, size) in group {
                 if let s = states.first(where: { $0.id == id }) { s.size = size }
+            }
+        }
+        // Fresh measurements answer any open boomerang question ("did the
+        // cleaned folder refill?") — single-path targets only, since a size
+        // spread over several paths says nothing about one place.
+        for st in states where st.target.rawPaths.count == 1 {
+            if let p = st.target.expandedPaths.first {
+                LearningStore.shared.noticeMeasuredSize(path: p, size: st.size)
             }
         }
         invisible = await invisibleReport
@@ -463,6 +478,7 @@ final class AppModel {
             self.dirty.removeAll()
             for path in buckets {
                 let size = await Scanner.size(of: [path])
+                LearningStore.shared.noticeMeasuredSize(path: path, size: size)
                 if let e = self.activity.first(where: { $0.id == path }) {
                     if !e.hasBaseline { e.baseline = size; e.hasBaseline = true }
                     e.size = size

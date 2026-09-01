@@ -14,7 +14,7 @@
 "clean.confirm.message" = "Son cachés regenerables. Esta acción no se puede deshacer.";
 "subtitle.scanning" = "Escaneando…";
 "subtitle.lastClean" = "Última limpieza: %1$@ liberado · %2$@ encontrado";
-"subtitle.selected" = "%1$d seleccionados · %2$@ encontrado en total";
+"subtitle.selected" = "%1$d categorías seleccionadas · %2$@ encontrado en total";
 
 /* Live activity */
 "live.title" = "ACTIVIDAD EN VIVO";
@@ -146,3 +146,20 @@
 "root.suggest.message" = "Se encontraron %d indicios de proyectos en este disco";
 "root.suggest.add" = "Analizar";
 "root.suggest.dismiss" = "No preguntar más";
+
+/* UX pass: amount CTA, collapsible live section, worded select-all,
+   tiny-row grouping, idle-days detail */
+"action.cleanAmount" = "Limpiar %@";
+"live.locations" = "%d ubicaciones";
+"live.session" = "▲ %@ esta sesión";
+"activity.clean" = "Limpiar…";
+"section.selectAllBtn" = "Seleccionar todo";
+"section.deselectAll" = "Deseleccionar todo";
+"tiny.title" = "%d cachés pequeñas";
+"tiny.detail" = "todas menores de 1 MB";
+"detail.idleDays" = "inactiva %d días";
+
+/* Smart scan: per-volume trash, old-version families, boomerang hint */
+"seed.volumetrash" = "Papelera de discos externos";
+"detail.oldVersions" = "versiones antiguas";
+"detail.boomerang" = "se rellena enseguida";

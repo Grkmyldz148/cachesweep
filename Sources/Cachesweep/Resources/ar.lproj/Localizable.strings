@@ -14,7 +14,7 @@
 "clean.confirm.message" = "هذه ذواكر مؤقتة قابلة لإعادة الإنشاء. لا يمكن التراجع عن هذا الإجراء.";
 "subtitle.scanning" = "جارٍ الفحص…";
 "subtitle.lastClean" = "آخر تنظيف: تم تحرير %1$@ · تم العثور على %2$@";
-"subtitle.selected" = "%1$d محدد · تم العثور على %2$@ إجمالًا";
+"subtitle.selected" = "%1$d فئة محددة · تم العثور على %2$@ إجمالًا";
 
 /* Live activity */
 "live.title" = "النشاط المباشر";
@@ -146,3 +146,20 @@
 "root.suggest.message" = "تم العثور على %d أثر لمشاريع على هذا القرص";
 "root.suggest.add" = "افحص";
 "root.suggest.dismiss" = "لا تسأل مرة أخرى";
+
+/* UX pass: amount CTA, collapsible live section, worded select-all,
+   tiny-row grouping, idle-days detail */
+"action.cleanAmount" = "تنظيف %@";
+"live.locations" = "%d مواقع";
+"live.session" = "▲ %@ في هذه الجلسة";
+"activity.clean" = "تنظيف…";
+"section.selectAllBtn" = "تحديد الكل";
+"section.deselectAll" = "إلغاء تحديد الكل";
+"tiny.title" = "%d ذاكرات مؤقتة صغيرة";
+"tiny.detail" = "كلها أقل من 1 م.ب";
+"detail.idleDays" = "غير مستخدم منذ %d يومًا";
+
+/* Smart scan: per-volume trash, old-version families, boomerang hint */
+"seed.volumetrash" = "سلة مهملات الأقراص الخارجية";
+"detail.oldVersions" = "إصدارات قديمة";
+"detail.boomerang" = "يمتلئ من جديد فورًا";

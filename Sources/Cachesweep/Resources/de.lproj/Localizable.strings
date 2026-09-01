@@ -14,7 +14,7 @@
 "clean.confirm.message" = "Dies sind neu erzeugbare Caches. Dies kann nicht rückgängig gemacht werden.";
 "subtitle.scanning" = "Wird gescannt…";
 "subtitle.lastClean" = "Letzte Bereinigung: %1$@ frei · %2$@ gefunden";
-"subtitle.selected" = "%1$d ausgewählt · insgesamt %2$@ gefunden";
+"subtitle.selected" = "%1$d Kategorien ausgewählt · insgesamt %2$@ gefunden";
 
 /* Live activity */
 "live.title" = "LIVE-AKTIVITÄT";
@@ -146,3 +146,20 @@
 "root.suggest.message" = "%d Projektspuren auf diesem Volume gefunden";
 "root.suggest.add" = "Durchsuchen";
 "root.suggest.dismiss" = "Nicht mehr fragen";
+
+/* UX pass: amount CTA, collapsible live section, worded select-all,
+   tiny-row grouping, idle-days detail */
+"action.cleanAmount" = "%@ aufräumen";
+"live.locations" = "%d Orte";
+"live.session" = "▲ %@ in dieser Sitzung";
+"activity.clean" = "Aufräumen…";
+"section.selectAllBtn" = "Alle auswählen";
+"section.deselectAll" = "Alle abwählen";
+"tiny.title" = "%d kleine Caches";
+"tiny.detail" = "alle unter 1 MB";
+"detail.idleDays" = "seit %d Tagen inaktiv";
+
+/* Smart scan: per-volume trash, old-version families, boomerang hint */
+"seed.volumetrash" = "Papierkorb externer Volumes";
+"detail.oldVersions" = "alte Versionen";
+"detail.boomerang" = "füllt sich sofort wieder";

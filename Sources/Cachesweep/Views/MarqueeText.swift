@@ -14,6 +14,9 @@ enum Reveal {
 /// and foreground style from the environment like a plain Text.
 struct MarqueeText: View {
     let text: String
+    /// Middle suits paths (both ends carry meaning); names read better
+    /// truncated at the tail, where the distinctive part is up front.
+    var truncation: Text.TruncationMode = .middle
 
     @State private var textWidth: CGFloat = 0
     @State private var containerWidth: CGFloat = 0
@@ -25,7 +28,7 @@ struct MarqueeText: View {
     var body: some View {
         Text(text)
             .lineLimit(1)
-            .truncationMode(.middle)
+            .truncationMode(truncation)
             .opacity(hovering && overflow > 1 ? 0 : 1)
             .background(widthReader { containerWidth = $0 })
             .overlay(alignment: .leading) {

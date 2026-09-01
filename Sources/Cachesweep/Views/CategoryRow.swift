@@ -4,7 +4,6 @@ import SwiftUI
 struct CategoryRow: View {
     var state: TargetState
     var onToggle: () -> Void
-    @State private var isHovering = false
 
     var body: some View {
         Button(action: onToggle) {
@@ -14,32 +13,21 @@ struct CategoryRow: View {
                     HStack(spacing: DS.s1) {
                         // Seed names are localization keys; discovered names
                         // (paths, bundle components) pass through L() unchanged.
-                        MarqueeText(text: L(state.target.name))
+                        MarqueeText(text: L(state.target.name), truncation: .tail)
                             .font(.callout.weight(.medium))
                             .foregroundStyle(.primary)
-                            .layoutPriority(-1)   // badges keep their space; name compresses & scrolls
+                            .layoutPriority(-1)   // the badge keeps its space; name compresses & scrolls
                         if state.target.isDiscovered {
                             Image(systemName: "sparkle.magnifyingglass")
                                 .font(.system(size: 10, weight: .bold))
                                 .foregroundStyle(.purple)
                                 .help(L("discovered.help"))
                         }
-                        if state.target.inUse {
-                            badge(L("badge.inUse"), .orange)
-                        } else if let d = state.target.ageDays, d >= 14 {
-                            badge(Lf("badge.idleDays", Int32(d)), .gray)
-                        }
-                        if state.target.learned {
-                            badge(L("badge.learned"), .teal)
-                        }
-                        if state.target.isLeftover {
-                            badge(L("badge.leftover"), .indigo)
-                        }
-                        if state.target.needsAdmin {
-                            badge(L("badge.admin"), .gray)
+                        if let b = primaryBadge {
+                            badge(b.0, b.1)
                         }
                     }
-                    MarqueeText(text: state.target.detail)
+                    MarqueeText(text: detailText)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
@@ -49,18 +37,43 @@ struct CategoryRow: View {
             .padding(.vertical, DS.s2)
             .padding(.horizontal, DS.s4)
             .contentShape(Rectangle())
-            .onHover { isHovering = $0 }
         }
         .buttonStyle(.plain)
         .opacity(state.isCleaning ? 0.45 : (isEmpty ? 0.5 : 1))
         .disabled(isEmpty || state.isCleaning)
+        .contextMenu {
+            if let path = state.target.expandedPaths.first {
+                Button(L("reveal.help")) { Reveal.inFinder(path) }
+            }
+        }
     }
 
     private var isEmpty: Bool { state.size == 0 }
 
+    /// At most one badge per row — the state that changes the cleaning
+    /// decision most. Everything informational lives in the detail line.
+    private var primaryBadge: (String, Color)? {
+        if state.target.inUse { return (L("badge.inUse"), .orange) }
+        if state.target.isLeftover { return (L("badge.leftover"), .indigo) }
+        if state.target.needsAdmin { return (L("badge.admin"), .gray) }
+        return nil
+    }
+
+    /// Path plus the states that used to compete as badges on the name line.
+    private var detailText: String {
+        var parts = [state.target.detail]
+        if state.target.isVersionFamily { parts.append(L("detail.oldVersions")) }
+        if state.target.learned { parts.append(L("badge.learned")) }
+        if !state.target.inUse, let d = state.target.ageDays, d >= 14 {
+            parts.append(Lf("detail.idleDays", Int32(d)))
+        }
+        if state.target.boomerang { parts.append(L("detail.boomerang")) }
+        return parts.joined(separator: " · ")
+    }
+
     private func badge(_ text: String, _ color: Color) -> some View {
         Text(text)
-            .font(.system(size: 9, weight: .semibold))
+            .font(.system(size: 10, weight: .semibold))
             .padding(.horizontal, 4).padding(.vertical, 1)
             .background(color.opacity(0.15), in: Capsule())
             .foregroundStyle(color)
@@ -82,17 +95,6 @@ struct CategoryRow: View {
         if state.isCleaning {
             ProgressView().controlSize(.small)
         } else {
-            Button {
-                Reveal.inFinder(state.target.expandedPaths.first ?? "")
-            } label: {
-                Image(systemName: "arrow.up.forward.app")
-            }
-            .buttonStyle(.borderless)
-            .controlSize(.small)
-            .foregroundStyle(.secondary)
-            .help(L("reveal.help"))
-            .opacity(isHovering ? 1 : 0)            // reserved space — no layout jump
-            .allowsHitTesting(isHovering)
             Text(isEmpty ? "—" : state.size.fileSize)
                 .font(.callout.monospacedDigit())
                 .foregroundStyle(isEmpty ? .secondary : .primary)
