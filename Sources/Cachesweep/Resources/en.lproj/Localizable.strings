@@ -163,3 +163,17 @@
 "seed.volumetrash" = "External Disk Trash";
 "detail.oldVersions" = "old versions";
 "detail.boomerang" = "refills right away";
+
+/* Project artifacts: dormant-only, never preselected */
+"category.projects" = "DORMANT PROJECTS";
+"section.selectSafe" = "Select Safe";
+"section.selectRisky" = "Include Risky";
+"badge.noLock" = "no lockfile";
+"clean.confirm.safeOnly" = "Safe only (%@)";
+"clean.confirm.rebuildable" = "%1$@ of this belongs to %2$d project(s) — it won't come back on its own; you'll have to reinstall.";
+"settings.projects" = "Project Folders";
+"settings.projects.footer" = "node_modules, .venv, Pods and the like are listed only after the project itself has gone untouched this long — and none of them is ever preselected.";
+"settings.skipProjects" = "Never touch project folders";
+"settings.projectIdle" = "Show when untouched for";
+"settings.projectIdle.days" = "%d days";
+"detail.artifactCount" = "%d folders";

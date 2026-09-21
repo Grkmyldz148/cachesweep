@@ -163,3 +163,17 @@
 "seed.volumetrash" = "Harici Disk Çöpleri";
 "detail.oldVersions" = "eski sürümler";
 "detail.boomerang" = "hemen geri doluyor";
+
+/* Project artifacts: dormant-only, never preselected */
+"category.projects" = "UYKUDAKİ PROJELER";
+"section.selectSafe" = "Güvenlileri Seç";
+"section.selectRisky" = "Riskliler Dahil Seç";
+"badge.noLock" = "kilit yok";
+"clean.confirm.safeOnly" = "Sadece güvenli olanlar (%@)";
+"clean.confirm.rebuildable" = "Bunun %1$@ kadarı %2$d projenin kendi klasörü — kendiliğinden geri gelmez, yeniden kurman gerekir.";
+"settings.projects" = "Proje Klasörleri";
+"settings.projects.footer" = "node_modules, .venv, Pods gibi klasörler ancak projeye bu süredir dokunulmadıysa listelenir — ve hiçbiri kendiliğinden seçili gelmez.";
+"settings.skipProjects" = "Proje klasörlerine hiç dokunma";
+"settings.projectIdle" = "Şu kadar süredir açılmamışsa göster";
+"settings.projectIdle.days" = "%d gün";
+"detail.artifactCount" = "%d klasör";

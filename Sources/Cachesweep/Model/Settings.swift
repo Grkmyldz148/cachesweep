@@ -19,7 +19,17 @@ final class AppSettings {
         static let excluded = "excludedPaths"
         static let language = "language"
         static let dismissedRoots = "dismissedRootSuggestions"
+        static let projectIdle = "projectIdleDays"
+        static let skipProjects = "skipProjectArtifacts"
     }
+
+    /// How long a project has to have been untouched before its own artifacts
+    /// (`node_modules`, `.venv`, `Pods`…) may even be listed.
+    ///
+    /// Thirty days is the default because it is the shortest span where "I am
+    /// not working on this" is more likely than "I was away". Measured on the
+    /// project, never on the artifact — see `ProjectGuard`.
+    static let idleChoices = [30, 90, 180]
 
     /// Locations the smart scanner searches.
     var scanRoots: [String]
@@ -32,6 +42,10 @@ final class AppSettings {
     /// Disks the advisor offered and the user said no to — asked once, then
     /// never again.
     var dismissedRoots: [String]
+    /// Idle threshold, in days, for offering a project's own artifacts.
+    var projectIdleDays: Int { didSet { save() } }
+    /// Leave every project folder alone, however cold it is.
+    var skipProjectArtifacts: Bool { didSet { save() } }
 
     private init() {
         scanRoots = store.stringArray(forKey: Key.roots) ?? [NSHomeDirectory()]
@@ -39,6 +53,9 @@ final class AppSettings {
         excludedPaths = store.stringArray(forKey: Key.excluded) ?? []
         language = store.string(forKey: Key.language) ?? "system"
         dismissedRoots = store.stringArray(forKey: Key.dismissedRoots) ?? []
+        let idle = store.integer(forKey: Key.projectIdle)
+        projectIdleDays = Self.idleChoices.contains(idle) ? idle : 30
+        skipProjectArtifacts = store.bool(forKey: Key.skipProjects)
         Localizer.apply(language == "system" ? nil : language)
     }
 
@@ -54,6 +71,8 @@ final class AppSettings {
         store.set(excludedPaths, forKey: Key.excluded)
         store.set(language, forKey: Key.language)
         store.set(dismissedRoots, forKey: Key.dismissedRoots)
+        store.set(projectIdleDays, forKey: Key.projectIdle)
+        store.set(skipProjectArtifacts, forKey: Key.skipProjects)
     }
 
     /// Stop offering this disk as a scan root.

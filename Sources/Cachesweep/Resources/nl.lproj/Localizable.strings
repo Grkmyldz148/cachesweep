@@ -163,3 +163,17 @@
 "seed.volumetrash" = "Prullenmand externe schijven";
 "detail.oldVersions" = "oude versies";
 "detail.boomerang" = "loopt meteen weer vol";
+
+/* Project artifacts: dormant-only, never preselected */
+"category.projects" = "SLAPENDE PROJECTEN";
+"section.selectSafe" = "Veilige selecteren";
+"section.selectRisky" = "Riskante meenemen";
+"badge.noLock" = "geen lockfile";
+"clean.confirm.safeOnly" = "Alleen veilige (%@)";
+"clean.confirm.rebuildable" = "%1$@ hiervan hoort bij %2$d project(en) — dat komt niet vanzelf terug, je moet opnieuw installeren.";
+"settings.projects" = "Projectmappen";
+"settings.projects.footer" = "node_modules, .venv, Pods en dergelijke verschijnen pas als het project zelf zo lang onaangeroerd is — en geen ervan staat ooit voorgeselecteerd.";
+"settings.skipProjects" = "Projectmappen nooit aanraken";
+"settings.projectIdle" = "Tonen na inactiviteit van";
+"settings.projectIdle.days" = "%d dagen";
+"detail.artifactCount" = "%d mappen";

@@ -75,6 +75,27 @@ struct SettingsView: View {
             }
 
             Section {
+                Toggle(L("settings.skipProjects"), isOn: Binding(
+                    get: { settings.skipProjectArtifacts },
+                    set: { settings.skipProjectArtifacts = $0 }
+                ))
+                Picker(L("settings.projectIdle"), selection: Binding(
+                    get: { settings.projectIdleDays },
+                    set: { settings.projectIdleDays = $0 }
+                )) {
+                    ForEach(AppSettings.idleChoices, id: \.self) { days in
+                        Text(Lf("settings.projectIdle.days", Int32(days))).tag(days)
+                    }
+                }
+                .pickerStyle(.menu)
+                .disabled(settings.skipProjectArtifacts)
+            } header: {
+                Text(L("settings.projects"))
+            } footer: {
+                Text(L("settings.projects.footer"))
+            }
+
+            Section {
                 if settings.excludedPaths.isEmpty {
                     Text(L("settings.noExclusions")).foregroundStyle(.secondary)
                 }

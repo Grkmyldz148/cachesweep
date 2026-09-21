@@ -96,11 +96,14 @@ enum Discovery {
                          learn: [String: Double],
                          expect: [String: UInt64] = [:],
                          hotSpots: [String: Set<String>] = [:],
-                         boomerang: Set<String> = []) async -> [CleanTarget] {
+                         boomerang: Set<String> = [],
+                         projectIdleDays: Int = 30,
+                         skipProjects: Bool = false) async -> [CleanTarget] {
         await Task.detached(priority: .utility) {
             run(roots: roots, excluding: seedPaths, excludes: excludes,
                 activePaths: activePaths, learn: learn, expect: expect,
-                hotSpots: hotSpots, boomerang: boomerang)
+                hotSpots: hotSpots, boomerang: boomerang,
+                projectIdleDays: projectIdleDays, skipProjects: skipProjects)
         }.value
     }
 
@@ -124,9 +127,12 @@ enum Discovery {
                             excludes: [String], activePaths: Set<String>,
                             learn: [String: Double], expect: [String: UInt64],
                             hotSpots: [String: Set<String>],
-                            boomerang: Set<String>) -> [CleanTarget] {
+                            boomerang: Set<String>,
+                            projectIdleDays: Int = 30,
+                            skipProjects: Bool = false) -> [CleanTarget] {
         let fm = FileManager()
         let home = NSHomeDirectory()
+        let projects = ProjectGuard(idleThresholdDays: projectIdleDays)
         var seen = Set<String>()
         // `capped` marks the one unbounded source (the Spotlight project
         // sweep). Everything else is bounded by the folder it enumerates.
@@ -138,6 +144,11 @@ enum Discovery {
             // Skip anything a curated seed already covers (exact or nested),
             // otherwise its bytes would be counted and cleaned twice.
             guard !seedPaths.contains(where: { path == $0 || path.hasPrefix($0 + "/") }) else { return }
+            // Project artifacts have exactly one way in — the project pass
+            // below, which checks liveness and the repo's own verdict first.
+            // Without this, a `node_modules` carrying a backup-exclusion flag
+            // would slip back in through the self-declared sweep, unchecked.
+            guard ProjectGuard.ownerManifests[lastComp(path)] == nil else { return }
             guard isDir(path, fm) else { return }
             // An empty folder can never free a byte. One readdir here keeps
             // hundreds of empty per-profile cache dirs out of the list.
@@ -165,6 +176,66 @@ enum Discovery {
                            capped))
         }
 
+        /// Candidates that passed the guard, collected rather than emitted:
+        /// rows are per *project*, and which artifacts a project has is only
+        /// known once every pass has run.
+        var projectArtifacts: [ProjectGuard.Artifact] = []
+        func considerProject(_ info: ProjectGuard.Artifact) {
+            let path = info.path
+            guard !seen.contains(path) else { return }
+            guard !seedPaths.contains(where: { path == $0 || path.hasPrefix($0 + "/") }) else { return }
+            guard !denylisted(path, excludes: excludes) else { return }
+            guard isDir(path, fm) else { return }
+            guard let contents = try? fm.contentsOfDirectory(atPath: path),
+                  !contents.isEmpty else { return }
+            seen.insert(path)
+            projectArtifacts.append(info)
+        }
+
+        /// One row per dormant project — a separate door from `consider`,
+        /// because the scoring that decides whether something is a cache has
+        /// nothing useful to say about it. Whether these may be shown at all
+        /// was settled by `ProjectGuard`; what is left is how they read, and
+        /// none of them is ever `.safe`.
+        ///
+        /// A workspace's packages collapse into their root. Thirty rows for
+        /// one monorepo is not a list anybody reads, and worse, it lets half
+        /// of a workspace be selected — which leaves the other half pointing
+        /// at symlinks into a folder that no longer exists.
+        func emitProjects() {
+            let byRoot = Dictionary(grouping: projectArtifacts, by: \.root)
+            for (root, group) in byRoot {
+                let paths = group.map(\.path).sorted()
+                let sig = LearningStore.signature(forPath: paths[0])
+                let isBoomerang = boomerang.contains(sig)
+                let reproducible = group.allSatisfy(\.reproducible)
+                let idle = group.map(\.idleDays).min() ?? 0
+                let target = CleanTarget(
+                    id: "proj:\(root)",
+                    name: (root as NSString).lastPathComponent,
+                    detail: tildeAbbreviate(root),
+                    symbol: symbol(for: (paths[0] as NSString).lastPathComponent),
+                    rawPaths: paths,
+                    // No lockfile means the reinstall is a fresh resolution,
+                    // not a restoration — a different promise, so a different
+                    // tier.
+                    safety: reproducible ? .rebuildable : .caution,
+                    strategy: .directory,
+                    isDiscovered: true,
+                    ageDays: idle,
+                    inUse: paths.contains { isActive($0, activePaths) },
+                    boomerang: isBoomerang,
+                    restoreCommand: Self.restoreSummary(group.map(\.restore)),
+                    reproducible: reproducible,
+                    category: .projects
+                )
+                scored.append((target,
+                               priority(score: 0.9, expectedBytes: expect[sig] ?? 0)
+                                   - (isBoomerang ? 0.5 : 0),
+                               true))
+            }
+        }
+
         for root in roots {
             // Ask Spotlight for every marker at once, then fall back to a
             // bounded walk if it answered nothing for this root. A stale or
@@ -174,9 +245,16 @@ enum Discovery {
             let wanted = Set(manifestMap.keys).union(["CACHEDIR.TAG"])
             var markers: [String: [String]] = [:]
             for name in wanted {
-                let hits = mdfind(["-onlyin", root, "-name", name]).prefix(6000)
-                    .filter { ($0 as NSString).lastPathComponent == name }
-                if !hits.isEmpty { markers[name] = hits }
+                // Filter *before* the cap. A disk of JS projects answers this
+                // query with one hit per installed package — hundreds of
+                // thousands of them, all inside a `node_modules` we are going
+                // to discard anyway. Capping first spent the whole budget on
+                // dependency internals and dropped real project roots, which
+                // is how a workspace could show its packages and not itself.
+                let hits = mdfind(["-onlyin", root, "-name", name])
+                    .filter { ($0 as NSString).lastPathComponent == name && !insideArtifact($0) }
+                    .prefix(6000)
+                if !hits.isEmpty { markers[name] = Array(hits) }
             }
             if markers.isEmpty {
                 markers = ManifestWalk.find(wanted, under: root)
@@ -191,15 +269,21 @@ enum Discovery {
                          derived: true, hasTag: true, designated: false, capped: true)
             }
 
-            // 2) Manifest-derived: a manifest proves its sibling outputs are regenerable.
-            for (manifest, derivedDirs) in manifestMap {
-                for hit in markers[manifest] ?? [] {
-                    let dir = (hit as NSString).deletingLastPathComponent
-                    if dir.contains("/node_modules/") || dir.contains("/.build/")
-                        || dir.contains("/vendor/") || dir.contains("/Pods/") { continue }
-                    for d in derivedDirs {
-                        consider(dir + "/" + d, derived: true, hasTag: false,
-                                 designated: false, capped: true)
+            // 2) Manifest-derived. A manifest proves its sibling outputs are
+            //    *regenerable*; it says nothing about whether regenerating
+            //    them is free, or whether anyone is still working here. That
+            //    is `ProjectGuard`'s job, and nothing gets past it.
+            if !skipProjects {
+                for (manifest, derivedDirs) in manifestMap {
+                    for hit in markers[manifest] ?? [] {
+                        let dir = (hit as NSString).deletingLastPathComponent
+                        for d in derivedDirs {
+                            if let info = projects.evaluate(artifact: dir + "/" + d,
+                                                            project: dir,
+                                                            siblings: derivedDirs) {
+                                considerProject(info)
+                            }
+                        }
                     }
                 }
             }
@@ -348,18 +432,29 @@ enum Discovery {
         //     folder both had a `node_modules`, its other projects probably do
         //     too — and those have never been cleaned, may not be indexed, and
         //     nothing else here would ever look at them.
-        for (container, kinds) in hotSpots {
+        for (container, kinds) in hotSpots where !skipProjects {
             guard roots.contains(where: { container == $0 || container.hasPrefix($0 + "/") }) else { continue }
             let children = ((try? fm.contentsOfDirectory(atPath: container)) ?? [])
                 .filter { !$0.hasPrefix(".") }
                 .prefix(400)
             for child in children {
+                // Inference is the weakest evidence in the app — it has never
+                // seen this project, only its neighbours. It gets no shortcut
+                // past the guard: a sibling with the same folder name but no
+                // manifest, or one somebody is working in, is not an offer.
                 for kind in kinds {
-                    consider("\(container)/\(child)/\(kind)",
-                             derived: true, hasTag: false, designated: false)
+                    if let info = projects.evaluate(artifact: "\(container)/\(child)/\(kind)",
+                                                    project: "\(container)/\(child)",
+                                                    siblings: Array(kinds)) {
+                        considerProject(info)
+                    }
                 }
             }
         }
+        emitProjects()
+        let projectRows = scored.filter { $0.target.category == .projects }
+        sweepDebug("🛡️ proje geçidi — \(projectRows.count) uyuyan proje "
+                   + "(\(projectArtifacts.count) klasör) sunuldu, " + projects.debugSummary)
 
         // 5) Leftovers from uninstalled apps — the opaque bulk of "System Data".
         //    Bundle-id-named folders in Application Support / Containers whose
@@ -410,11 +505,18 @@ enum Discovery {
         // Drop candidates nested inside a shallower candidate — the parent
         // already covers their bytes (prevents double counting and racing
         // deletes like `target` + `target/wasm32-unknown-unknown`).
+        // Every path, not just the first: a project row now covers a whole
+        // workspace, so checking one of its paths would let the other
+        // seventy-five double-count bytes against a row that already holds
+        // them — and race two deletes into the same folder.
         var kept: [(target: CleanTarget, rank: Double, capped: Bool)] = []
+        var keptPaths: [String] = []
         for cand in scored.sorted(by: { $0.target.rawPaths[0].count < $1.target.rawPaths[0].count }) {
-            let p = cand.target.rawPaths[0]
-            if kept.contains(where: { p.hasPrefix($0.target.rawPaths[0] + "/") }) { continue }
+            if cand.target.rawPaths.contains(where: { p in
+                keptPaths.contains { p.hasPrefix($0 + "/") }
+            }) { continue }
             kept.append(cand)
+            keptPaths += cand.target.rawPaths
         }
 
         // Only the Spotlight project sweep is unbounded, so only it gets
@@ -461,6 +563,18 @@ enum Discovery {
         }
         return found
     }
+
+    /// Is this path buried inside an artifact directory? A manifest in there
+    /// describes a dependency, not a project — there are hundreds of thousands
+    /// of them on a working disk and not one is worth a row.
+    static func insideArtifact(_ path: String) -> Bool {
+        artifactPathSegments.contains { path.contains($0) }
+    }
+
+    private static let artifactPathSegments = [
+        "/node_modules/", "/.build/", "/vendor/", "/Pods/", "/target/",
+        "/.venv/", "/venv/", "/deps/", "/.gradle/", "/_build/", "/.dart_tool/",
+    ]
 
     /// Folders that are either the user's own data or already handled by a
     /// cheaper pass — walking into them is cost with no possible payoff.
@@ -679,7 +793,11 @@ enum Discovery {
         // entry under ~/Library/Caches — the largest reliable source there is.
         if designated                                { cache += 1.0; safe += 0.4 }
         if cacheNameTokens.contains(lastComp(path))   { cache += 0.4 }
-        if derived                                    { cache += 0.5; safe += 0.7 }   // regenerable
+        // Regenerable, which is a claim about the folder and not about the
+        // user. The only caller left is `CACHEDIR.TAG`, whose own 0.6 already
+        // clears the gate; the 0.7 this used to hand out is what made every
+        // project artifact green and preselected.
+        if derived                                    { cache += 0.5; safe += 0.3 }
         // Found *because* the folder carries the don't-back-this-up flag: the
         // tool declared it expendable itself — no name to recognise, no table
         // to be in. Enough to clear the gate together with the flag's own 0.5,
@@ -746,6 +864,17 @@ enum Discovery {
             boomerang: boomerang,
             category: category
         )
+    }
+
+    /// A Tauri app's row covers a Rust `target` and an iOS `Pods`; saying
+    /// "pod install" would be picking one at random and calling it the
+    /// answer. Distinct commands, sorted so the row is stable between scans,
+    /// and truncated rather than allowed to run away with the detail line.
+    static func restoreSummary(_ commands: [String]) -> String? {
+        let distinct = Set(commands).subtracting([""]).sorted()
+        guard !distinct.isEmpty else { return nil }
+        if distinct.count <= 2 { return distinct.joined(separator: " + ") }
+        return distinct.prefix(2).joined(separator: " + ") + " …"
     }
 
     private static func symbol(for name: String) -> String {

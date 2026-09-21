@@ -168,12 +168,38 @@ struct MenuContentView: View {
                 Button(L("clean.confirm.clean"), role: .destructive) {
                     Task { await model.cleanSelected() }
                 }
+                // The escape hatch lives here rather than in the header,
+                // because here is where the breakdown is read and here is
+                // where it can still be a surprise.
+                if !model.selectedNonCache.isEmpty {
+                    let safeBytes = model.selectedReclaimable - model.selectedNonCacheBytes
+                    if safeBytes > 0 {
+                        Button(Lf("clean.confirm.safeOnly", safeBytes.fileSize)) {
+                            model.keepOnlySafeSelection()
+                            Task { await model.cleanSelected() }
+                        }
+                    }
+                }
                 Button(L("clean.confirm.cancel"), role: .cancel) {}
             } message: {
-                Text(L("clean.confirm.message"))
+                Text(confirmMessage)
             }
         }
         .padding(DS.s4)
+    }
+
+    /// "18 items, 14.2 GB" answers the wrong question. What the user is
+    /// actually deciding is whether pressing this costs them anything, so the
+    /// sheet separates the bytes that come back on their own from the ones
+    /// that come back only when they run a command.
+    private var confirmMessage: String {
+        // One row per project, so this counts projects and not the folders
+        // they are made of — which is the number the sentence claims.
+        let projects = model.selectedProjects
+        guard !projects.isEmpty else { return L("clean.confirm.message") }
+        let bytes = projects.reduce(UInt64(0)) { $0 + $1.size }
+        return L("clean.confirm.message") + "\n\n"
+            + Lf("clean.confirm.rebuildable", bytes.fileSize, Int32(projects.count))
     }
 
     private var subtitle: String {
@@ -307,8 +333,11 @@ struct MenuContentView: View {
             }
             .buttonStyle(.plain)
             Button {
-                let target = !allOn
-                for r in rows { r.isSelected = target }
+                switch bulkAction(for: rows) {
+                case .safe: for r in rows where r.target.safety.isPureCache { r.isSelected = true }
+                case .all:  for r in rows { r.isSelected = true }
+                case .none: for r in rows { r.isSelected = false }
+                }
             } label: {
                 Image(systemName: allOn ? "checkmark.circle.fill"
                                  : noneOn ? "circle" : "minus.circle.fill")
@@ -384,6 +413,22 @@ struct MenuContentView: View {
         .padding(.bottom, DS.s3)
     }
 
+    /// What a section's bulk control does next.
+    ///
+    /// One toggle that swept up every row in the section is what made this
+    /// button dangerous: in a mixed section it selected pure caches and a
+    /// project's dependencies with the same click, so "select all" could
+    /// never be pressed without reading every line first. Now the safe rows
+    /// go in on their own, and the rest is a second, deliberate press.
+    private enum Bulk { case safe, all, none }
+
+    private func bulkAction(for rows: [TargetState]) -> Bulk {
+        if rows.allSatisfy(\.isSelected) { return .none }
+        let safe = rows.filter { $0.target.safety.isPureCache }
+        if !safe.isEmpty, !safe.allSatisfy(\.isSelected) { return .safe }
+        return .all
+    }
+
     private func sectionHeader(_ title: String, rows: [TargetState] = []) -> some View {
         HStack(spacing: DS.s2) {
             Text(title)
@@ -394,20 +439,35 @@ struct MenuContentView: View {
             if !rows.isEmpty {
                 // A worded control, not a circle: the old header circle read
                 // as one more row checkbox and its effect was a surprise.
-                let allOn = rows.allSatisfy(\.isSelected)
-                Button(allOn ? L("section.deselectAll") : L("section.selectAllBtn")) {
-                    let target = !allOn
-                    for r in rows { r.isSelected = target }
+                let action = bulkAction(for: rows)
+                let mixed = rows.contains { $0.target.safety.isPureCache }
+                    && rows.contains { !$0.target.safety.isPureCache }
+                Button(bulkLabel(action, mixed: mixed)) {
+                    switch action {
+                    case .safe: for r in rows where r.target.safety.isPureCache { r.isSelected = true }
+                    case .all:  for r in rows { r.isSelected = true }
+                    case .none: for r in rows { r.isSelected = false }
+                    }
                 }
                 .buttonStyle(.plain)
                 .font(.caption2.weight(.medium))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(action == .all && mixed ? Color.orange : Color.accentColor)
                 .help(L("section.selectAll"))
             }
         }
         .padding(.horizontal, DS.s4)
         .padding(.top, DS.s3)
         .padding(.bottom, DS.s1)
+    }
+
+    private func bulkLabel(_ action: Bulk, mixed: Bool) -> String {
+        switch action {
+        case .none: return L("section.deselectAll")
+        // In a section that is all one tier there is nothing to stage, so the
+        // button keeps its plain wording.
+        case .safe: return mixed ? L("section.selectSafe") : L("section.selectAllBtn")
+        case .all:  return mixed ? L("section.selectRisky") : L("section.selectAllBtn")
+        }
     }
 
     // MARK: System areas (admin-gated)

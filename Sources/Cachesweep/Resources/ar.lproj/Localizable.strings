@@ -163,3 +163,17 @@
 "seed.volumetrash" = "سلة مهملات الأقراص الخارجية";
 "detail.oldVersions" = "إصدارات قديمة";
 "detail.boomerang" = "يمتلئ من جديد فورًا";
+
+/* Project artifacts: dormant-only, never preselected */
+"category.projects" = "مشاريع خاملة";
+"section.selectSafe" = "تحديد الآمن";
+"section.selectRisky" = "تضمين المحفوف بالمخاطر";
+"badge.noLock" = "لا يوجد ملف قفل";
+"clean.confirm.safeOnly" = "الآمن فقط (%@)";
+"clean.confirm.rebuildable" = "‏%1$@ من هذا يخص %2$d مشروعًا — لن يعود من تلقاء نفسه، وستحتاج إلى إعادة التثبيت.";
+"settings.projects" = "مجلدات المشاريع";
+"settings.projects.footer" = "لا تظهر مجلدات مثل node_modules و.venv وPods إلا إذا بقي المشروع نفسه دون استخدام هذه المدة، ولا يُحدَّد أي منها تلقائيًا.";
+"settings.skipProjects" = "لا تلمس مجلدات المشاريع أبدًا";
+"settings.projectIdle" = "إظهارها بعد خمول";
+"settings.projectIdle.days" = "%d يومًا";
+"detail.artifactCount" = "%d مجلدات";

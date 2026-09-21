@@ -163,3 +163,17 @@
 "seed.volumetrash" = "Корзины внешних дисков";
 "detail.oldVersions" = "старые версии";
 "detail.boomerang" = "тут же заполняется снова";
+
+/* Project artifacts: dormant-only, never preselected */
+"category.projects" = "СПЯЩИЕ ПРОЕКТЫ";
+"section.selectSafe" = "Выбрать безопасные";
+"section.selectRisky" = "Включая рискованные";
+"badge.noLock" = "нет lock-файла";
+"clean.confirm.safeOnly" = "Только безопасные (%@)";
+"clean.confirm.rebuildable" = "%1$@ из этого принадлежит проектам (%2$d) — само не вернётся, придётся переустановить.";
+"settings.projects" = "Папки проектов";
+"settings.projects.footer" = "node_modules, .venv, Pods и подобные показываются, только если сам проект не трогали столько времени, — и ни один из них не выбирается автоматически.";
+"settings.skipProjects" = "Никогда не трогать папки проектов";
+"settings.projectIdle" = "Показывать при простое от";
+"settings.projectIdle.days" = "%d дн.";
+"detail.artifactCount" = "%d папк.";

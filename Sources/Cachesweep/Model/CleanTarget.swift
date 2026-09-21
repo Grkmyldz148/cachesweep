@@ -1,16 +1,37 @@
 import Foundation
 
-/// How confident we are that cleaning a target is safe.
+/// How much it costs the user to get a target back after it is cleaned.
+///
+/// The two-way split this replaced ("safe" / "caution") had no room for the
+/// most common thing on a developer's disk: a folder that is genuinely
+/// regenerable and genuinely expensive. A `node_modules` is not a cache the
+/// way `~/.npm/_cacache` is a cache — one comes back on its own, the other
+/// comes back when its owner runs a command and the registry cooperates. They
+/// were scoring the same, so they were preselected the same, which is how
+/// "clean everything" became something the user could not safely press.
 enum Safety: String, Sendable {
-    case safe       // pure regenerable cache — green
-    case caution    // real data that re-downloads or takes effort — orange
+    /// Pure regenerable cache: the owning tool refills it without anyone
+    /// noticing. The only tier that is ever preselected.
+    case safe
+    /// Project output: one command brings it back, but that command costs
+    /// minutes, bandwidth and a cooperating registry. Offered, never
+    /// preselected.
+    case rebuildable
+    /// Real data that re-downloads or takes effort to recreate.
+    case caution
 
     var label: String {
         switch self {
-        case .safe:    return "Güvenli"
-        case .caution: return "Dikkat"
+        case .safe:        return "Güvenli"
+        case .rebuildable: return "Yeniden kurulur"
+        case .caution:     return "Dikkat"
         }
     }
+
+    /// The only tier that is a cache in the sense the user means: it refills
+    /// itself and nobody pays for it. Used by the bulk controls, which select
+    /// this tier first and everything else only on a second, explicit press.
+    var isPureCache: Bool { self == .safe }
 }
 
 /// How a target's space is reclaimed.
@@ -26,6 +47,11 @@ enum CleanStrategy: Sendable {
 /// Display grouping for the main list.
 enum TargetCategory: Int, CaseIterable, Sendable {
     case devCaches   // package managers & build outputs
+    /// Dormant projects' own artifacts. Their own section because they are
+    /// the one group where "select all" has to mean something different:
+    /// every row here costs a reinstall, so none of them is ever ticked for
+    /// the user, and the header says so.
+    case projects
     case appCaches   // per-app caches under ~/Library/Caches
     case leftovers   // remains of uninstalled apps
     case aiData      // AI tool bulk data: models, VM images, session stores
@@ -34,6 +60,7 @@ enum TargetCategory: Int, CaseIterable, Sendable {
     @MainActor var title: String {
         switch self {
         case .devCaches: return L("category.dev")
+        case .projects:  return L("category.projects")
         case .appCaches: return L("category.app")
         case .leftovers: return L("category.leftovers")
         case .aiData:    return L("category.ai")
@@ -69,6 +96,14 @@ struct CleanTarget: Identifiable, Sendable {
     /// Learning proved this kind refills right after every clean — offered,
     /// but never preselected, and the row says why.
     var boomerang = false
+    /// The command that brings a project artifact back ("pnpm install").
+    /// Shown on the row: telling someone a folder is regenerable is only
+    /// reassuring if you can also tell them how.
+    var restoreCommand: String?
+    /// A lockfile pins this tree, so reinstalling reproduces what was here.
+    /// False means the reinstall is a fresh resolution — offered, flagged,
+    /// and demoted to `.caution`.
+    var reproducible = true
     var category: TargetCategory = .devCaches
 
     var expandedPaths: [String] {

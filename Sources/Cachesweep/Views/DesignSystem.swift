@@ -27,8 +27,12 @@ extension Safety {
     /// Semantic system colors — adapt to light/dark automatically.
     var tint: Color {
         switch self {
-        case .safe:    return .green
-        case .caution: return .orange
+        case .safe:        return .green
+        // Blue, not a shade of green: the row is offered and reversible, but
+        // reversing it costs the user a command and a wait, and the colour is
+        // the fastest way to say "this one is your call".
+        case .rebuildable: return .blue
+        case .caution:     return .orange
         }
     }
 }

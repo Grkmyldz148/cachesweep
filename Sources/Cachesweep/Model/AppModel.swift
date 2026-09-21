@@ -26,7 +26,13 @@ final class TargetState: Identifiable {
         // the user has cleaned them before and they grew back — their own
         // judgement, recorded. Everything else cautious (leftovers, AI data,
         // runtimes) stays strictly opt-in.
+        //
+        // `.rebuildable` is excluded even when learned. Cleaning a project's
+        // artifacts twice says the user is willing to do it, not that they
+        // want it done for them — and the one thing this box must never do is
+        // tick itself in front of a folder that costs a reinstall.
         self.isSelected = !target.inUse && !target.boomerang
+            && target.safety != .rebuildable
             && (target.safety == .safe || (target.learned && !target.isLeftover))
     }
 }
@@ -125,6 +131,31 @@ final class AppModel {
         allStates.filter { $0.isSelected && $0.size > 0 }.count
     }
 
+    /// Selected rows that are not pure caches — project artifacts, leftovers,
+    /// AI models, installers. The confirm sheet needs this: "18 items, 14.2
+    /// GB" tells nobody whether pressing the button is free, and that is the
+    /// only question being asked.
+    var selectedNonCache: [TargetState] {
+        allStates.filter { $0.isSelected && $0.size > 0 && !$0.target.safety.isPureCache }
+    }
+
+    var selectedNonCacheBytes: UInt64 {
+        selectedNonCache.reduce(0) { $0 + $1.size }
+    }
+
+    /// Selected dormant-project rows — one per project, so this is a count of
+    /// projects, not of folders.
+    var selectedProjects: [TargetState] {
+        allStates.filter { $0.isSelected && $0.size > 0 && $0.target.category == .projects }
+    }
+
+    /// Drop everything from the selection that is not a pure cache — the
+    /// escape hatch on the confirm sheet, for when the breakdown turns out
+    /// to be a surprise.
+    func keepOnlySafeSelection() {
+        for st in allStates where !st.target.safety.isPureCache { st.isSelected = false }
+    }
+
     // MARK: - Scanning
 
     func scan(force: Bool = false) async {
@@ -154,6 +185,8 @@ final class AppModel {
         let roots = AppSettings.shared.scanRoots
         let excludes = AppSettings.shared.excludedPaths
         let cacheKey = roots.joined(separator: "|") + "‖" + excludes.joined(separator: "|")
+            + "‖\(AppSettings.shared.projectIdleDays)"
+            + (AppSettings.shared.skipProjectArtifacts ? "‖noproj" : "")
 
         // Smart discovery: find cache-like dirs beyond the curated seed list,
         // across the user's chosen scan roots and respecting their exclusions.
@@ -174,7 +207,9 @@ final class AppModel {
                                              learn: LearningStore.shared.boosts(),
                                              expect: LearningStore.shared.expectations(),
                                              hotSpots: LearningStore.shared.hotSpots(),
-                                             boomerang: LearningStore.shared.boomerangKinds())
+                                             boomerang: LearningStore.shared.boomerangKinds(),
+                                             projectIdleDays: AppSettings.shared.projectIdleDays,
+                                             skipProjects: AppSettings.shared.skipProjectArtifacts)
             discoveryCache = (cacheKey, Date(), found)
             sweepDebug("🔭 keşif: \(found.count) aday — " + found.prefix(12).map { t in
                 let flag = t.safety == .safe ? "🟢" : "🟠"

@@ -163,3 +163,17 @@
 "seed.volumetrash" = "外部ディスクのゴミ箱";
 "detail.oldVersions" = "古いバージョン";
 "detail.boomerang" = "すぐに元に戻る";
+
+/* Project artifacts: dormant-only, never preselected */
+"category.projects" = "休眠中のプロジェクト";
+"section.selectSafe" = "安全なものを選択";
+"section.selectRisky" = "リスクありも含める";
+"badge.noLock" = "ロックファイルなし";
+"clean.confirm.safeOnly" = "安全なものだけ (%@)";
+"clean.confirm.rebuildable" = "このうち %1$@ は %2$d 件のプロジェクトのものです。自動では戻らず、再インストールが必要です。";
+"settings.projects" = "プロジェクトフォルダ";
+"settings.projects.footer" = "node_modules、.venv、Pods などは、プロジェクト自体がこの期間触られていない場合にのみ表示され、自動選択されることはありません。";
+"settings.skipProjects" = "プロジェクトフォルダには触れない";
+"settings.projectIdle" = "この期間放置されていたら表示";
+"settings.projectIdle.days" = "%d 日";
+"detail.artifactCount" = "%d フォルダ";

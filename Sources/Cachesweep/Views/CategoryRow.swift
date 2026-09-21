@@ -54,6 +54,10 @@ struct CategoryRow: View {
     /// decision most. Everything informational lives in the detail line.
     private var primaryBadge: (String, Color)? {
         if state.target.inUse { return (L("badge.inUse"), .orange) }
+        // No lockfile: the reinstall is a fresh resolution of whatever the
+        // registry serves today, not a restoration of what was deleted. That
+        // outranks the other badges — it is the one that can bite.
+        if !state.target.reproducible { return (L("badge.noLock"), .orange) }
         if state.target.isLeftover { return (L("badge.leftover"), .indigo) }
         if state.target.needsAdmin { return (L("badge.admin"), .gray) }
         return nil
@@ -68,6 +72,14 @@ struct CategoryRow: View {
             parts.append(Lf("detail.idleDays", Int32(d)))
         }
         if state.target.boomerang { parts.append(L("detail.boomerang")) }
+        // A workspace arrives as one row over several folders; say how many,
+        // or the size looks like it came from the one path on the line.
+        if state.target.category == .projects, state.target.rawPaths.count > 1 {
+            parts.append(Lf("detail.artifactCount", Int32(state.target.rawPaths.count)))
+        }
+        // The restore command, right on the row. "Regenerable" is an abstract
+        // reassurance until the user can see what regenerating it costs them.
+        if let cmd = state.target.restoreCommand { parts.append(cmd) }
         return parts.joined(separator: " · ")
     }
 

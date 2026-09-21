@@ -163,3 +163,17 @@
 "seed.volumetrash" = "Papierkorb externer Volumes";
 "detail.oldVersions" = "alte Versionen";
 "detail.boomerang" = "füllt sich sofort wieder";
+
+/* Project artifacts: dormant-only, never preselected */
+"category.projects" = "RUHENDE PROJEKTE";
+"section.selectSafe" = "Sichere auswählen";
+"section.selectRisky" = "Riskante einschließen";
+"badge.noLock" = "keine Lockdatei";
+"clean.confirm.safeOnly" = "Nur sichere (%@)";
+"clean.confirm.rebuildable" = "%1$@ davon gehören zu %2$d Projekt(en) — das kommt nicht von selbst zurück, du musst neu installieren.";
+"settings.projects" = "Projektordner";
+"settings.projects.footer" = "node_modules, .venv, Pods usw. erscheinen erst, wenn das Projekt selbst so lange unberührt war — und keiner davon ist je vorausgewählt.";
+"settings.skipProjects" = "Projektordner nie anfassen";
+"settings.projectIdle" = "Anzeigen ab Ruhezeit von";
+"settings.projectIdle.days" = "%d Tagen";
+"detail.artifactCount" = "%d Ordner";

@@ -163,3 +163,17 @@
 "seed.volumetrash" = "外置磁盘废纸篓";
 "detail.oldVersions" = "旧版本";
 "detail.boomerang" = "很快就会重新填满";
+
+/* Project artifacts: dormant-only, never preselected */
+"category.projects" = "休眠项目";
+"section.selectSafe" = "选择安全项";
+"section.selectRisky" = "包含有风险项";
+"badge.noLock" = "无锁文件";
+"clean.confirm.safeOnly" = "仅安全项 (%@)";
+"clean.confirm.rebuildable" = "其中 %1$@ 属于 %2$d 个项目，不会自动恢复，需要你重新安装。";
+"settings.projects" = "项目文件夹";
+"settings.projects.footer" = "node_modules、.venv、Pods 等仅在项目本身闲置达到该时长后才会列出，并且从不预先勾选。";
+"settings.skipProjects" = "从不触碰项目文件夹";
+"settings.projectIdle" = "闲置多久后显示";
+"settings.projectIdle.days" = "%d 天";
+"detail.artifactCount" = "%d 个文件夹";

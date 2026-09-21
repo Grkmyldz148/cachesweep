@@ -163,3 +163,17 @@
 "seed.volumetrash" = "외장 디스크 휴지통";
 "detail.oldVersions" = "이전 버전";
 "detail.boomerang" = "바로 다시 채워짐";
+
+/* Project artifacts: dormant-only, never preselected */
+"category.projects" = "휴면 프로젝트";
+"section.selectSafe" = "안전한 항목 선택";
+"section.selectRisky" = "위험 항목 포함";
+"badge.noLock" = "잠금 파일 없음";
+"clean.confirm.safeOnly" = "안전한 항목만 (%@)";
+"clean.confirm.rebuildable" = "이 중 %1$@는 %2$d개 프로젝트의 폴더입니다. 저절로 돌아오지 않으며 다시 설치해야 합니다.";
+"settings.projects" = "프로젝트 폴더";
+"settings.projects.footer" = "node_modules, .venv, Pods 같은 폴더는 프로젝트 자체가 이 기간 동안 사용되지 않은 경우에만 표시되며, 자동으로 선택되지 않습니다.";
+"settings.skipProjects" = "프로젝트 폴더는 건드리지 않기";
+"settings.projectIdle" = "이 기간 사용하지 않으면 표시";
+"settings.projectIdle.days" = "%d일";
+"detail.artifactCount" = "폴더 %d개";

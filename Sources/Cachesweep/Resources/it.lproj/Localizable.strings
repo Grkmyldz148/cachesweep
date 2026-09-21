@@ -163,3 +163,17 @@
 "seed.volumetrash" = "Cestino dei dischi esterni";
 "detail.oldVersions" = "versioni precedenti";
 "detail.boomerang" = "si riempie subito";
+
+/* Project artifacts: dormant-only, never preselected */
+"category.projects" = "PROGETTI INATTIVI";
+"section.selectSafe" = "Seleziona i sicuri";
+"section.selectRisky" = "Includi i rischiosi";
+"badge.noLock" = "nessun lockfile";
+"clean.confirm.safeOnly" = "Solo i sicuri (%@)";
+"clean.confirm.rebuildable" = "%1$@ appartengono a %2$d progetto/i: non torna da solo, dovrai reinstallare.";
+"settings.projects" = "Cartelle di progetto";
+"settings.projects.footer" = "node_modules, .venv, Pods e simili compaiono solo se il progetto è rimasto intatto per questo periodo — e nessuno è mai preselezionato.";
+"settings.skipProjects" = "Non toccare mai le cartelle di progetto";
+"settings.projectIdle" = "Mostra dopo un'inattività di";
+"settings.projectIdle.days" = "%d giorni";
+"detail.artifactCount" = "%d cartelle";
